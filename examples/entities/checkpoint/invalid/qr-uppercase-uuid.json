@@ -1,0 +1,16 @@
+{
+  "id": "019a2b3c-4d5e-7f00-8a00-000000000006",
+  "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+  "name": "Kazánház",
+  "instruction": null,
+  "tag_type": "qr",
+  "tag_uid": null,
+  "qr_payload": "waypost:cp:019A2B3C-4D5E-7F00-8A00-000000000006:aB3dE5gH7jK9mN2p",
+  "lat_e7": null,
+  "lng_e7": null,
+  "accuracy_dm": null,
+  "photo_media_id": null,
+  "active": true,
+  "created_at": "2026-10-20T08:00:00.000Z",
+  "updated_at": "2026-10-27T10:05:12.345Z"
+}

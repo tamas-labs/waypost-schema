@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/entities/schedule.json",
+  "title": "Schedule",
+  "description": "When rounds of a route are due, in the site's time zone. list mode: one round at every start_times entry. interval mode: from interval_from every interval_every_min minutes up to and including interval_to; if interval_to <= interval_from the window crosses midnight and belongs to its start day. The fields of the other mode are null. Every property is present; absent values are null.",
+  "type": "object",
+  "required": [
+    "id",
+    "route_id",
+    "name",
+    "weekdays",
+    "mode",
+    "start_times",
+    "interval_from",
+    "interval_to",
+    "interval_every_min",
+    "time_limit_min",
+    "active",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../common/uuid.json"
+    },
+    "route_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "weekdays": {
+      "description": "Bit mask of start days: 1 = Monday, 2 = Tuesday, 4 = Wednesday, 8 = Thursday, 16 = Friday, 32 = Saturday, 64 = Sunday.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 127
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "list",
+        "interval"
+      ]
+    },
+    "start_times": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "../common/local-time.json"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "interval_from": {
+      "anyOf": [
+        {
+          "$ref": "../common/local-time.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "interval_to": {
+      "anyOf": [
+        {
+          "$ref": "../common/local-time.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "interval_every_min": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "time_limit_min": {
+      "anyOf": [
+        {
+          "description": "Time limit of a round in minutes; null = no limit.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "$ref": "../common/timestamp.json"
+    },
+    "updated_at": {
+      "description": "Last change; drives the pull cursor.",
+      "$ref": "../common/timestamp.json"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "list"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "start_times": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "interval_from": {
+            "type": "null"
+          },
+          "interval_to": {
+            "type": "null"
+          },
+          "interval_every_min": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "interval"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "start_times": {
+            "type": "null"
+          },
+          "interval_from": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "interval_to": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "interval_every_min": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

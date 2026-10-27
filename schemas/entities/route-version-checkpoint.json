@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/entities/route-version-checkpoint.json",
+  "title": "Route version checkpoint",
+  "description": "A checkpoint at a position of a route version. Identified by (route_version_id, position); immutable like its version. Every property is present; absent values are null.",
+  "type": "object",
+  "required": [
+    "route_version_id",
+    "checkpoint_id",
+    "position",
+    "walk_time_from_prev_s"
+  ],
+  "properties": {
+    "route_version_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "checkpoint_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "position": {
+      "description": "Order within the version, starting at 1.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "walk_time_from_prev_s": {
+      "anyOf": [
+        {
+          "description": "Measured walk from the previous position in seconds; null for position 1 and after reordering.",
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

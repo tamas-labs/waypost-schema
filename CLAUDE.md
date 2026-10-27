@@ -30,6 +30,7 @@ CHANGELOG.md
 
 - Minden séma JSON Schema **draft 2020-12** (`"$schema": "https://json-schema.org/draft/2020-12/schema"`), `$id` = `https://waypost.dev/schema/<útvonal a schemas/ alatt>`; a sémák egymásra relatív `$ref`-fel hivatkoznak. A közös típusok külön sémafájlokban vannak (`schemas/common/`), és `$ref`-fel hivatkozunk rájuk – nem másoljuk őket.
 - Minden sémához tartozik legalább egy érvényes **és** egy érvénytelen példa: `examples/<séma útvonala .json nélkül>/valid|invalid/<név>.json`. Az érvénytelen példa fájlneve mondja meg, mi a hiba benne, és egyszerre csak egy hibát tartalmazzon.
+- Az entitássémák a hálózati alakot írják le: minden mező kötelezően jelen van, a hiányzó érték `null`; csak szerveroldali mező (jelszó, e-mail, eszköztitok, `deleted_at`) nem kerülhet bele.
 - Minden objektumséma `additionalProperties: false`; új mező = új minor sémaverzió.
 - A `pattern`-ek a JS (Ajv, `u` flag) és a PCRE (opis) közös részhalmazát használják: `[0-9]` a `\d` helyett, nincs lookbehind, nincs Unicode-tulajdonság-osztály, mindig `^…$` horgonnyal.
 - **Lebegőpontos szám sehol.** Koordináta `lat_e7` / `lng_e7`, pontosság `accuracy_dm` – egészek.

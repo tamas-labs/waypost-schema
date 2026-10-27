@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/entities/route-version.json",
+  "title": "Route version",
+  "description": "An immutable version of a route; any change to its checkpoints creates a new version. Every property is present; absent values are null.",
+  "type": "object",
+  "required": [
+    "id",
+    "route_id",
+    "version",
+    "walk_duration_s",
+    "created_by",
+    "created_at"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../common/uuid.json"
+    },
+    "route_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "version": {
+      "description": "Sequence number within the route, starting at 1.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "walk_duration_s": {
+      "anyOf": [
+        {
+          "description": "Measured walk: last scan minus first scan during training, in seconds.",
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_by": {
+      "$ref": "../common/uuid.json"
+    },
+    "created_at": {
+      "$ref": "../common/timestamp.json"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/entities/site.json",
+  "title": "Site",
+  "description": "A guarded site. Every property is present; absent values are null.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "address",
+    "timezone",
+    "no_data_alert_after_min",
+    "created_by",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "address": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timezone": {
+      "description": "IANA time zone name; schedules are interpreted in it.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^(UTC|[A-Z][A-Za-z_-]+(/[A-Za-z0-9_+-]+){1,2})$"
+    },
+    "no_data_alert_after_min": {
+      "description": "Minutes after the deadline of the last expected round without any data from the device before supervisors are alerted.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440
+    },
+    "created_by": {
+      "description": "Supervisor who created the site.",
+      "$ref": "../common/uuid.json"
+    },
+    "created_at": {
+      "$ref": "../common/timestamp.json"
+    },
+    "updated_at": {
+      "description": "Last change; drives the pull cursor.",
+      "$ref": "../common/timestamp.json"
+    }
+  },
+  "additionalProperties": false
+}

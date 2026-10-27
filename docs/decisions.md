@@ -77,3 +77,47 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 - **Döntés:** A séma azt garantálja, hogy az érték matematikailag egész; az `47.4979` és a `474979000.5` elbukik. A küldő félnek egészként, tizedesrész nélkül kell kiírnia a számot. Az RFC 8785 kanonikus alakja `1.0`-ra és `1`-re is `1`, így a lenyomatban nincs eltérés. Az `accuracy_dm` felső korlátja 2³¹ − 1, a koordináták a fok × 10⁷ tartományában maradnak, így mindhárom elfér egy 32 bites egész oszlopban.
 - **Indok:** Nyers JSON-szöveg szintű ellenőrzés egyik oldalon sem kell; a valódi kockázat (lebegőpontos érték a hash-elt adatban) a sémával kiszűrhető.
 - **Érintett:** `common/lat-e7.json`, `common/lng-e7.json`, `common/accuracy-dm.json`, M0-05, M0-07.
+
+## 2026-10-27 – Mit ír le egy entitásséma?
+
+- **Kérdés:** Az entitássémák az adatbázis-táblát vagy a hálózaton utazó alakot írják le? Mi a teendő a hiányzó értékekkel?
+- **Döntés:** A hálózati alakot (pull `changes`, később a CRUD-válaszok). Minden mező kötelezően jelen van, a hiányzó érték `null` – mint a láncbejegyzésben. A csak szerveroldali mezők soha nem szerepelnek: `users.email`, `users.password`, `devices.secret`, `devices.last_seq`, `devices.last_hash`, `deleted_at` (a törlés a pull `deleted` listájában jelenik meg). A `created_at` / `updated_at` ott van, ahol a táblának is van időbélyege; a `devices` és a `report_subscriptions` táblának nincs.
+- **Indok:** Egy alak, amelyből a TS típusok (`T | null`, nem opcionális mező) egyértelműek; a kiszivárgó titkot az `additionalProperties: false` azonnal elkapja.
+- **Érintett:** `schemas/entities/*`, M0-06, M2-23, M3-01.
+
+## 2026-10-27 – A pont helye egész számokkal
+
+- **Kérdés:** A specifikáció adatmodelljében a `checkpoints` tábla `lat decimal`, `lng decimal`, `accuracy_m float` mezőkkel szerepel, miközben a hash-elt adatban nem lehet lebegőpontos szám.
+- **Döntés:** A `checkpoint` entitásban `lat_e7`, `lng_e7`, `accuracy_dm` egész szám, mint a láncban. Mind null lehet (a betanításkor a helymeghatározás 5 mp után feladja); `lat_e7` és `lng_e7` együtt van vagy együtt hiányzik, `accuracy_dm` csak hellyel együtt. A backend javasolt oszlopai is egészek (`lat_e7 int`, `lng_e7 int`, `accuracy_dm int`).
+- **Indok:** Egyféle helyábrázolás az egész rendszerben; a `far_from_checkpoint` jelölés (M4-06) a lánc és a pont koordinátáit így átváltás és kerekítési eltérés nélkül hasonlítja össze.
+- **Érintett:** `entities/checkpoint.json`, M2-03 (migráció), M4-06, M5-11.
+
+## 2026-10-27 – NFC UID és QR payload formátuma
+
+- **Kérdés:** Milyen hosszú lehet a `tag_uid`, mi a QR payload 16 karakteres kódjának ábécéje, és lehet-e egy NFC-pontnak QR-kódja?
+- **Döntés:**
+  - `tag_uid`: nagybetűs hex, elválasztó nélkül, 4–10 bájt (8–20 páros számú karakter) – ISO 14443 (4, 7, 10 bájt) és ISO 15693 (8 bájt) is belefér.
+  - QR payload: `waypost:cp:<checkpoint id, kisbetűs UUIDv7>:<16 karakter [A-Za-z0-9]>`. Hogy az UUID a pont saját ID-ja, azt a séma nem tudja ellenőrizni – a backend ellenőrzi (M2-18).
+  - `nfc` / `nfc_dna` pontnál a `tag_uid`, `qr` pontnál a `qr_payload` kötelező; a másik mező bármelyik típusnál kitölthető (pl. tartalék QR-matrica egy NFC-ponton).
+- **Indok:** A 62 karakteres ábécé 16 jeggyel ~95 bit véletlen, és nincs benne olyan jel, amelyet a QR-olvasók vagy az URL-ek másként kezelnének.
+- **Érintett:** `entities/checkpoint.json`, M1-04, M1-05, M2-18, M3-18.
+
+## 2026-10-27 – A felhasználó a pullban (`site_ids`, PIN-mezők)
+
+- **Kérdés:** Honnan tudja a supervisor saját telefonja, melyik őr melyik telephelyhez tartozik? Mi van a PIN-mezőkkel, ha a felhasználónak nincs PIN-je, vagy a címzett nem kaphatja meg (Q9)?
+- **Döntés:**
+  - A `user` entitás `site_ids` tömböt kap (a `site_user` táblából, a címzett által látható telephelyekre szűrve). Egy hozzárendelés változásakor a felhasználó `updated_at`-je is frissül, hogy az inkrementális pull elhozza.
+  - `pin_hash` (32 bájt), `pin_salt` (16 bájt), `pin_iterations` (≥ 100 000): vagy mind a három ki van töltve, vagy mind a három `null`. `null`, ha a felhasználónak nincs PIN-je (pl. a `waypost:create-supervisor` paranccsal létrehozott supervisor), vagy ha a címzett nem kaphatja meg. A supervisorok is kaphatnak PIN-t (a telephelyi telefonon supervisor módba lépéshez).
+  - A Q9 tényleges döntése (a supervisor saját telefonja kap-e PIN-hasheket) az M2-23-ban születik; a séma mindkét változatot megengedi.
+- **Indok:** Külön `site_users` lista helyett egyetlen mező; a PIN-mezők mindent-vagy-semmit szabálya kizárja a félig kitöltött, használhatatlan ellenőrzőt.
+- **Érintett:** `entities/user.json`, M2-09, M2-17, M2-23, M3-15, Q9, Q11.
+
+## 2026-10-27 – Útvonalverzió-pontok és menetrend részletei
+
+- **Kérdés:** A `position` 0-tól vagy 1-től indul? Mit enged a menetrend sémája?
+- **Döntés:**
+  - `position` és `version` 1-től indul. A `route_version_checkpoint`-nak nincs saját ID-ja (a kulcs `route_version_id` + `position`); a verzióval együtt változatlan, ezért a pull `deleted` listájában sem kell szerepelnie.
+  - Menetrend: a másik mód mezői `null`-ok; `list` módban legalább egy, egyedi `HH:MM` időpont; `interval` módban `interval_from`, `interval_to`, `interval_every_min` kötelező. A `weekdays` 1–127. Hogy az `interval_from` ≠ `interval_to`, és hogy a `list` időpontjai milyen sorrendben állnak, azt a séma nem ellenőrzi (a jelentésüket az M0-08 menetrend-tesztvektorai rögzítik).
+  - Korlátok: `interval_every_min`, `time_limit_min` és `no_data_alert_after_min` 1–1440 perc; név 255, cím 255, utasítás 2000, `app_version` 50 karakter; az időzóna IANA-név mintával.
+- **Indok:** A korlátok az adatbázis-oszlopokhoz (`varchar(255)`) és a józan észhez igazodnak; ha szűknek bizonyulnak, egy minor verzióval bővíthetők.
+- **Érintett:** `entities/route-version*.json`, `entities/schedule.json`, `entities/site.json`, `entities/device.json`, M0-08, M2-19, M2-20.

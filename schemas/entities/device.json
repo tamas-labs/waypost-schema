@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/entities/device.json",
+  "title": "Device",
+  "description": "A phone enrolled to a site. The secret and the server-side chain state (last_seq, last_hash) are never part of this representation. Every property is present; absent values are null.",
+  "type": "object",
+  "required": [
+    "id",
+    "site_id",
+    "name",
+    "platform",
+    "app_version",
+    "enrolled_by",
+    "enrolled_at",
+    "revoked_at",
+    "last_seen_at"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../common/uuid.json"
+    },
+    "site_id": {
+      "anyOf": [
+        {
+          "$ref": "../common/uuid.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "ios",
+        "android"
+      ]
+    },
+    "app_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "enrolled_by": {
+      "description": "Supervisor who enrolled the device.",
+      "$ref": "../common/uuid.json"
+    },
+    "enrolled_at": {
+      "$ref": "../common/timestamp.json"
+    },
+    "revoked_at": {
+      "anyOf": [
+        {
+          "$ref": "../common/timestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "last_seen_at": {
+      "anyOf": [
+        {
+          "$ref": "../common/timestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

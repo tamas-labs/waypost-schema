@@ -1,0 +1,11 @@
+{
+  "id": "019a2b3c-4d5e-7f00-8a00-000000000004",
+  "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+  "name": "Portásfülke telefon",
+  "platform": "android",
+  "app_version": "0.1.0",
+  "enrolled_by": "019a2b3c-4d5e-7f00-8a00-000000000002",
+  "enrolled_at": "2026-10-20T08:00:00.000Z",
+  "revoked_at": null,
+  "last_seen_at": "2026-10-27T10:05:12.345Z"
+}

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/entities/user.json",
+  "title": "User (pull)",
+  "description": "A guard or supervisor as delivered by sync pull: without e-mail and password, with the PIN verifier for offline PIN login. The three PIN fields are either all set or all null (no PIN yet, or the recipient is not entitled to them). Every property is present; absent values are null.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "role",
+    "pin_hash",
+    "pin_salt",
+    "pin_iterations",
+    "active",
+    "site_ids",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "supervisor",
+        "guard"
+      ]
+    },
+    "pin_hash": {
+      "anyOf": [
+        {
+          "description": "PBKDF2-HMAC-SHA256 output, 32 bytes.",
+          "$ref": "../common/base64.json",
+          "type": "string",
+          "minLength": 44,
+          "maxLength": 44
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "pin_salt": {
+      "anyOf": [
+        {
+          "description": "Random salt, 16 bytes.",
+          "$ref": "../common/base64.json",
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 24
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "pin_iterations": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 100000,
+          "maximum": 10000000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "active": {
+      "description": "Inactive users cannot log in.",
+      "type": "boolean"
+    },
+    "site_ids": {
+      "description": "Sites the user is assigned to (site_user), limited to the sites the recipient can see.",
+      "type": "array",
+      "items": {
+        "$ref": "../common/uuid.json"
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "$ref": "../common/timestamp.json"
+    },
+    "updated_at": {
+      "description": "Last change; drives the pull cursor.",
+      "$ref": "../common/timestamp.json"
+    }
+  },
+  "additionalProperties": false,
+  "if": {
+    "properties": {
+      "pin_hash": {
+        "type": "null"
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "pin_salt": {
+        "type": "null"
+      },
+      "pin_iterations": {
+        "type": "null"
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "pin_salt": {
+        "not": {
+          "type": "null"
+        }
+      },
+      "pin_iterations": {
+        "not": {
+          "type": "null"
+        }
+      }
+    }
+  }
+}

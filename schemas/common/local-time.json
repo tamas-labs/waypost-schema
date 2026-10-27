@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/local-time.json",
+  "title": "Local wall-clock time",
+  "description": "Time of day as HH:MM (24-hour, zero-padded) in the site's time zone, e.g. 20:00.",
+  "type": "string",
+  "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+}
