@@ -17,6 +17,7 @@
   "scripts": {
     "validate": "node scripts/validate.js",
     "vectors:chain": "node scripts/chain-vectors.js",
+    "vectors:schedule": "node scripts/schedule-vectors.js",
     "test": "node --test \"scripts/**/*.test.js\" && node scripts/validate.js"
   },
   "devDependencies": {

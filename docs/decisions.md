@@ -235,3 +235,44 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - A fájlt a `scripts/chain-vectors.js` állítja elő (`npm run vectors:chain`); kézzel nem szerkesztjük. A teszt (`npm test`) ellenőrzi, hogy a fájl bájtra egyezik egy friss futtatás eredményével, és hogy a generátor determinisztikus.
 - **Indok:** Egy fájl, amelyből a két másik repó tesztjei közvetlenül olvasnak; a bájtazonosság miatt egy véletlen kézi módosítás vagy egy nem determinisztikus generátor azonnal kiderül.
 - **Érintett:** `chain/test-vectors.json`, `scripts/chain-vectors.js`, M3-10, M3-11, M4-02, M0-10 (export).
+
+## 2026-10-27 – Menetrend-kibontás: DST (Q5)
+
+- **Kérdés:** Mi legyen a tavaszi váltáskor nem létező és az őszi váltáskor kétszer előforduló helyi időponttal? Az intervallum lépései faliórás időpontok vagy valós eltelt percek?
+- **Döntés (a tasks.md Q5 javaslata, jóváhagyva):**
+  - Az intervallum lépései **faliórás** időpontok (20:00, 21:00 … helyi idő szerint), nem valós eltelt percek.
+  - A **nem létező** helyi időpont a váltás utáni első érvényes időre kerül: 2026-03-29 02:30 → 03:00 CEST (01:00 UTC), nem 03:30.
+  - A **kétszer előforduló** helyi időpontnál az **első** előfordulás számít: 2026-10-25 02:30 → 02:30 CEST (00:30 UTC).
+  - Ha egy ablak két időpontja ugyanarra a pillanatra esik (pl. a nem létező 02:00 és a 03:00 lépés), az **egy** kör.
+- **Következmény:** a tavaszi éjszakán a 20:00–08:00 óránkénti menetrend 12 kört ad (11 valós óra), az őszin 13-at (13 valós óra, a 02:00 és a 03:00 között 2 valós óra).
+- **Vigyázat, a könyvtárak alapviselkedése eltér:** a PHP `DateTime` a kétszer előforduló időpontnál a **második** előfordulást választja (02:30 → 01:30 UTC), a nem létezőt pedig a kiesett órával tolja (02:30 → 03:30 CEST); a JS Temporal `disambiguation: 'compatible'` módja az elsőt választja, de a nem létezőt szintén 03:30-ra tolja. Az M3-13 és az M6-02 implementációjában ezt a két esetet kifejezetten kell kezelni; a `schedule/test-vectors.json` DST-esetei ezt ellenőrzik.
+- **Indok:** A faliórás lépés az, amit a supervisor beállít és az őr az órán lát; a „korábbi előfordulás” és a „váltás pillanata” mindkét irányban a lehető legkorábbi kört adja, így kör nem csúszik ki az ablakból.
+- **Érintett:** `schedule/test-vectors.json`, M3-13, M3-24, M6-02, M6-03.
+
+## 2026-10-27 – Menetrend-kibontás: a `list` mód és az éjfélen átnyúló ablak
+
+- **Kérdés:** A specifikáció az `interval` módra kimondja, hogy az éjfélen átnyúló ablak a kezdő napjához tartozik, a `list` módra nem. A `["22:00", "00:00", "02:00"]` lista elemei melyik naphoz tartoznak?
+- **Döntés:**
+  - A lista egy **sorozat** a kezdő naptól: ha egy elem nem későbbi az előzőnél, az a következő napra esik. Így `["22:00", "00:00", "02:00"]` keddi ablaka kedd 22:00, szerda 00:00 és 02:00; `["02:00", "20:00"]` mindkét eleme a kezdő napra esik.
+  - Érvényes lista: legfeljebb egy ilyen „visszalépés”, és ha van, az utolsó elem korábbi az elsőnél (az ablak rövidebb 24 óránál, és nem lóg bele a következő nap ablakába). Az `interval_from = interval_to` érvénytelen. Ezeket a séma nem tudja kifejezni, a backend ellenőrzi (M2-20, `422 validation_failed`).
+  - A `weekdays` a kezdő napra vonatkozik, és az ablak minden köre a kezdő naphoz tartozik – ez a „nap” a jelentésekben is (M6-03).
+  - Időszak (`from_date` … `to_date`, a telephely helyi dátumai, mindkét vég beleértve): azok a körök, amelyek ablaka ezeken a napokon kezdődik.
+- **Indok:** Ugyanaz a szabály, mint az `interval` módnál; a supervisor úgy írja be az éjszakát, ahogy az őr bejárja (este kezdve).
+- **Érintett:** `schedule/test-vectors.json`, `entities/schedule.json` (leírás), M2-20, M3-13, M5-17, M6-02, M6-03.
+
+## 2026-10-27 – Az időkeret-alapérték szélei
+
+- **Kérdés:** A `ceil(walk_duration_s × 1,5 / 300) × 5` képlet 0 mért másodpercre 0 percet ad, nagyon hosszú útra pedig a `time_limit_min` 1440-es felső korlátjánál többet.
+- **Döntés:** `walk_duration_s = null` → 20 perc; egyébként `ceil(walk_duration_s / 200) × 5` (a képlettel azonos, de egész aritmetikával, lebegőpontos kerekítési hiba nélkül), legalább 5 és legfeljebb 1440 perc.
+- **Indok:** Egy pontból álló útvonalnál a mért idő 0, de a körhöz kell idő; a felső korlát a séma érvényes tartománya.
+- **Érintett:** `schedule/test-vectors.json` (`time_limit_default`), M2-20, M3-14, M5-17.
+
+## 2026-10-27 – A menetrend-tesztvektorok fájlja
+
+- **Kérdés:** Milyen szerkezetű a `schedule/test-vectors.json`, és hogyan van ellenőrizve?
+- **Döntés:**
+  - `expansion[]`: `{ name, description, schedule (érvényes entities/schedule.json), timezone, from_date, to_date, expected[] }`, ahol egy kör `{ start_day, wall_time, local, utc }`: a kezdő nap, a menetrendben megadott faliórás idő, a tényleges helyi idő eltolással (pl. `2026-03-29T03:00:00+02:00`) és az UTC időbélyeg.
+  - `time_limit_default[]`: `{ walk_duration_s, time_limit_min }`.
+  - A fájlt a `scripts/schedule-vectors.js` állítja elő (`npm run vectors:schedule`), kézzel nem szerkesztjük; a teszt bájtazonosságot ellenőriz.
+  - Kézi ellenőrzés: a `scripts/schedule-vectors.test.js` a kritikus esetek (13 kör, éjfélen átnyúló lista, péntek–szombat, mindkét DST-éjszaka, nem létező és kétszer előforduló időpont, időkeret) várt értékeit a generátortól függetlenül, kézzel számolva tartalmazza. Ezen felül a PHP 8.5 (tzdata 2026.5) mind a 75 kör helyi ↔ UTC megfeleltetését megerősítette; eltérés csak a Q5-szabály két esetében van, ahol a PHP alapviselkedése más (lásd fent).
+- **Érintett:** `schedule/test-vectors.json`, M3-13, M3-14, M6-02, M6-03.
