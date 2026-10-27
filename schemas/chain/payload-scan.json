@@ -1,0 +1,401 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/chain/payload-scan.json",
+  "title": "Payload: scan",
+  "description": "A checkpoint scan by NFC, QR or manual entry. App-set flags: manual (manual entry), out_of_order (fixed order, not the expected checkpoint), out_of_round (no open round or checkpoint not on the route; round_id is then null), unknown_tag (no checkpoint for the tag; checkpoint_id is then null), mock_location (Android mock location provider; equals is_mock). Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
+  "type": "object",
+  "required": [
+    "scan_id",
+    "round_id",
+    "checkpoint_id",
+    "method",
+    "tag_uid",
+    "qr_payload",
+    "ndef_raw",
+    "lat_e7",
+    "lng_e7",
+    "accuracy_dm",
+    "is_mock",
+    "flags",
+    "note",
+    "media"
+  ],
+  "properties": {
+    "scan_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "round_id": {
+      "anyOf": [
+        {
+          "$ref": "../common/uuid.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "checkpoint_id": {
+      "anyOf": [
+        {
+          "$ref": "../common/uuid.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "nfc",
+        "qr",
+        "manual"
+      ]
+    },
+    "tag_uid": {
+      "anyOf": [
+        {
+          "description": "NFC tag UID: uppercase hex without separators, 4 to 10 bytes.",
+          "type": "string",
+          "pattern": "^([0-9A-F]{2}){4,10}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "qr_payload": {
+      "anyOf": [
+        {
+          "description": "The scanned QR text. Only waypost:cp: codes are accepted by the reader; an unknown one is still recorded (unknown_tag).",
+          "type": "string",
+          "pattern": "^waypost:cp:",
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ndef_raw": {
+      "anyOf": [
+        {
+          "description": "Raw NDEF message of the tag, if any; kept for later verification (e.g. NTAG 424 DNA).",
+          "$ref": "../common/base64.json",
+          "type": "string",
+          "maxLength": 8192
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lat_e7": {
+      "anyOf": [
+        {
+          "$ref": "../common/lat-e7.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lng_e7": {
+      "anyOf": [
+        {
+          "$ref": "../common/lng-e7.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "accuracy_dm": {
+      "anyOf": [
+        {
+          "$ref": "../common/accuracy-dm.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "is_mock": {
+      "type": "boolean"
+    },
+    "flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "manual",
+          "out_of_order",
+          "out_of_round",
+          "unknown_tag",
+          "mock_location"
+        ]
+      }
+    },
+    "note": {
+      "anyOf": [
+        {
+          "description": "Free text from the guard (Hungarian).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "media": {
+      "description": "Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected.",
+      "type": "array",
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "sha256"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "../common/uuid.json"
+          },
+          "sha256": {
+            "$ref": "../common/hash.json"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "lat_e7": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "lng_e7": {
+            "type": "null"
+          },
+          "accuracy_dm": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "lng_e7": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "nfc: the tag UID is recorded, there is no QR text.",
+      "if": {
+        "properties": {
+          "method": {
+            "const": "nfc"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tag_uid": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "qr_payload": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "description": "qr: the QR text is recorded, there is no NFC data.",
+      "if": {
+        "properties": {
+          "method": {
+            "const": "qr"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "qr_payload": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "tag_uid": {
+            "type": "null"
+          },
+          "ndef_raw": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "description": "manual: the guard picked a checkpoint; a note and at least one photo are required, and the manual flag is set.",
+      "if": {
+        "properties": {
+          "method": {
+            "const": "manual"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tag_uid": {
+            "type": "null"
+          },
+          "qr_payload": {
+            "type": "null"
+          },
+          "ndef_raw": {
+            "type": "null"
+          },
+          "checkpoint_id": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "note": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "media": {
+            "type": "array",
+            "minItems": 1
+          },
+          "flags": {
+            "type": "array",
+            "contains": {
+              "const": "manual"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "The manual flag only goes with manual entry.",
+      "if": {
+        "properties": {
+          "flags": {
+            "type": "array",
+            "contains": {
+              "const": "manual"
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "method": {
+            "const": "manual"
+          }
+        }
+      }
+    },
+    {
+      "description": "unknown_tag exactly when no checkpoint was found.",
+      "if": {
+        "properties": {
+          "checkpoint_id": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "flags": {
+            "type": "array",
+            "contains": {
+              "const": "unknown_tag"
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "flags": {
+            "type": "array",
+            "not": {
+              "contains": {
+                "const": "unknown_tag"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "out_of_round scans are not assigned to a round.",
+      "if": {
+        "properties": {
+          "flags": {
+            "type": "array",
+            "contains": {
+              "const": "out_of_round"
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "round_id": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "description": "mock_location exactly when is_mock.",
+      "if": {
+        "properties": {
+          "is_mock": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "flags": {
+            "type": "array",
+            "contains": {
+              "const": "mock_location"
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "flags": {
+            "type": "array",
+            "not": {
+              "contains": {
+                "const": "mock_location"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "019a2b3c-4d5e-7f00-8a00-000000000030",
+  "device_id": "019a2b3c-4d5e-7f00-8a00-000000000004",
+  "seq": 412,
+  "type": "scan",
+  "payload": {
+    "scan_id": "019a2b3c-4d5e-7f00-8a00-000000000022",
+    "round_id": "019a2b3c-4d5e-7f00-8a00-000000000021",
+    "checkpoint_id": "019a2b3c-4d5e-7f00-8a00-000000000005",
+    "method": "nfc",
+    "tag_uid": "04A1B2C3D4E580",
+    "qr_payload": null,
+    "ndef_raw": "0QEJVQJleGFtcGxlLmNvbQ==",
+    "lat_e7": 474979000,
+    "lng_e7": 190402000,
+    "accuracy_dm": 125,
+    "is_mock": false,
+    "flags": [],
+    "note": null,
+    "media": []
+  },
+  "device_time": "2026-10-27T21:03:44.120Z",
+  "uptime_ms": 86400123,
+  "boot_id": "android-17",
+  "gnss_time": null,
+  "ref_server_time": "2026-10-27T19:58:02.511Z",
+  "ref_uptime_ms": 82500000,
+  "ref_boot_id": "android-17",
+  "prev_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

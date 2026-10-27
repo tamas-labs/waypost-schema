@@ -1,0 +1,12 @@
+{
+  "incident_id": "019a2b3c-4d5e-7f00-8a00-000000000023",
+  "shift_id": "019a2b3c-4d5e-7f00-8a00-000000000020",
+  "category": "other",
+  "note": "A raktár hátsó ajtaja nyitva volt.",
+  "lat_e7": null,
+  "lng_e7": null,
+  "accuracy_dm": null,
+  "nearest_checkpoint_id": null,
+  "scan_id": null,
+  "media": []
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/chain/payload-shift_closed.json",
+  "title": "Payload: shift_closed",
+  "description": "A shift ended: by the guard, by a handover to another guard, or automatically. Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
+  "type": "object",
+  "required": [
+    "shift_id",
+    "closed_by"
+  ],
+  "properties": {
+    "shift_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "closed_by": {
+      "type": "string",
+      "enum": [
+        "guard",
+        "handover",
+        "auto"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

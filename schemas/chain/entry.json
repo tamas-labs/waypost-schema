@@ -1,0 +1,274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/chain/entry.json",
+  "title": "Chain entry",
+  "description": "One entry of a device's hash chain, as stored on the device and sent in sync push. hash = lowercase hex of HMAC-SHA256(key = device secret, message = RFC 8785 canonical JSON of this object without the \"hash\" property). Every property is present, null values included; there are no floating-point numbers anywhere, and every integer is within ±(2^53 − 1). New entry types (e.g. sos in stage 2) are added as a new enum value, a new payload schema and a new branch below, in a minor version.",
+  "type": "object",
+  "required": [
+    "id",
+    "device_id",
+    "seq",
+    "type",
+    "payload",
+    "device_time",
+    "uptime_ms",
+    "boot_id",
+    "gnss_time",
+    "ref_server_time",
+    "ref_uptime_ms",
+    "ref_boot_id",
+    "prev_hash",
+    "hash"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../common/uuid.json"
+    },
+    "device_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "seq": {
+      "description": "Position in the device's chain: 1, 2, 3, … without gaps.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "shift_started",
+        "shift_closed",
+        "round_opened",
+        "scan",
+        "incident",
+        "round_closed"
+      ]
+    },
+    "payload": {
+      "description": "Type-specific data, see chain/payload-<type>.json.",
+      "type": "object"
+    },
+    "device_time": {
+      "description": "Device wall clock when the entry was created.",
+      "$ref": "../common/timestamp.json"
+    },
+    "uptime_ms": {
+      "description": "Monotonic clock (time since boot, including sleep) in milliseconds.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "boot_id": {
+      "$ref": "#/$defs/boot_id"
+    },
+    "gnss_time": {
+      "anyOf": [
+        {
+          "description": "GNSS time of the location fix (Android, GPS provider only).",
+          "$ref": "../common/timestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ref_server_time": {
+      "anyOf": [
+        {
+          "description": "server_time of the last successful sync; null until the first sync.",
+          "$ref": "../common/timestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ref_uptime_ms": {
+      "anyOf": [
+        {
+          "description": "uptime_ms when ref_server_time was received.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ref_boot_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/boot_id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prev_hash": {
+      "description": "hash of the previous entry; 64 zeros for seq 1.",
+      "$ref": "../common/hash.json"
+    },
+    "hash": {
+      "$ref": "../common/hash.json"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "The sync reference is either complete or absent.",
+      "if": {
+        "properties": {
+          "ref_server_time": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "ref_uptime_ms": {
+            "type": "null"
+          },
+          "ref_boot_id": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "ref_uptime_ms": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "ref_boot_id": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "The first entry links to the all-zero hash.",
+      "if": {
+        "properties": {
+          "seq": {
+            "const": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "prev_hash": {
+            "const": "0000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "shift_started"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "payload-shift_started.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "shift_closed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "payload-shift_closed.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "round_opened"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "payload-round_opened.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "scan"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "payload-scan.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "incident"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "payload-incident.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "round_closed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "payload-round_closed.json"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "boot_id": {
+      "description": "Opaque identifier of the current boot (from the waypost-clock module); changes on every restart.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,64}$"
+    }
+  }
+}

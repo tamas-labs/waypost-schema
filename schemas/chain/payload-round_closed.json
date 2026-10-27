@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/chain/payload-round_closed.json",
+  "title": "Payload: round_closed",
+  "description": "A round closed: completed (every checkpoint scanned), or at its deadline incomplete (some scans) or missed (none). Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
+  "type": "object",
+  "required": [
+    "round_id",
+    "status",
+    "finished_at"
+  ],
+  "properties": {
+    "round_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "incomplete",
+        "missed"
+      ]
+    },
+    "finished_at": {
+      "$ref": "../common/timestamp.json"
+    }
+  },
+  "additionalProperties": false
+}

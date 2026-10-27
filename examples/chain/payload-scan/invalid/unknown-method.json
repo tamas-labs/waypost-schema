@@ -1,0 +1,16 @@
+{
+  "scan_id": "019a2b3c-4d5e-7f00-8a00-000000000022",
+  "round_id": "019a2b3c-4d5e-7f00-8a00-000000000021",
+  "checkpoint_id": "019a2b3c-4d5e-7f00-8a00-000000000005",
+  "method": "ble",
+  "tag_uid": "04A1B2C3D4E580",
+  "qr_payload": null,
+  "ndef_raw": "0QEJVQJleGFtcGxlLmNvbQ==",
+  "lat_e7": 474979000,
+  "lng_e7": 190402000,
+  "accuracy_dm": 125,
+  "is_mock": false,
+  "flags": [],
+  "note": null,
+  "media": []
+}

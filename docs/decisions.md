@@ -121,3 +121,55 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - Korlátok: `interval_every_min`, `time_limit_min` és `no_data_alert_after_min` 1–1440 perc; név 255, cím 255, utasítás 2000, `app_version` 50 karakter; az időzóna IANA-név mintával.
 - **Indok:** A korlátok az adatbázis-oszlopokhoz (`varchar(255)`) és a józan észhez igazodnak; ha szűknek bizonyulnak, egy minor verzióval bővíthetők.
 - **Érintett:** `entities/route-version*.json`, `entities/schedule.json`, `entities/site.json`, `entities/device.json`, M0-08, M2-19, M2-20.
+
+## 2026-10-27 – A küldött láncbejegyzés alakja és a HMAC bemenete
+
+- **Kérdés:** A specifikáció hash-elt `entry` objektumában szerepel a `device_id`, a push-példa bejegyzéseiben viszont nincs, és ott a `hash` is a bejegyzésen belül van. Mi pontosan a HMAC bemenete?
+- **Döntés:** A `chain/entry.json` a küldött és tárolt bejegyzés: a specifikáció `entry` mezői (a `device_id`-vel együtt) + `hash`. A HMAC bemenete: `canonical_json(bejegyzés a "hash" mező nélkül)`. Más mező (pl. az app `synced_at`-je vagy a szerver `flags`, `verify_status`, `received_at` mezője) nem kerülhet a küldött bejegyzésbe.
+- **Indok:** A szerver a kapott objektumból a `hash` elhagyásával közvetlenül újraszámolhatja a HMAC-ot, semmit nem kell visszaillesztenie; a `device_id` a bejegyzésben marad, így egy bejegyzés másik eszköz nevében nem játszható vissza. A push kérés `device_id`-jének egyeznie kell az eszköztokennel és minden bejegyzés `device_id`-jével (backend-ellenőrzés, M4-03).
+- **Érintett:** `chain/entry.json`, M0-06, M0-07, M3-11, M4-02, M4-03.
+
+## 2026-10-27 – `media` a `media_ids` helyett
+
+- **Kérdés:** A specifikáció szerint a `scan` és az `incident` payloadban a `media_ids[]` mellett `media: [{id, sha256}]` is van. Kell-e mindkettő?
+- **Döntés:** Csak a `media: [{id, sha256}]` van; a `media_ids` megszűnik (a lista a `media[].id`-ből adódik). Legfeljebb 5 fotó, mindkét payloadban; kézi rögzítésnél legalább 1.
+- **Indok:** Ugyanaz az ID-lista kétszer szerepelne a hash-elt adatban, és a kettő egyezését a séma nem tudja ellenőrizni – egy eltérés csak zavart okozna.
+- **Érintett:** `chain/payload-scan.json`, `chain/payload-incident.json`, M0-06 (a push-példa `media_ids` mezője), M3-12, M4-05, M4-07.
+
+## 2026-10-27 – A bejegyzéstípus bővítése
+
+- **Kérdés:** Hogyan legyen a `type` „bővíthető” (2. lépcső: `sos`)?
+- **Döntés:** A sémában zárt felsorolás (a mai hat típus); a típusonkénti payloadot egy-egy `if/then` ág köti a `type`-hoz. Új típus = új enum-érték + új `payload-<type>.json` + új ág, minor verzióban, előbb itt, aztán a backendben, végül az appban. Az adatbázisban a `type` szöveges oszlop (Q14), így ott nem kell migráció.
+- **Indok:** A zárt felsorolás miatt egy elgépelt vagy ismeretlen típus nem kerülhet a láncba; a bővítés mégis egyetlen, visszafelé kompatibilis lépés.
+- **Érintett:** `chain/entry.json`, M0-09 (a TS típusnál a `type` és a `payload` összekapcsolását kézzel kell megoldani, mert a generátor az `if/then`-t nem ismeri), M2-04, Q14.
+
+## 2026-10-27 – Láncbejegyzés: egész számok, `boot_id`, szinkronreferencia
+
+- **Kérdés:** Mekkora egész számok lehetnek a láncban, milyen a `boot_id`, és milyen összefüggések kötelezők a mezők között?
+- **Döntés:**
+  - Minden egész szám ±(2⁵³ − 1) között van (`seq`, `uptime_ms`, `ref_uptime_ms`) – ezt az RFC 8785 és a JS `number` is pontosan ábrázolja.
+  - `boot_id`: átlátszatlan szöveg, `[A-Za-z0-9._:-]{1,64}`; az előállítását a `waypost-clock` modul (M1-03) adja.
+  - `ref_server_time`, `ref_uptime_ms`, `ref_boot_id`: vagy mind a három ki van töltve, vagy mind `null` (az első szinkron előtt).
+  - `seq = 1` esetén a `prev_hash` 64 db `0`.
+- **Indok:** A hiányos szinkronreferenciából a szerver nem tud időt becsülni (`time_suspect`), ezért már a séma kiszűri.
+- **Érintett:** `chain/entry.json`, M0-07, M1-03, M3-02, M4-06.
+
+## 2026-10-27 – A `scan` payload belső szabályai
+
+- **Kérdés:** Mennyit ellenőrizzen a séma a leolvasás mezői közötti összefüggésekből?
+- **Döntés:** Amit a mezőkből egyértelműen el lehet dönteni:
+  - `nfc`: van `tag_uid`, nincs `qr_payload`; `qr`: van `qr_payload`, nincs `tag_uid` és `ndef_raw`; `manual`: nincs címkeadat, van `checkpoint_id`, megjegyzés, legalább egy fotó és `manual` jelölés – és a `manual` jelölés csak kézi rögzítésnél állhat.
+  - `unknown_tag` jelölés pontosan akkor, ha `checkpoint_id = null`; `mock_location` pontosan akkor, ha `is_mock = true`; `out_of_round` jelölésnél `round_id = null`.
+  - A helyadat (`lat_e7`, `lng_e7`, `accuracy_dm`) mindent-vagy-semmit, mint a pontnál.
+  - A `scan.qr_payload` csak a `waypost:cp:` előtagot követeli meg (legfeljebb 255 karakter), mert az ismeretlen kódot is rögzíteni kell (`unknown_tag`).
+  - A szerveroldali jelölések (`time_suspect`, `too_fast`, `far_from_checkpoint`, `late_sync`) nem kerülhetnek a payloadba; a szerver a saját `chain_entries.flags` mezőjében tárolja őket.
+  - Az `out_of_order` és az `out_of_round` helyességét (a várt pont, a kör útvonala) a séma nem tudja ellenőrizni – ez a domain (M3-18) dolga.
+- **Indok:** Az app hibáját már a fejlesztői ellenőrzés (`__DEV__`) és a backend sémaellenőrzése is elkapja, mielőtt az a hash-elt, már nem javítható láncba kerülne.
+- **Érintett:** `chain/payload-scan.json`, M3-12, M3-18, M3-19, M4-06.
+
+## 2026-10-27 – A példák `hash` mezői
+
+- **Kérdés:** A `chain/entry` példáiban valódi HMAC legyen?
+- **Döntés:** Nem: az `examples/chain/entry/` alatti `prev_hash` és `hash` értékek formailag helyes helyőrzők. A valódi, kulccsal számolt bejegyzések a `chain/test-vectors.json`-ban vannak (M0-07); a lánc- és HMAC-teszteket arra kell építeni.
+- **Indok:** A JSON Schema a lenyomat helyességét nem tudja ellenőrizni; a példák a formát tesztelik, a tesztvektorok a számítást.
+- **Érintett:** `examples/chain/entry/`, M0-07.

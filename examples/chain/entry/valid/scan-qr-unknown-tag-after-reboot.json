@@ -1,0 +1,33 @@
+{
+  "id": "019a2b3c-4d5e-7f00-8a00-000000000034",
+  "device_id": "019a2b3c-4d5e-7f00-8a00-000000000004",
+  "seq": 413,
+  "type": "scan",
+  "payload": {
+    "scan_id": "019a2b3c-4d5e-7f00-8a00-000000000022",
+    "round_id": null,
+    "checkpoint_id": null,
+    "method": "qr",
+    "tag_uid": null,
+    "qr_payload": "waypost:cp:ismeretlen",
+    "ndef_raw": null,
+    "lat_e7": null,
+    "lng_e7": null,
+    "accuracy_dm": null,
+    "is_mock": false,
+    "flags": [
+      "unknown_tag"
+    ],
+    "note": null,
+    "media": []
+  },
+  "device_time": "2026-10-27T21:03:44.120Z",
+  "uptime_ms": 1200,
+  "boot_id": "ios-1761590000",
+  "gnss_time": null,
+  "ref_server_time": "2026-10-27T19:58:02.511Z",
+  "ref_uptime_ms": 82500000,
+  "ref_boot_id": "android-17",
+  "prev_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

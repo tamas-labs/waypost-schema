@@ -1,0 +1,17 @@
+{
+  "incident_id": "019a2b3c-4d5e-7f00-8a00-000000000023",
+  "shift_id": "019a2b3c-4d5e-7f00-8a00-000000000020",
+  "category": "open_door",
+  "note": "A raktár hátsó ajtaja nyitva volt.",
+  "lat_e7": 474979100,
+  "lng_e7": 190402300,
+  "accuracy_dm": 80,
+  "nearest_checkpoint_id": "019a2b3c-4d5e-7f00-8a00-000000000005",
+  "scan_id": null,
+  "media": [
+    {
+      "id": "019a2b3c-4d5e-7f00-8a00-000000000024",
+      "sha256": "677E912D1A8AA1101FE271BAB42C91BE187BD6076FF1281335DB85E3477F6CE1"
+    }
+  ]
+}

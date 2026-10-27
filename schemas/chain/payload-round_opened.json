@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/chain/payload-round_opened.json",
+  "title": "Payload: round_opened",
+  "description": "A scheduled round opened (status open). A missed time slot is opened later with its original scheduled_at. Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
+  "type": "object",
+  "required": [
+    "round_id",
+    "shift_id",
+    "route_version_id",
+    "schedule_id",
+    "scheduled_at",
+    "time_limit_min"
+  ],
+  "properties": {
+    "round_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "shift_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "route_version_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "schedule_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "scheduled_at": {
+      "$ref": "../common/timestamp.json"
+    },
+    "time_limit_min": {
+      "anyOf": [
+        {
+          "description": "Copied from the schedule; null = no limit.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

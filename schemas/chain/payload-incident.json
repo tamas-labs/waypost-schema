@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/chain/payload-incident.json",
+  "title": "Payload: incident",
+  "description": "An incident reported by the guard (also created with category damaged_tag and scan_id for a manual scan). Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
+  "type": "object",
+  "required": [
+    "incident_id",
+    "shift_id",
+    "category",
+    "note",
+    "lat_e7",
+    "lng_e7",
+    "accuracy_dm",
+    "nearest_checkpoint_id",
+    "scan_id",
+    "media"
+  ],
+  "properties": {
+    "incident_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "shift_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "vandalism",
+        "open_door",
+        "water",
+        "intruder",
+        "damaged_tag",
+        "other"
+      ]
+    },
+    "note": {
+      "anyOf": [
+        {
+          "description": "Free text from the guard (Hungarian).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lat_e7": {
+      "anyOf": [
+        {
+          "$ref": "../common/lat-e7.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lng_e7": {
+      "anyOf": [
+        {
+          "$ref": "../common/lng-e7.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "accuracy_dm": {
+      "anyOf": [
+        {
+          "$ref": "../common/accuracy-dm.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nearest_checkpoint_id": {
+      "anyOf": [
+        {
+          "$ref": "../common/uuid.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scan_id": {
+      "anyOf": [
+        {
+          "description": "The manual scan this incident belongs to.",
+          "$ref": "../common/uuid.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "media": {
+      "description": "Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected.",
+      "type": "array",
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "sha256"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "../common/uuid.json"
+          },
+          "sha256": {
+            "$ref": "../common/hash.json"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "lat_e7": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "lng_e7": {
+            "type": "null"
+          },
+          "accuracy_dm": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "lng_e7": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
