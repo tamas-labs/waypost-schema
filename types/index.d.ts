@@ -377,6 +377,11 @@ export interface ChainEntryOf<T extends ChainEntryType> extends ChainEntryFields
 export type ChainEntry = { [T in ChainEntryType]: ChainEntryOf<T> }[ChainEntryType];
 
 /**
+ * A chain entry without hash: the object whose RFC 8785 canonical JSON is the HMAC input.
+ */
+export type UnsignedChainEntry = { [T in ChainEntryType]: Omit<ChainEntryOf<T>, "hash"> }[ChainEntryType];
+
+/**
  * Opaque identifier of the current boot (from the waypost-clock module); changes on every restart.
  */
 export type BootId = string;

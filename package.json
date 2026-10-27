@@ -1,14 +1,30 @@
 {
   "name": "@waypost/schema",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Waypost shared contract: JSON Schemas (draft 2020-12) for entities, API and chain entries, plus chain and schedule test vectors.",
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
-  "types": "types/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./vectors": {
+      "types": "./lib/vectors.d.ts",
+      "default": "./lib/vectors.js"
+    },
+    "./schemas/*": "./schemas/*",
+    "./chain/test-vectors.json": "./chain/test-vectors.json",
+    "./schedule/test-vectors.json": "./schedule/test-vectors.json",
+    "./package.json": "./package.json"
+  },
   "files": [
-    "schemas/",
+    "lib/",
     "types/",
+    "schemas/",
     "chain/",
     "schedule/",
     "CHANGELOG.md"
@@ -21,6 +37,8 @@
     "vectors:chain": "node scripts/chain-vectors.js",
     "vectors:schedule": "node scripts/schedule-vectors.js",
     "types": "node scripts/types.js",
+    "embed": "node scripts/embed.js",
+    "build": "node scripts/types.js && node scripts/embed.js",
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --test \"scripts/**/*.test.js\" && node scripts/validate.js"
   },

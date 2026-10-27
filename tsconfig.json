@@ -9,5 +9,5 @@
     "moduleResolution": "nodenext",
     "types": []
   },
-  "include": ["types/**/*.d.ts", "scripts/**/*.ts"]
+  "include": ["types/**/*.d.ts", "lib/**/*.d.ts", "scripts/**/*.ts"]
 }

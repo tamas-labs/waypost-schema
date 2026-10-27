@@ -108,7 +108,7 @@ async function compileSchema(schema, path, name) {
   return ts.trim();
 }
 
-/** chain/entry.json → ChainEntryFields + ChainEntryType + ChainPayloadMap + ChainEntryOf<T> + ChainEntry. */
+/** chain/entry.json → ChainEntryFields, ChainEntryType, ChainPayloadMap, ChainEntryOf<T>, ChainEntry, UnsignedChainEntry. */
 async function compileEntry(schema) {
   const types = schema.properties.type.enum;
   const payloads = new Map();
@@ -147,6 +147,8 @@ ${payload.description ? `  ${comment(payload.description).split('\n').join('\n  
 }`,
     `${comment(`${schema.description}\n\nDiscriminated union on type: narrowing on entry.type narrows entry.payload.`)}
 export type ChainEntry = { [T in ChainEntryType]: ChainEntryOf<T> }[ChainEntryType];`,
+    `${comment('A chain entry without hash: the object whose RFC 8785 canonical JSON is the HMAC input.')}
+export type UnsignedChainEntry = { [T in ChainEntryType]: Omit<ChainEntryOf<T>, "hash"> }[ChainEntryType];`,
   ].join('\n\n');
 }
 

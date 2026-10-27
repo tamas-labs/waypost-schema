@@ -21,6 +21,8 @@ schemas/
 chain/test-vectors.json      # bemenet → canonical_json → hash
 schedule/test-vectors.json   # menetrend + időszak → várt időpontok (DST-vel)
 types/index.d.ts             # TS típusok, a sémákból generálva
+lib/          # npm-exportok: index.js (sémák, schemaId), vectors.js; generated/ = beágyazott JSON (generált)
+src/Paths.php # Composer: Waypost\Schema\Paths – sémák és vektorok útvonala
 examples/     # <séma útvonala>/valid/*.json és <séma útvonala>/invalid/*.json
 scripts/      # sémaellenőrzés (Ajv), TS típusgenerálás, tesztvektor-generátor
 docs/decisions.md
@@ -40,7 +42,7 @@ CHANGELOG.md
 - A láncbejegyzésben minden mező kötelező, a `null` értékű is. A bejegyzéstípus (`type`) bővíthető legyen (2. lépcső: `sos`), ezért ne zárjuk ki a jövőbeli típusokat az adatmodellben.
 - A 2. lépcső funkcióit ne építsd meg, csak ne zárd ki őket.
 - A tesztvektorokat generátor állítja elő; a generátor újrafuttatása bájtra azonos fájlt ad. Kézzel nem szerkesztjük.
-- A TS típusok (`types/index.d.ts`) is generáltak; sémaváltozás után `npm run types`. A típusnév a séma útvonalából jön (`scripts/types.js`, `typeNameOf`). A feltételes szabályokat a típusok nem tükrözik, kivéve a láncbejegyzés `type` → `payload` ágait; nem típusosítható szerkezetnél (`not`, nem feltételes `allOf`) a generátor hibával leáll.
+- A TS típusok (`types/index.d.ts`) és a `lib/generated/` is generáltak, és commitolva vannak (a `file:` függőség symlink, telepítéskor nincs build); sémaváltozás vagy vektor-újragenerálás után `npm run build`. A típusnév a séma útvonalából jön (`scripts/types.js`, `typeNameOf`). A feltételes szabályokat a típusok nem tükrözik, kivéve a láncbejegyzés `type` → `payload` ágait; nem típusosítható szerkezetnél (`not`, nem feltételes `allOf`) a generátor hibával leáll.
 
 ## Verziózás
 
@@ -62,5 +64,7 @@ CHANGELOG.md
 - `npm run vectors:chain` – a `chain/test-vectors.json` újragenerálása (`scripts/chain-vectors.js`). Ha a láncséma vagy a generátor változik, futtasd, és a változást a CHANGELOG-ban jelezd; az `npm test` elbukik, ha a fájl elavult.
 - `npm run vectors:schedule` – a `schedule/test-vectors.json` újragenerálása (`scripts/schedule-vectors.js`); a kézzel ellenőrzött várt értékek a `scripts/schedule-vectors.test.js`-ben vannak, szabályváltozásnál azokat is frissíteni kell.
 - `npm run types` – a `types/index.d.ts` újragenerálása (`scripts/types.js`); az `npm test` elbukik, ha elavult, vagy ha a típusokkal a `scripts/types-sample.ts` vagy bármelyik érvényes példa nem fordul le.
+- `npm run embed` – a `lib/generated/` újragenerálása (`scripts/embed.js`): a sémák és a vektorok ES-modulként. `npm run build` = `types` + `embed`.
+- `sh scripts/composer-smoke.sh` – Composer-telepítés üres projektbe `path` repositoryból, és a `Paths` ellenőrzése (Docker). Az npm-telepítést az `npm test` próbálja ki (`scripts/package.test.js`).
 - `npm run typecheck` – `tsc` a `tsconfig.json` szerint (`strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`).
 - `composer validate` – a `composer.json` ellenőrzése. Helyben nincs Composer; Dockerrel: `docker run --rm -v "$PWD":/app -w /app composer:2 validate`.

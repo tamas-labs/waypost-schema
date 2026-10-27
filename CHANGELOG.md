@@ -10,6 +10,10 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 
 ## [Unreleased]
 
+## [0.1.0] – 2026-10-27
+
+Az első telepíthető változat: a pull, push, enroll és login végpontok, az entitások és a láncbejegyzések sémái, a lánc- és menetrend-tesztvektorok, TS típusok.
+
 ### Added
 
 - Repo váz: `package.json` (`@waypost/schema`), `composer.json` (`waypost/schema`), `CLAUDE.md`, `CHANGELOG.md`, `.gitignore`, `docs/decisions.md`, könyvtárszerkezet (`schemas/entities|api|chain`, `chain/`, `schedule/`, `examples/`, `scripts/`).
@@ -22,4 +26,6 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 - Menetrend-tesztvektorok: `schedule/test-vectors.json` (`list` és `interval` mód, éjfélen átnyúló ablak, `weekdays` a kezdő napra, mindkét 2026-os DST-váltás Europe/Budapest időzónában a Q5 döntés szerint, időkeret-alapérték), generátor: `scripts/schedule-vectors.js` (`npm run vectors:schedule`).
 - `schemas/api/error.json`: a hibaválasz (`server_time`, `error.code`, `error.message`, `error.details`).
 - API-sémák (`schemas/api/`): `auth-login.request/response`, `auth-logout.response`, `devices-enroll.request/response`, `sync-pull.response` (`cursor`, `has_more`, minden `changes` és `deleted` lista kötelező; `devices` és `report_subscriptions` is), `sync-push.request/response` (`accepted`, `last_seq`, `rejected[]`, `media_missing[]`). Minden válaszban kötelező a `server_time`.
-- TS típusok: `types/index.d.ts` (a csomag `types` exportja), a sémákból a `scripts/types.js` generálja (`npm run types`) json-schema-to-typescript-tel. Sémánként egy nevesített típus, a láncbejegyzés `type` szerinti diszkriminált unió (`ChainEntry`), `SchemaTypes` térkép. Ellenőrzés `tsc --strict`-tel (`npm run typecheck`, `scripts/types-sample.ts`); a teszt az összes érvényes példát is lefordítja a típusokkal.
+- TS típusok: `types/index.d.ts` (a `@waypost/schema` főbelépője exportálja), a sémákból a `scripts/types.js` generálja (`npm run types`) json-schema-to-typescript-tel. Sémánként egy nevesített típus, a láncbejegyzés `type` szerinti diszkriminált unió (`ChainEntry`), a hash nélküli bejegyzés (`UnsignedChainEntry`), `SchemaTypes` térkép. Ellenőrzés `tsc --strict`-tel (`npm run typecheck`, `scripts/types-sample.ts`); a teszt az összes érvényes példát is lefordítja a típusokkal.
+- npm-csomag (`@waypost/schema`, `file:../waypost-schema`): `exports` – `.` (`schemas`, `schemaId()`, `SCHEMA_ID_BASE` és minden típus), `./vectors` (`chainVectors`, `scheduleVectors` típusosan), valamint a JSON-fájlok (`./schemas/*`, `./chain/test-vectors.json`, `./schedule/test-vectors.json`). A sémák és a vektorok beágyazott ES-modulként is megvannak (`lib/generated/`, `npm run embed`), mert a React Native (Metro) JSON-t import-attribútummal nem tud betölteni. Az `npm test` üres npm-projektbe telepítve is kipróbálja (Node; TypeScript `nodenext` és `bundler` feloldással).
+- Composer-csomag (`waypost/schema`, `path` repository): `Waypost\Schema\Paths` – a sémák könyvtára és fájljai, az `$id`-k, a sémanevek listája és a tesztvektorok útvonala. Ellenőrzés: `sh scripts/composer-smoke.sh` (Docker).

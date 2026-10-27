@@ -6,12 +6,22 @@
     "require": {
         "php": "^8.4"
     },
+    "autoload": {
+        "psr-4": {
+            "Waypost\\Schema\\": "src/"
+        }
+    },
     "archive": {
         "exclude": [
             "/node_modules",
             "/examples",
             "/scripts",
-            "/docs"
+            "/docs",
+            "/lib",
+            "/types",
+            "/tsconfig.json",
+            "/package.json",
+            "/package-lock.json"
         ]
     },
     "minimum-stability": "stable"

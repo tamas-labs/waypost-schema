@@ -1,37 +1,13 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { TYPES_FILE, renderTypes, schemaPaths, typeNameOf } from './types.js';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { renderTypes, schemaPaths, typeNameOf, TYPES_FILE } from './types.js';
+import { ROOT, tempModule, typecheck } from './typecheck.js';
 
-const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
-const TSC = resolve(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
-
-/** Runs tsc with the repo's tsconfig.json on the given files only; returns { status, output }. */
-function typecheck(files) {
-  const dir = mkdtempSync(join(tmpdir(), 'waypost-types-'));
-  try {
-    const config = { extends: resolve(ROOT, 'tsconfig.json'), files: files.map((f) => f(dir)), include: [] };
-    writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify(config));
-    const result = spawnSync(process.execPath, [TSC, '-p', join(dir, 'tsconfig.json'), '--pretty', 'false'], { encoding: 'utf8' });
-    return { status: result.status, output: `${result.stdout}${result.stderr}` };
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-/** A file in the temporary directory that imports the generated types. */
-function tempModule(name, body) {
-  return (dir) => {
-    const path = join(dir, name);
-    const types = relative(dir, TYPES_FILE).split('\\').join('/').replace(/\.d\.ts$/, '.js');
-    writeFileSync(path, `import type { SchemaTypes } from ${JSON.stringify(types)};\n\n${body}\n`);
-    return path;
-  };
-}
+/** A temporary module that imports SchemaTypes. */
+const withSchemaTypes = (name, body) =>
+  tempModule(name, (importPath) => `import type { SchemaTypes } from ${importPath('types/index.d.ts')};\n\n${body}\n`);
 
 describe('types/index.d.ts', () => {
   test('is identical to a fresh generator run', async () => {
@@ -57,7 +33,7 @@ describe('types/index.d.ts', () => {
       }
     }
     assert.ok(examples.length >= schemaPaths().length);
-    const { status, output } = typecheck([() => resolve(ROOT, 'scripts', 'types-sample.ts'), tempModule('examples.mts', examples.join('\n\n'))]);
+    const { status, output } = typecheck([() => resolve(ROOT, 'scripts', 'types-sample.ts'), withSchemaTypes('examples.mts', examples.join('\n\n'))]);
     assert.equal(status, 0, output);
   });
 
@@ -66,7 +42,7 @@ describe('types/index.d.ts', () => {
 declare const fields: Omit<Extract<Entry, { type: 'scan' }>, 'type' | 'payload'>;
 declare const roundClosed: SchemaTypes['chain/payload-round_closed'];
 export const entry: Entry = { ...fields, type: 'scan', payload: roundClosed };`;
-    const { status, output } = typecheck([tempModule('bad.mts', body)]);
+    const { status, output } = typecheck([withSchemaTypes('bad.mts', body)]);
     assert.notEqual(status, 0);
     assert.match(output, /bad\.mts\([0-9]+,[0-9]+\): error TS2322/);
     assert.match(output, /Types of property 'payload' are incompatible/);

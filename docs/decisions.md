@@ -290,3 +290,20 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - Ellenőrzés: TypeScript 7, `strict` + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` (`tsconfig.json`). A `scripts/types-sample.ts` minta lefordul, a benne lévő `@ts-expect-error` sorok (rossz payload, ismeretlen típus, hiányzó `null` mező, üres push, idegen enum-érték, többletmező) nem; a teszt mind a 97 érvényes példát is a sémája típusára illesztve fordítja.
 - **Indok:** Az app a legszigorúbb TS-beállításokkal is használhassa a típusokat; a szűkíthető láncbejegyzés a bejegyzéstípusonkénti feldolgozásnál (M3) fontos. A példák lefordítása biztosítja, hogy a típus ne legyen szigorúbb a sémánál.
 - **Érintett:** `types/index.d.ts`, `scripts/types.js`, `tsconfig.json`, M0-10, M3.
+
+## 2026-10-27 – Csomagolás (0.1.0)
+
+- **Kérdés:** Mit exportál a két csomag, és hogyan működik a JS-oldal Node-ban, Jestben és React Native-ben (Metro) is?
+- **Döntés:**
+  - npm, csak ES-modul, `exports`-szal:
+    - `@waypost/schema`: `schemas` (útvonal → séma), `schemaId(path)`, `SCHEMA_ID_BASE` és minden típus (`SchemaPath`, `JsonSchema`, a `types/index.d.ts` összes típusa);
+    - `@waypost/schema/vectors`: `chainVectors`, `scheduleVectors` (típusosan, `lib/vectors.d.ts`);
+    - a nyers JSON-fájlok: `@waypost/schema/schemas/<útvonal>.json`, `/chain/test-vectors.json`, `/schedule/test-vectors.json`.
+    - A belső fájlok (`scripts/`, `examples/`) nincsenek exportálva.
+  - A JS-exportok a JSON-t nem importálják, hanem a `scripts/embed.js` által generált ES-modulokból (`lib/generated/`) olvassák. A Node JSON-t csak `with { type: 'json' }` import-attribútummal tölt be, a Metro ezt nem ismeri; a generált modul mindkettőben működik. A U+2028/U+2029 escape-elve van. A vektorok külön belépési pont, hogy a tesztadatok ne kerüljenek az app bundle-jébe.
+  - A `lib/generated/` és a `types/` commitolva van (a `file:` függőség symlink, telepítéskor nincs build); az `npm test` elbukik, ha elavultak. `npm run build` mindkettőt újragenerálja.
+  - Composer: `Waypost\Schema\Paths` (PSR-4, `src/`): `schemaDirectory()`, `schema($name)`, `schemaId($name)`, `schemaNames()`, `chainVectors()`, `scheduleVectors()`, `SCHEMA_ID_BASE`. A név formátumát ellenőrzi (nincs `..`), ismeretlen névre `InvalidArgumentException`. opis/json-schema-val: `$validator->resolver()->registerPrefix(Paths::SCHEMA_ID_BASE, Paths::schemaDirectory() . '/')` – ezzel kipróbálva mind a 326 példa (érvényes és érvénytelen) ugyanúgy dönt, mint az Ajv.
+  - Verzió: `package.json` `0.1.0`; a Composer a git tagből olvassa (`v0.1.0`), tag nélkül `dev-main`.
+- **Indok:** A telepítés és az import minden futtatókörnyezetben build nélkül működjön; a backendnek elég a könyvtár, a validátor maga tölti be a hivatkozott sémákat.
+- **Következmény az appban (M1-01, M3-04):** a `file:` függőség symlink, ezért a Metro `watchFolders`-ébe fel kell venni a `../waypost-schema` könyvtárat. Ha a csomag egyszer másolatként kerül a `node_modules`-ba (pl. `npm pack`), a Jest `transformIgnorePatterns`-ből ki kell venni a `@waypost/schema`-t (csak ES-modul).
+- **Érintett:** `package.json`, `composer.json`, `lib/`, `src/Paths.php`, `scripts/embed.js`, `scripts/composer-smoke.sh`, M1-01, M2-01, M2-11, M3-04.
