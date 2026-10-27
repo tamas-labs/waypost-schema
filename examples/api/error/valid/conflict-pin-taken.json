@@ -1,0 +1,12 @@
+{
+  "server_time": "2026-10-27T20:00:00.000Z",
+  "error": {
+    "code": "conflict",
+    "message": "Ez a PIN-kód már foglalt ezen a telephelyen.",
+    "details": {
+      "pin": [
+        "Foglalt PIN-kód."
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/lat-e7.json",
+  "title": "Latitude × 10^7",
+  "description": "WGS 84 latitude in degrees multiplied by 10^7 and rounded to an integer (47.4979° → 474979000). Floating-point numbers are not allowed in hashed data.",
+  "type": "integer",
+  "minimum": -900000000,
+  "maximum": 900000000
+}

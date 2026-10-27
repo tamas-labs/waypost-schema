@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/accuracy-dm.json",
+  "title": "Horizontal accuracy in decimetres",
+  "description": "Horizontal accuracy radius of a location fix in decimetres, rounded to an integer (12.5 m → 125). The upper bound keeps it within a signed 32-bit column.",
+  "type": "integer",
+  "minimum": 0,
+  "maximum": 2147483647
+}

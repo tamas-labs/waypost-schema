@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/hash.json",
+  "title": "Hash",
+  "description": "A 32-byte digest as 64 lowercase hexadecimal characters: a SHA-256 digest (media) or an HMAC-SHA256 tag (chain entry hash, prev_hash). The first chain entry's prev_hash is 64 '0' characters.",
+  "type": "string",
+  "pattern": "^[0-9a-f]{64}$"
+}

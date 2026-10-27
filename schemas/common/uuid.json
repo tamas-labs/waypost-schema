@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/uuid.json",
+  "title": "UUIDv7",
+  "description": "RFC 9562 UUID version 7 in canonical lowercase text form. Every primary key is a UUIDv7, because records are also created on devices while offline. Lowercase only: IDs are part of hashed chain entries, so their text form must be unique.",
+  "type": "string",
+  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+}

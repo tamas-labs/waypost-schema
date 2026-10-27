@@ -1,0 +1,16 @@
+{
+  "server_time": "2026-10-27T20:00:00.000Z",
+  "error": {
+    "code": "validation_failed",
+    "message": "A megadott adatok hibásak.",
+    "details": {
+      "name": [
+        "A név megadása kötelező."
+      ],
+      "entries.3.seq": [
+        "A sorszámnak pozitív egésznek kell lennie.",
+        "Hiányzó mező."
+      ]
+    }
+  }
+}

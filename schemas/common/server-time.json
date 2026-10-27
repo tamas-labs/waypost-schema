@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/server-time.json",
+  "title": "Server time",
+  "description": "The server clock when the response was produced. Required in every API response, including error responses; the app uses it with its monotonic clock to estimate trusted time.",
+  "$ref": "timestamp.json"
+}

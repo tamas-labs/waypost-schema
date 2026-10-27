@@ -1,0 +1,25 @@
+{
+  "name": "@waypost/schema",
+  "version": "0.0.0",
+  "description": "Waypost shared contract: JSON Schemas (draft 2020-12) for entities, API and chain entries, plus chain and schedule test vectors.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "files": [
+    "schemas/",
+    "chain/",
+    "schedule/",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "validate": "node scripts/validate.js",
+    "test": "node --test \"scripts/**/*.test.js\" && node scripts/validate.js"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

@@ -1,0 +1,13 @@
+# Dependencies
+/node_modules/
+/vendor/
+
+# Library package: lock file is not committed on the Composer side
+/composer.lock
+
+# Logs and OS / editor files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
