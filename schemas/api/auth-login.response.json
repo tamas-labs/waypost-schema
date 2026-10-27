@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/auth-login.response.json",
+  "title": "POST /auth/login – 200 response",
+  "description": "A non-expiring Sanctum token with the supervisor ability, returned only once. Wrong credentials: 401 unauthenticated. Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "token",
+    "user"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "token": {
+      "description": "Bearer token for the Authorization header. Opaque; store it in the secure store.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "user": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "email",
+        "role"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../common/uuid.json"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 255
+        },
+        "role": {
+          "const": "supervisor"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

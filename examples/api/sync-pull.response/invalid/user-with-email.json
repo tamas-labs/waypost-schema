@@ -1,0 +1,153 @@
+{
+  "server_time": "2026-10-27T10:05:12.345Z",
+  "cursor": "MjAyNi0xMC0yN1QxMDowNToxMi4zNDVaXzAxOWEyYjNjLTRkNWUtN2YwMC04YTAwLTAwMDAwMDAwMDAwOQ",
+  "has_more": false,
+  "changes": {
+    "sites": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+        "name": "Telephely A",
+        "address": "1051 Budapest, Példa utca 1.",
+        "timezone": "Europe/Budapest",
+        "no_data_alert_after_min": 120,
+        "created_by": "019a2b3c-4d5e-7f00-8a00-000000000002",
+        "created_at": "2026-10-20T08:00:00.000Z",
+        "updated_at": "2026-10-27T10:05:12.345Z"
+      }
+    ],
+    "users": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000003",
+        "name": "Kiss Péter",
+        "role": "guard",
+        "pin_hash": "q83vEjRWeJCrze8SNFZ4kKvN7xI0VniQq83vEjRWeJA=",
+        "pin_salt": "q83vEjRWeJCrze8SNFZ4kA==",
+        "pin_iterations": 100000,
+        "active": true,
+        "site_ids": [
+          "019a2b3c-4d5e-7f00-8a00-000000000001"
+        ],
+        "created_at": "2026-10-20T08:00:00.000Z",
+        "updated_at": "2026-10-27T10:05:12.345Z",
+        "email": "kiss.peter@example.com"
+      }
+    ],
+    "devices": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000004",
+        "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+        "name": "Portásfülke telefon",
+        "platform": "android",
+        "app_version": "0.1.0",
+        "enrolled_by": "019a2b3c-4d5e-7f00-8a00-000000000002",
+        "enrolled_at": "2026-10-20T08:00:00.000Z",
+        "revoked_at": null,
+        "last_seen_at": "2026-10-27T10:05:12.345Z"
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000005",
+        "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+        "name": "Raktár hátsó ajtó",
+        "instruction": "Ellenőrizd, hogy az ajtó zárva van-e.",
+        "tag_type": "nfc",
+        "tag_uid": "04A1B2C3D4E580",
+        "qr_payload": null,
+        "lat_e7": 474979000,
+        "lng_e7": 190402000,
+        "accuracy_dm": 125,
+        "photo_media_id": "019a2b3c-4d5e-7f00-8a00-000000000011",
+        "active": true,
+        "created_at": "2026-10-20T08:00:00.000Z",
+        "updated_at": "2026-10-27T10:05:12.345Z"
+      },
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000006",
+        "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+        "name": "Kazánház",
+        "instruction": null,
+        "tag_type": "qr",
+        "tag_uid": null,
+        "qr_payload": "waypost:cp:019a2b3c-4d5e-7f00-8a00-000000000006:aB3dE5gH7jK9mN2p",
+        "lat_e7": null,
+        "lng_e7": null,
+        "accuracy_dm": null,
+        "photo_media_id": null,
+        "active": true,
+        "created_at": "2026-10-20T08:00:00.000Z",
+        "updated_at": "2026-10-27T10:05:12.345Z"
+      }
+    ],
+    "routes": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+        "name": "Éjszakai kör",
+        "order_mode": "fixed",
+        "current_version_id": "019a2b3c-4d5e-7f00-8a00-000000000008",
+        "active": true,
+        "created_at": "2026-10-20T08:00:00.000Z",
+        "updated_at": "2026-10-27T10:05:12.345Z"
+      }
+    ],
+    "route_versions": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000008",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "version": 1,
+        "walk_duration_s": 840,
+        "created_by": "019a2b3c-4d5e-7f00-8a00-000000000002",
+        "created_at": "2026-10-20T08:00:00.000Z"
+      }
+    ],
+    "route_version_checkpoints": [
+      {
+        "route_version_id": "019a2b3c-4d5e-7f00-8a00-000000000008",
+        "checkpoint_id": "019a2b3c-4d5e-7f00-8a00-000000000006",
+        "position": 1,
+        "walk_time_from_prev_s": null
+      },
+      {
+        "route_version_id": "019a2b3c-4d5e-7f00-8a00-000000000008",
+        "checkpoint_id": "019a2b3c-4d5e-7f00-8a00-000000000005",
+        "position": 2,
+        "walk_time_from_prev_s": 95
+      }
+    ],
+    "schedules": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000009",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Hétköznap éjjel",
+        "weekdays": 31,
+        "mode": "interval",
+        "start_times": null,
+        "interval_from": "20:00",
+        "interval_to": "08:00",
+        "interval_every_min": 60,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-10-20T08:00:00.000Z",
+        "updated_at": "2026-10-27T10:05:12.345Z"
+      }
+    ],
+    "report_subscriptions": [
+      {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000010",
+        "user_id": "019a2b3c-4d5e-7f00-8a00-000000000002",
+        "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+        "frequency": "weekly"
+      }
+    ]
+  },
+  "deleted": {
+    "sites": [],
+    "users": [],
+    "devices": [],
+    "checkpoints": [],
+    "routes": [],
+    "schedules": [],
+    "report_subscriptions": []
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/devices-enroll.request.json",
+  "title": "POST /devices/enroll – request",
+  "description": "Enroll the phone the request comes from as the site phone of a site. Supervisor token; requires an Idempotency-Key header. A previously enrolled phone of the site is revoked.",
+  "type": "object",
+  "required": [
+    "site_id",
+    "name",
+    "platform",
+    "app_version"
+  ],
+  "properties": {
+    "site_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "ios",
+        "android"
+      ]
+    },
+    "app_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    }
+  },
+  "additionalProperties": false
+}

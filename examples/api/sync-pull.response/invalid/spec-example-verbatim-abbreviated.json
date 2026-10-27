@@ -1,0 +1,36 @@
+{
+  "server_time": "2026-10-27T10:05:12.345Z",
+  "cursor": "2026-10-27T10:05:12.345Z_01JC...",
+  "has_more": false,
+  "changes": {
+    "sites": [
+      {
+        "id": "...",
+        "name": "Telephely A",
+        "timezone": "Europe/Budapest"
+      }
+    ],
+    "users": [
+      {
+        "id": "...",
+        "name": "Kiss Péter",
+        "role": "guard",
+        "pin_hash": "base64",
+        "pin_salt": "base64",
+        "pin_iterations": 100000,
+        "active": true
+      }
+    ],
+    "checkpoints": [],
+    "routes": [],
+    "route_versions": [],
+    "route_version_checkpoints": [],
+    "schedules": []
+  },
+  "deleted": {
+    "users": [
+      "..."
+    ],
+    "checkpoints": []
+  }
+}

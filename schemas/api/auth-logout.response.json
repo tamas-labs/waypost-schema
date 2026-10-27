@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/auth-logout.response.json",
+  "title": "POST /auth/logout – 200 response",
+  "description": "The supervisor token used for the request has been deleted. Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    }
+  },
+  "additionalProperties": false
+}

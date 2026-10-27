@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/sync-push.request.json",
+  "title": "POST /sync/push – request",
+  "description": "A batch of chain entries of the calling device, in ascending seq order. Device token; requires an Idempotency-Key header. device_id must equal the token's device and the device_id of every entry.",
+  "type": "object",
+  "required": [
+    "device_id",
+    "entries"
+  ],
+  "properties": {
+    "device_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": {
+        "$ref": "../chain/entry.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

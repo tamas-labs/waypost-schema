@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/sync-pull.response.json",
+  "title": "GET /sync/pull – 200 response",
+  "description": "Configuration changes since the cursor given in the \"cursor\" query parameter (none: full state). Device token: the device's site; supervisor token: the supervisor's sites. At most 500 records per page; while has_more is true, request the next page with the returned cursor right away. Every list is present, possibly empty. Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "cursor",
+    "has_more",
+    "changes",
+    "deleted"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "cursor": {
+      "description": "Opaque; send it back unchanged as the \"cursor\" query parameter of the next pull.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "has_more": {
+      "type": "boolean"
+    },
+    "changes": {
+      "description": "Created or updated records, in full.",
+      "type": "object",
+      "required": [
+        "sites",
+        "users",
+        "devices",
+        "checkpoints",
+        "routes",
+        "route_versions",
+        "route_version_checkpoints",
+        "schedules",
+        "report_subscriptions"
+      ],
+      "properties": {
+        "sites": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/site.json"
+          }
+        },
+        "users": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/user.json"
+          }
+        },
+        "devices": {
+          "description": "Devices enrolled to the visible sites (for a device token: itself).",
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/device.json"
+          }
+        },
+        "checkpoints": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/checkpoint.json"
+          }
+        },
+        "routes": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/route.json"
+          }
+        },
+        "route_versions": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/route-version.json"
+          }
+        },
+        "route_version_checkpoints": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/route-version-checkpoint.json"
+          }
+        },
+        "schedules": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/schedule.json"
+          }
+        },
+        "report_subscriptions": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../entities/report-subscription.json"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "deleted": {
+      "description": "IDs of records deleted (or no longer visible to the caller) since the cursor. Route versions and their checkpoints are immutable and never deleted on their own.",
+      "type": "object",
+      "required": [
+        "sites",
+        "users",
+        "devices",
+        "checkpoints",
+        "routes",
+        "schedules",
+        "report_subscriptions"
+      ],
+      "properties": {
+        "sites": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../common/uuid.json"
+          }
+        },
+        "users": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../common/uuid.json"
+          }
+        },
+        "devices": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../common/uuid.json"
+          }
+        },
+        "checkpoints": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../common/uuid.json"
+          }
+        },
+        "routes": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../common/uuid.json"
+          }
+        },
+        "schedules": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../common/uuid.json"
+          }
+        },
+        "report_subscriptions": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../common/uuid.json"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

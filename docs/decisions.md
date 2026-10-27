@@ -173,3 +173,40 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 - **Döntés:** Nem: az `examples/chain/entry/` alatti `prev_hash` és `hash` értékek formailag helyes helyőrzők. A valódi, kulccsal számolt bejegyzések a `chain/test-vectors.json`-ban vannak (M0-07); a lánc- és HMAC-teszteket arra kell építeni.
 - **Indok:** A JSON Schema a lenyomat helyességét nem tudja ellenőrizni; a példák a formát tesztelik, a tesztvektorok a számítást.
 - **Érintett:** `examples/chain/entry/`, M0-07.
+
+## 2026-10-27 – A specifikáció JSON-példái és a sémák
+
+- **Kérdés:** Az M0-06 elfogadási feltétele, hogy „a specifikáció JSON-példái érvényes példaként validálnak”. A specifikáció példái azonban rövidítettek (`"id": "..."`, `"pin_hash": "base64"`, csonka entitások, a `deleted`-ben csak két lista), így szó szerint semmilyen hasznos séma nem fogadhatja el őket.
+- **Döntés:** A specifikáció pull-, push- és push-válasz-példája `spec-example.json` néven érvényes példa lett, ugyanazzal a szerkezettel és értékekkel, de a `"..."` helyén valódi azonosítókkal, teljes entitásokkal, minden listával, és a korábbi döntések szerint (`media` a `media_ids` helyett, `device_id` a bejegyzésben). A pull-példa szó szerinti alakja `examples/api/sync-pull.response/invalid/spec-example-verbatim-abbreviated.json` néven, érvénytelen példaként dokumentálja az eltérést.
+- **Indok:** A példák szerkezete és jelentése megmarad, a séma pedig nem lazul fel a rövidítések kedvéért.
+- **Érintett:** `examples/api/sync-pull.response/`, `examples/api/sync-push.request/`, `examples/api/sync-push.response/`; a specifikáció API-szerződés szakaszának példái frissítendők.
+
+## 2026-10-27 – A pull válasza
+
+- **Kérdés:** Mely listák szerepelnek a pull `changes` és `deleted` részében, és kötelezők-e?
+- **Döntés:**
+  - Mindkét objektumban minden lista kötelezően jelen van (esetleg üresen), ismeretlen lista nem lehet.
+  - `changes`: a specifikáció hét listája + `devices` (a supervisor a telephely adatlapján látja a hozzárendelt telefont, S3) + `report_subscriptions` (jelentésbeállítások, S10).
+  - `deleted`: `sites`, `users`, `devices`, `checkpoints`, `routes`, `schedules`, `report_subscriptions` – azonosítók listája. Ide kerül az is, ami a hívó számára már nem látható (pl. egy őrt leválasztottak a telephelyről). Az útvonalverziók és pontjaik változatlanok és nem törlődnek önállóan, ezért nincs törlési listájuk.
+  - Listánként legfeljebb 500 elem; az oldalankénti összesen 500 rekordot a backend biztosítja.
+  - A `cursor` mindig nem üres, átlátszatlan szöveg (üres adatbázisnál is), a kliens változatlanul küldi vissza.
+- **Indok:** A kliens minden listát feltétel nélkül bejárhat; a két új lista nélkül a supervisor saját telefonja nem tudná megjeleníteni a telephely telefonját és a jelentés-előfizetéseket.
+- **Érintett:** `api/sync-pull.response.json`, M2-23, M3-07, M5-08, M5-19, Q3.
+
+## 2026-10-27 – Belépés, kijelentkezés, eszköz-hozzárendelés válaszai
+
+- **Kérdés:** Mit adnak vissza a `POST /auth/login`, `POST /auth/logout` és `POST /devices/enroll` végpontok?
+- **Döntés:**
+  - Login: `{ server_time, token, user: { id, name, email, role: "supervisor" } }`. A telephelyek a következő pullban jönnek. A token átlátszatlan szöveg (Sanctum).
+  - Logout: `200` és `{ server_time }` (nem `204`), mert minden válaszban kötelező a `server_time`.
+  - Enroll: `{ server_time, device, token, secret }`, ahol a `device` a teljes `device` entitás, a `secret` 32 bájt base64-ben (44 karakter).
+  - A fejlécek (`Authorization`, `Idempotency-Key`) nem részei a törzs-sémáknak; a sémák `description` mezője jelzi, hol kötelezők.
+- **Indok:** A legegyszerűbb alak, amely a specifikáció minden kötelező elemét tartalmazza; az entitást nem kell egy külön, csonka alakban újra leírni.
+- **Érintett:** `api/auth-*.json`, `api/devices-enroll.*.json`, M2-14, M2-22, M3-06, M5-06, M5-09.
+
+## 2026-10-27 – A push válasza
+
+- **Kérdés:** Milyen alakú a `rejected` lista, és mi a `last_seq`, ha még semmi nem lett elfogadva?
+- **Döntés:** `rejected[]`: `{ id, code, expected_seq }`, ahol a `code` csak `chain_gap`, `chain_fork` vagy `bad_hmac` lehet, az `expected_seq` pedig `chain_gap` esetén a szerver által várt `seq`, egyébként `null`. A `last_seq` a szerver utolsó ellenőrzött `seq`-je (még semmi: `0`). Az `accepted` az összes most `ok` állapotú bejegyzés azonosítója, a korábban már elfogadottaké is. Egy köteg 1–200 bejegyzés; ha a kérés maga sémahibás, a válasz `422 validation_failed`, nem bejegyzésenkénti elutasítás.
+- **Indok:** A specifikáció példáját követi; a `null` a „minden mező jelen van” elv miatt kell.
+- **Érintett:** `api/sync-push.*.json`, M4-03, M4-04, M4-09.

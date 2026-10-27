@@ -1,0 +1,25 @@
+{
+  "server_time": "2026-10-27T10:05:12.345Z",
+  "cursor": "MjAyNi0xMC0yN1QxMDowNToxMi4zNDVaXzAxOWEyYjNjLTRkNWUtN2YwMC04YTAwLTAwMDAwMDAwMDAwOQ",
+  "has_more": false,
+  "changes": {
+    "sites": [],
+    "users": [],
+    "devices": [],
+    "checkpoints": [],
+    "routes": [],
+    "route_versions": [],
+    "route_version_checkpoints": [],
+    "schedules": [],
+    "report_subscriptions": []
+  },
+  "deleted": {
+    "sites": [],
+    "users": [],
+    "devices": [],
+    "checkpoints": [],
+    "routes": [],
+    "schedules": [],
+    "report_subscriptions": []
+  }
+}

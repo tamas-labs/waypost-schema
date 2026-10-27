@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/auth-login.request.json",
+  "title": "POST /auth/login – request",
+  "description": "Supervisor login with e-mail and password. Guards cannot log in with a password. No token required.",
+  "type": "object",
+  "required": [
+    "email",
+    "password",
+    "device_name"
+  ],
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email",
+      "minLength": 3,
+      "maxLength": 255
+    },
+    "password": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "device_name": {
+      "description": "Shown in the token list, e.g. \"Pixel 8 (Nagy Anna)\".",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    }
+  },
+  "additionalProperties": false
+}

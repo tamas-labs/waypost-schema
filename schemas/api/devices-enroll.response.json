@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/devices-enroll.response.json",
+  "title": "POST /devices/enroll – 200 response",
+  "description": "The new device, its token (device ability) and its HMAC secret. Token and secret are returned only by this response, never again. Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "device",
+    "token",
+    "secret"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "device": {
+      "$ref": "../entities/device.json"
+    },
+    "token": {
+      "description": "Bearer token of the device. Opaque; store it in the secure store.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "secret": {
+      "description": "32 random bytes, base64: the HMAC-SHA256 key of the device's chain. Store it in the secure store.",
+      "$ref": "../common/base64.json",
+      "type": "string",
+      "minLength": 44,
+      "maxLength": 44
+    }
+  },
+  "additionalProperties": false
+}
