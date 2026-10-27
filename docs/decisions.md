@@ -210,3 +210,28 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 - **Döntés:** `rejected[]`: `{ id, code, expected_seq }`, ahol a `code` csak `chain_gap`, `chain_fork` vagy `bad_hmac` lehet, az `expected_seq` pedig `chain_gap` esetén a szerver által várt `seq`, egyébként `null`. A `last_seq` a szerver utolsó ellenőrzött `seq`-je (még semmi: `0`). Az `accepted` az összes most `ok` állapotú bejegyzés azonosítója, a korábban már elfogadottaké is. Egy köteg 1–200 bejegyzés; ha a kérés maga sémahibás, a válasz `422 validation_failed`, nem bejegyzésenkénti elutasítás.
 - **Indok:** A specifikáció példáját követi; a `null` a „minden mező jelen van” elv miatt kell.
 - **Érintett:** `api/sync-push.*.json`, M4-03, M4-04, M4-09.
+
+## 2026-10-27 – A kanonikus JSON pontos szabályai (RFC 8785, Waypost-szűkítéssel)
+
+- **Kérdés:** Mit kell pontosan tudnia a `canonical_json`-nak az appban (M3-10) és a backendben (M4-02)?
+- **Döntés:** RFC 8785 (JCS) a következő szűkítésekkel – a referencia a `scripts/jcs.js`:
+  - szám csak egész lehet, ±(2⁵³ − 1) között; bármi más (lebegőpontos, túl nagy, `NaN`, `Infinity`) kivételt dob;
+  - a szövegben magányos surrogate nem lehet (I-JSON); kivétel;
+  - a kulcsok UTF-16 kódegységek szerint rendezve, minden szinten; a szöveg pontosan az ECMAScript `JSON.stringify` szerint: csak a `"`, a `\` és az U+0000–U+001F escape-elődik (`\b \t \n \f \r`, egyébként `\u00xx` kisbetűvel); a `/`, a nem ASCII karakterek és az U+2028/U+2029 betű szerint maradnak;
+  - a HMAC bemenete a kanonikus szöveg UTF-8 bájtjai.
+  - A hash-elt adatban minden kulcs ASCII (`[a-z0-9_]`, ezt a sémák `additionalProperties: false`-a biztosítja), ezért a bájt szerinti rendezés (PHP `ksort(..., SORT_STRING)`) itt egyenértékű a UTF-16 szerintivel.
+  - PHP-ban: rekurzív `ksort(SORT_STRING)` a nem-lista tömbökön, majd `json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS | JSON_THROW_ON_ERROR)`. Alapértelmezett flagekkel a vektorok közül kettő eltörik (ékezet, `/`, U+2028). Vigyázat: `json_decode(..., true)` után az üres objektum (`{}`) üres tömb lesz, és `[]`-ként íródik ki; a mai sémákban hash-elt üres objektum nem fordulhat elő.
+- **Indok:** A JS és a PHP alapértelmezett JSON-kimenete több ponton eltér; ezek a pontok mind szerepelnek a tesztvektorokban. A vektorokat egy független JS-implementáció (`canonicalize`, az RFC társszerzőjétől) és egy PHP-s próba (PHP 8.5, a fenti recepttel) is bájtra azonosan reprodukálja.
+- **Érintett:** `scripts/jcs.js`, `chain/test-vectors.json`, M3-10, M3-11, M4-02.
+
+## 2026-10-27 – A lánc-tesztvektorok fájlja
+
+- **Kérdés:** Milyen szerkezetű a `chain/test-vectors.json`, és hogyan marad naprakész?
+- **Döntés:**
+  - Rögzített teszt-kulcs: a 0x00, 0x01, …, 0x1f bájtok (`key_base64`, `key_hex`) – csak tesztekhez.
+  - `cases[]`: `{ name, description, input, canonical_json, hash }`, ahol az `input` a bejegyzés `hash` nélkül, és `input` + `hash` érvényes `chain/entry.json`. Az önálló esetek `prev_hash`-e helyőrző (64 db `a`, az első bejegyzésnél 64 db `0`); valódi láncolás csak a `chain` részben van.
+  - `chain.entries[]`: 3 egymást követő bejegyzés (`seq` 1–3), mindegyik `prev_hash`-e az előző `hash`-e, az elsőé 64 db `0`.
+  - Az `input` objektumok kulcsai szándékosan nem ábécérendben állnak (a specifikáció sorrendjében, a `key-order-reversed-nested` esetben minden szinten fordítva), így a rendezést minden implementációnak ténylegesen el kell végeznie.
+  - A fájlt a `scripts/chain-vectors.js` állítja elő (`npm run vectors:chain`); kézzel nem szerkesztjük. A teszt (`npm test`) ellenőrzi, hogy a fájl bájtra egyezik egy friss futtatás eredményével, és hogy a generátor determinisztikus.
+- **Indok:** Egy fájl, amelyből a két másik repó tesztjei közvetlenül olvasnak; a bájtazonosság miatt egy véletlen kézi módosítás vagy egy nem determinisztikus generátor azonnal kiderül.
+- **Érintett:** `chain/test-vectors.json`, `scripts/chain-vectors.js`, M3-10, M3-11, M4-02, M0-10 (export).

@@ -16,10 +16,12 @@
   },
   "scripts": {
     "validate": "node scripts/validate.js",
+    "vectors:chain": "node scripts/chain-vectors.js",
     "test": "node --test \"scripts/**/*.test.js\" && node scripts/validate.js"
   },
   "devDependencies": {
     "ajv": "^8.20.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "canonicalize": "^5.1.0"
   }
 }

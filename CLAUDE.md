@@ -57,4 +57,5 @@ CHANGELOG.md
 - `npm install` – függőségek (Node ≥ 22).
 - `npm test` – a szkriptek tesztjei (`node --test`), utána a teljes sémaellenőrzés.
 - `npm run validate -- --verbose` – csak a sémaellenőrzés; `--verbose` mellett az érvénytelen példák elutasításának oka is látszik (ellenőrizd, hogy a szándékolt okból buknak-e el). `--root <dir>` másik könyvtárat ellenőriz.
+- `npm run vectors:chain` – a `chain/test-vectors.json` újragenerálása (`scripts/chain-vectors.js`). Ha a láncséma vagy a generátor változik, futtasd, és a változást a CHANGELOG-ban jelezd; az `npm test` elbukik, ha a fájl elavult.
 - `composer validate` – a `composer.json` ellenőrzése. Helyben nincs Composer; Dockerrel: `docker run --rm -v "$PWD":/app -w /app composer:2 validate`.
