@@ -276,3 +276,17 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - A fájlt a `scripts/schedule-vectors.js` állítja elő (`npm run vectors:schedule`), kézzel nem szerkesztjük; a teszt bájtazonosságot ellenőriz.
   - Kézi ellenőrzés: a `scripts/schedule-vectors.test.js` a kritikus esetek (13 kör, éjfélen átnyúló lista, péntek–szombat, mindkét DST-éjszaka, nem létező és kétszer előforduló időpont, időkeret) várt értékeit a generátortól függetlenül, kézzel számolva tartalmazza. Ezen felül a PHP 8.5 (tzdata 2026.5) mind a 75 kör helyi ↔ UTC megfeleltetését megerősítette; eltérés csak a Q5-szabály két esetében van, ahol a PHP alapviselkedése más (lásd fent).
 - **Érintett:** `schedule/test-vectors.json`, M3-13, M3-14, M6-02, M6-03.
+
+## 2026-10-27 – TS típusok a sémákból
+
+- **Kérdés:** Hogyan legyenek a sémákból TS típusok, ha a json-schema-to-typescript a feltételes szabályokat (`if/then/else`) nem érti, és fájlonként külön-külön újradeklarálná a hivatkozott közös típusokat (`Timestamp1`, `Timestamp2`, …)?
+- **Döntés:**
+  - Egy fájl, `types/index.d.ts`; a `scripts/types.js` állítja elő (`npm run types`), kézzel nem szerkesztjük, a teszt bájtazonosságot ellenőriz. A csomag `types` mezője erre mutat.
+  - Minden sémafájl egy nevesített típus, a neve az útvonalból jön: `common/lat-e7` → `LatE7`, `entities/route-version` → `RouteVersion`, `chain/payload-scan` → `ScanPayload`, `api/sync-push.request` → `SyncPushRequest`, kivétel: `api/error` → `ErrorResponse` (a globális `Error` miatt). A `$defs` is külön típus (`BootId`). A fájlok közötti `$ref` a hivatkozott típus nevére fordul, így egy típus egyszer szerepel.
+  - A típus csak az alakot írja le. A mintákat, tartományokat, formátumokat és a feltételes szabályokat (pl. „`lat_e7` és `lng_e7` együtt `null`”) a sémavalidáció ellenőrzi; a generátor ezeket eldobja, és hibával leáll, ha más, nem típusosítható szerkezetet talál (`not`, nem feltételes `allOf`).
+  - Kivétel a láncbejegyzés `type` → `payload` ága: ebből `ChainEntry` diszkriminált unió lesz (`ChainEntryFields`, `ChainEntryType`, `ChainPayloadMap`, `ChainEntryOf<T>`), így a `switch (entry.type)` a payloadot is szűkíti. A generátor a `chain/entry.json` `if/then` ágaiból olvassa, és leáll, ha a `type` enum és az ágak eltérnek.
+  - `SchemaTypes`: séma-útvonal → típus térkép, hogy egy validátor szűkíthessen (`isValid<K extends keyof SchemaTypes>(schema: K, data): data is SchemaTypes[K]`).
+  - A `maxItems` nem lesz tuple-unió (`media` max. 5 elem → `{…}[]`), a `minItems: 1` viszont nem üres tuple (`[T, ...T[]]`).
+  - Ellenőrzés: TypeScript 7, `strict` + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` (`tsconfig.json`). A `scripts/types-sample.ts` minta lefordul, a benne lévő `@ts-expect-error` sorok (rossz payload, ismeretlen típus, hiányzó `null` mező, üres push, idegen enum-érték, többletmező) nem; a teszt mind a 97 érvényes példát is a sémája típusára illesztve fordítja.
+- **Indok:** Az app a legszigorúbb TS-beállításokkal is használhassa a típusokat; a szűkíthető láncbejegyzés a bejegyzéstípusonkénti feldolgozásnál (M3) fontos. A példák lefordítása biztosítja, hogy a típus ne legyen szigorúbb a sémánál.
+- **Érintett:** `types/index.d.ts`, `scripts/types.js`, `tsconfig.json`, M0-10, M3.

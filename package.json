@@ -5,8 +5,10 @@
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
+  "types": "types/index.d.ts",
   "files": [
     "schemas/",
+    "types/",
     "chain/",
     "schedule/",
     "CHANGELOG.md"
@@ -18,11 +20,15 @@
     "validate": "node scripts/validate.js",
     "vectors:chain": "node scripts/chain-vectors.js",
     "vectors:schedule": "node scripts/schedule-vectors.js",
+    "types": "node scripts/types.js",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "node --test \"scripts/**/*.test.js\" && node scripts/validate.js"
   },
   "devDependencies": {
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "canonicalize": "^5.1.0"
+    "canonicalize": "^5.1.0",
+    "json-schema-to-typescript": "^16.0.0",
+    "typescript": "^7.0.2"
   }
 }
