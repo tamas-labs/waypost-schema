@@ -1,0 +1,9 @@
+{
+  "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+  "name": "Hétköznap éjjel",
+  "weekdays": 31,
+  "mode": "interval",
+  "interval_from": null,
+  "interval_to": "08:00",
+  "interval_every_min": 60
+}

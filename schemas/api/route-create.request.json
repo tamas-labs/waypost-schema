@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/route-create.request.json",
+  "title": "POST /routes – request",
+  "description": "Create a route on a site of the caller, without checkpoints: they come with POST /routes/{id}/versions. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/route.response.json.",
+  "type": "object",
+  "required": [
+    "site_id",
+    "name",
+    "order_mode"
+  ],
+  "properties": {
+    "id": {
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "$ref": "../common/uuid.json"
+    },
+    "site_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "order_mode": {
+      "description": "fixed: checkpoints must be scanned by position; free: any order.",
+      "type": "string",
+      "enum": [
+        "free",
+        "fixed"
+      ]
+    },
+    "active": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

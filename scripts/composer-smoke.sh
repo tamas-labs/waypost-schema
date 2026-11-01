@@ -46,6 +46,8 @@ $chain = json_decode((string) file_get_contents(Paths::chainVectors()), true, fl
 check(count($chain['cases']) > 0 && strlen($chain['key_hex']) === 64, 'chain vectors');
 $schedule = json_decode((string) file_get_contents(Paths::scheduleVectors()), true, flags: JSON_THROW_ON_ERROR);
 check(count($schedule['expansion']) > 0, 'schedule vectors');
+$pin = json_decode((string) file_get_contents(Paths::pinVectors()), true, flags: JSON_THROW_ON_ERROR);
+check(count($pin['cases']) > 0 && $pin['defaults']['iterations'] === 100000, 'pin vectors');
 
 foreach (['../package', 'chain/../../composer', 'chain/entry.json', 'Chain/Entry', 'entry', 'chain/nope'] as $bad) {
     try {

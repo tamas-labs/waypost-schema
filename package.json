@@ -1,7 +1,7 @@
 {
   "name": "@waypost/schema",
-  "version": "0.1.0",
-  "description": "Waypost shared contract: JSON Schemas (draft 2020-12) for entities, API and chain entries, plus chain and schedule test vectors.",
+  "version": "0.2.0",
+  "description": "Waypost shared contract: JSON Schemas (draft 2020-12) for entities, API and chain entries, plus chain, schedule and PIN test vectors.",
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
@@ -19,6 +19,7 @@
     "./schemas/*": "./schemas/*",
     "./chain/test-vectors.json": "./chain/test-vectors.json",
     "./schedule/test-vectors.json": "./schedule/test-vectors.json",
+    "./pin/test-vectors.json": "./pin/test-vectors.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -27,6 +28,7 @@
     "schemas/",
     "chain/",
     "schedule/",
+    "pin/",
     "CHANGELOG.md"
   ],
   "engines": {
@@ -36,6 +38,7 @@
     "validate": "node scripts/validate.js",
     "vectors:chain": "node scripts/chain-vectors.js",
     "vectors:schedule": "node scripts/schedule-vectors.js",
+    "vectors:pin": "node scripts/pin-vectors.js",
     "types": "node scripts/types.js",
     "embed": "node scripts/embed.js",
     "build": "node scripts/types.js && node scripts/embed.js",

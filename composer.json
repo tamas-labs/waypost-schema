@@ -1,6 +1,6 @@
 {
     "name": "waypost/schema",
-    "description": "Waypost shared contract: JSON Schemas (draft 2020-12) for entities, API and chain entries, plus chain and schedule test vectors.",
+    "description": "Waypost shared contract: JSON Schemas (draft 2020-12) for entities, API and chain entries, plus chain, schedule and PIN test vectors.",
     "type": "library",
     "license": "proprietary",
     "require": {

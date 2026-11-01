@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/user-pin.request.json",
+  "title": "PUT /users/{id}/pin – request",
+  "description": "Set a new PIN for the user: the given one, or (pin absent) a generated one, returned once (pin in the response). Unique among the users of all of the user's sites: a taken PIN is 409 conflict. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.",
+  "type": "object",
+  "properties": {
+    "pin": {
+      "$ref": "../common/pin.json"
+    }
+  },
+  "additionalProperties": false
+}

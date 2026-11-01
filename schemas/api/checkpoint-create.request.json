@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/checkpoint-create.request.json",
+  "title": "POST /checkpoints – request",
+  "description": "Create a checkpoint on a site of the caller. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/checkpoint.response.json.",
+  "type": "object",
+  "required": [
+    "site_id",
+    "name",
+    "tag_type"
+  ],
+  "properties": {
+    "id": {
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "$ref": "../common/uuid.json"
+    },
+    "site_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "instruction": {
+      "anyOf": [
+        {
+          "description": "What the guard has to check here (Hungarian).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tag_type": {
+      "type": "string",
+      "enum": [
+        "nfc",
+        "nfc_dna",
+        "qr"
+      ]
+    },
+    "tag_uid": {
+      "anyOf": [
+        {
+          "description": "NFC tag UID, hex, 4 to 10 bytes, with or without colons, any case (04:a1:b2:c3, 04A1B2C3); stored uppercase without separators.",
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{2}(:?[0-9A-Fa-f]{2}){3,9}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "qr_payload": {
+      "anyOf": [
+        {
+          "description": "waypost:cp:<id of this checkpoint>:<16-character random code>. Globally unique.",
+          "type": "string",
+          "pattern": "^waypost:cp:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}:[A-Za-z0-9]{16}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lat_e7": {
+      "anyOf": [
+        {
+          "$ref": "../common/lat-e7.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lng_e7": {
+      "anyOf": [
+        {
+          "$ref": "../common/lng-e7.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "accuracy_dm": {
+      "anyOf": [
+        {
+          "$ref": "../common/accuracy-dm.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "active": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tag_type": {
+            "enum": [
+              "nfc",
+              "nfc_dna"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "tag_uid"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "tag_type"
+        ],
+        "properties": {
+          "tag_type": {
+            "enum": [
+              "nfc",
+              "nfc_dna"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tag_uid": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "tag_type"
+        ],
+        "properties": {
+          "tag_type": {
+            "const": "qr"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "qr_payload": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "lat_e7"
+        ]
+      },
+      "then": {
+        "required": [
+          "lng_e7"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "lng_e7"
+        ]
+      },
+      "then": {
+        "required": [
+          "lat_e7"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "accuracy_dm"
+        ]
+      },
+      "then": {
+        "required": [
+          "lat_e7"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "lat_e7"
+        ],
+        "properties": {
+          "lat_e7": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "lng_e7": {
+            "type": "null"
+          },
+          "accuracy_dm": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "lng_e7": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

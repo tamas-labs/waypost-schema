@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/report-subscription.response.json",
+  "title": "Report subscription – response",
+  "description": "POST /report-subscriptions (201), GET and PATCH /report-subscriptions/{id} (200). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "report_subscription"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "report_subscription": {
+      "$ref": "../entities/report-subscription.json"
+    }
+  },
+  "additionalProperties": false
+}

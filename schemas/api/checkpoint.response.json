@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/checkpoint.response.json",
+  "title": "Checkpoint – response",
+  "description": "POST /checkpoints (201), GET and PATCH /checkpoints/{id} (200). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "checkpoint"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "checkpoint": {
+      "$ref": "../entities/checkpoint.json"
+    }
+  },
+  "additionalProperties": false
+}

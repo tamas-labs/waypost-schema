@@ -94,4 +94,10 @@ final class Paths
     {
         return self::root() . '/schedule/test-vectors.json';
     }
+
+    /** pin/test-vectors.json: PIN, salt and iterations → PBKDF2-HMAC-SHA256 verifier; malformed PINs. */
+    public static function pinVectors(): string
+    {
+        return self::root() . '/pin/test-vectors.json';
+    }
 }

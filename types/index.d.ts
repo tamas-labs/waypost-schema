@@ -20,7 +20,7 @@ export type Base64 = string;
 // common/error-code.json
 
 /**
- * Machine-readable error code. Request level (HTTP status): unauthenticated (401), device_revoked (401), forbidden (403), not_found (404), conflict (409, e.g. PIN or tag already taken), validation_failed (422), rate_limited (429). Entry level, in the push response's rejected list: chain_gap, chain_fork, bad_hmac.
+ * Machine-readable error code. Request level (HTTP status): unauthenticated (401), device_revoked (401), forbidden (403), not_found (404), conflict (409, e.g. PIN or tag already taken), validation_failed (422), rate_limited (429); any other client error is bad_request (with its own 4xx status, e.g. 405, 413), any server error server_error (5xx, e.g. 500, 503 during maintenance). Entry level, in the push response's rejected list: chain_gap, chain_fork, bad_hmac.
  */
 export type ErrorCode =
   | "unauthenticated"
@@ -32,7 +32,9 @@ export type ErrorCode =
   | "chain_gap"
   | "chain_fork"
   | "bad_hmac"
-  | "rate_limited";
+  | "rate_limited"
+  | "bad_request"
+  | "server_error";
 
 // common/hash.json
 
@@ -62,6 +64,13 @@ export type LngE7 = number;
  */
 export type LocalTime = string;
 
+// common/pin.json
+
+/**
+ * Exactly 6 ASCII digits, a string (001234 is not 1234). Unique among the users of a site (pin/test-vectors.json: pin_pattern).
+ */
+export type Pin = string;
+
 // common/server-time.json
 
 /**
@@ -75,6 +84,13 @@ export type ServerTime = Timestamp;
  * ISO 8601 / RFC 3339 instant in UTC with exactly three fractional digits and a 'Z' suffix, e.g. 2026-10-27T20:00:00.000Z. No offsets, no leap seconds. The pattern fixes the textual form; 'format' additionally rejects impossible dates such as February 30.
  */
 export type Timestamp = string;
+
+// common/timezone.json
+
+/**
+ * IANA time zone name, e.g. Europe/Budapest. The server also checks that the zone exists.
+ */
+export type Timezone = string;
 
 // common/uuid.json
 
@@ -249,9 +265,9 @@ export interface Site {
   name: string;
   address: string | null;
   /**
-   * IANA time zone name; schedules are interpreted in it.
+   * Schedules are interpreted in it.
    */
-  timezone: string;
+  timezone: Timezone;
   /**
    * Minutes after the deadline of the last expected round without any data from the device before supervisors are alerted.
    */
@@ -551,6 +567,92 @@ export interface AuthLogoutResponse {
   server_time: ServerTime;
 }
 
+// api/checkpoint-create.request.json
+
+/**
+ * Create a checkpoint on a site of the caller. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/checkpoint.response.json.
+ */
+export interface CheckpointCreateRequest {
+  /**
+   * Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.
+   */
+  id?: Uuid;
+  site_id: Uuid;
+  name: string;
+  /**
+   * What the guard has to check here (Hungarian).
+   */
+  instruction?: string | null;
+  tag_type: "nfc" | "nfc_dna" | "qr";
+  /**
+   * NFC tag UID, hex, 4 to 10 bytes, with or without colons, any case (04:a1:b2:c3, 04A1B2C3); stored uppercase without separators.
+   */
+  tag_uid?: string | null;
+  /**
+   * waypost:cp:<id of this checkpoint>:<16-character random code>. Globally unique.
+   */
+  qr_payload?: string | null;
+  lat_e7?: LatE7 | null;
+  lng_e7?: LngE7 | null;
+  accuracy_dm?: AccuracyDm | null;
+  active?: boolean;
+}
+
+// api/checkpoint-list.response.json
+
+/**
+ * The checkpoints of the caller's sites; ?site_id= limits them to one site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.
+ */
+export interface CheckpointListResponse {
+  server_time: ServerTime;
+  checkpoints: Checkpoint[];
+}
+
+// api/checkpoint-update.request.json
+
+/**
+ * Change the given properties of a checkpoint; the site cannot change. The result must be a valid checkpoint (e.g. an nfc checkpoint has a tag_uid); a qr checkpoint without a qr_payload gets a generated one. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/checkpoint.response.json.
+ */
+export interface CheckpointUpdateRequest {
+  name?: string;
+  /**
+   * What the guard has to check here (Hungarian).
+   */
+  instruction?: string | null;
+  tag_type?: "nfc" | "nfc_dna" | "qr";
+  /**
+   * NFC tag UID, hex, 4 to 10 bytes, with or without colons, any case (04:a1:b2:c3, 04A1B2C3); stored uppercase without separators.
+   */
+  tag_uid?: string | null;
+  /**
+   * waypost:cp:<id of this checkpoint>:<16-character random code>. Globally unique.
+   */
+  qr_payload?: string | null;
+  lat_e7?: LatE7 | null;
+  lng_e7?: LngE7 | null;
+  accuracy_dm?: AccuracyDm | null;
+  active?: boolean;
+}
+
+// api/checkpoint.response.json
+
+/**
+ * POST /checkpoints (201), GET and PATCH /checkpoints/{id} (200). Error responses use api/error.json.
+ */
+export interface CheckpointResponse {
+  server_time: ServerTime;
+  checkpoint: Checkpoint;
+}
+
+// api/deleted.response.json
+
+/**
+ * The record is deleted (soft delete: sync pull lists it under deleted), or the user is detached from the site (DELETE /sites/{id}/users/{user_id}). Error responses use api/error.json.
+ */
+export interface DeletedResponse {
+  server_time: ServerTime;
+}
+
 // api/devices-enroll.request.json
 
 /**
@@ -606,18 +708,326 @@ export interface ErrorResponse {
   };
 }
 
+// api/report-subscription-create.request.json
+
+/**
+ * Subscribe a supervisor assigned to a site of the caller to a report of the site. The same (user_id, site_id, frequency) twice is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/report-subscription.response.json.
+ */
+export interface ReportSubscriptionCreateRequest {
+  /**
+   * Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.
+   */
+  id?: Uuid;
+  user_id: Uuid;
+  site_id: Uuid;
+  frequency: "shift" | "daily" | "weekly" | "monthly";
+}
+
+// api/report-subscription-list.response.json
+
+/**
+ * The subscriptions of the caller's sites, whoever the subscriber is; ?site_id= or ?user_id= limits them. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.
+ */
+export interface ReportSubscriptionListResponse {
+  server_time: ServerTime;
+  report_subscriptions: ReportSubscription[];
+}
+
+// api/report-subscription-update.request.json
+
+/**
+ * Change the frequency of a subscription; an existing (user_id, site_id, frequency) is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/report-subscription.response.json.
+ */
+export interface ReportSubscriptionUpdateRequest {
+  frequency: "shift" | "daily" | "weekly" | "monthly";
+}
+
+// api/report-subscription.response.json
+
+/**
+ * POST /report-subscriptions (201), GET and PATCH /report-subscriptions/{id} (200). Error responses use api/error.json.
+ */
+export interface ReportSubscriptionResponse {
+  server_time: ServerTime;
+  report_subscription: ReportSubscription;
+}
+
+// api/route-create.request.json
+
+/**
+ * Create a route on a site of the caller, without checkpoints: they come with POST /routes/{id}/versions. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/route.response.json.
+ */
+export interface RouteCreateRequest {
+  /**
+   * Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.
+   */
+  id?: Uuid;
+  site_id: Uuid;
+  name: string;
+  /**
+   * fixed: checkpoints must be scanned by position; free: any order.
+   */
+  order_mode: "free" | "fixed";
+  active?: boolean;
+}
+
+// api/route-list.response.json
+
+/**
+ * The routes of the caller's sites; ?site_id= limits them to one site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.
+ */
+export interface RouteListResponse {
+  server_time: ServerTime;
+  routes: Route[];
+}
+
+// api/route-update.request.json
+
+/**
+ * Change the given properties of a route; the site cannot change, the checkpoints change with a new version. Deleting a route deletes its schedules. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/route.response.json.
+ */
+export interface RouteUpdateRequest {
+  name?: string;
+  /**
+   * fixed: checkpoints must be scanned by position; free: any order.
+   */
+  order_mode?: "free" | "fixed";
+  active?: boolean;
+}
+
+// api/route-version-create.request.json
+
+/**
+ * Create the next version of a route (version = previous + 1) and make it the current one. Versions never change afterwards. The checkpoints in order (position = index + 1), each once, all on the route's site; walk_time_from_prev_s is null at the first position. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/route-version.response.json.
+ */
+export interface RouteVersionCreateRequest {
+  /**
+   * Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.
+   */
+  id?: Uuid;
+  /**
+   * Measured walk: last scan minus first scan during training, in seconds.
+   */
+  walk_duration_s?: number | null;
+  /**
+   * @minItems 1
+   * @maxItems 500
+   */
+  checkpoints: [
+    {
+      checkpoint_id: Uuid;
+      /**
+       * Measured walk from the previous position in seconds.
+       */
+      walk_time_from_prev_s?: number | null;
+    },
+    ...{
+      checkpoint_id: Uuid;
+      /**
+       * Measured walk from the previous position in seconds.
+       */
+      walk_time_from_prev_s?: number | null;
+    }[]
+  ];
+}
+
+// api/route-version-list.response.json
+
+/**
+ * Every version of the route by version number, and their checkpoints by version and position. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.
+ */
+export interface RouteVersionListResponse {
+  server_time: ServerTime;
+  route_versions: RouteVersion[];
+  route_version_checkpoints: RouteVersionCheckpoint[];
+}
+
+// api/route-version.response.json
+
+/**
+ * POST /routes/{id}/versions (201), GET /routes/{id}/versions/{version_id} (200): the version, its checkpoints by position and the route (current_version_id). Error responses use api/error.json.
+ */
+export interface RouteVersionResponse {
+  server_time: ServerTime;
+  route: Route;
+  route_version: RouteVersion;
+  /**
+   * @minItems 1
+   */
+  route_version_checkpoints: [RouteVersionCheckpoint, ...RouteVersionCheckpoint[]];
+}
+
+// api/route.response.json
+
+/**
+ * POST /routes (201), GET and PATCH /routes/{id} (200). Error responses use api/error.json.
+ */
+export interface RouteResponse {
+  server_time: ServerTime;
+  route: Route;
+}
+
+// api/schedule-create.request.json
+
+/**
+ * Create a schedule of a route of the caller. list mode: start_times; interval mode: interval_from, interval_to, interval_every_min. Absent time_limit_min: ceil(walk_duration_s × 1.5 / 300) × 5 minutes from the current version of the route (at most 1440), 20 without a measured walk; null: no limit. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/schedule.response.json.
+ */
+export interface ScheduleCreateRequest {
+  /**
+   * Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.
+   */
+  id?: Uuid;
+  route_id: Uuid;
+  name: string;
+  /**
+   * Bit mask of start days: 1 = Monday, 2 = Tuesday, 4 = Wednesday, 8 = Thursday, 16 = Friday, 32 = Saturday, 64 = Sunday.
+   */
+  weekdays: number;
+  mode: "list" | "interval";
+  /**
+   * list mode: a sequence from the start day; an element not later than the previous one is on the next day (at most one such step, and then the last element is earlier than the first).
+   *
+   * @minItems 1
+   */
+  start_times?: [LocalTime, ...LocalTime[]];
+  interval_from?: LocalTime;
+  interval_to?: LocalTime;
+  interval_every_min?: number;
+  /**
+   * Time limit of a round in minutes; null = no limit.
+   */
+  time_limit_min?: number | null;
+  active?: boolean;
+}
+
+// api/schedule-list.response.json
+
+/**
+ * The schedules of the routes of the caller's sites; ?site_id= or ?route_id= limits them. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.
+ */
+export interface ScheduleListResponse {
+  server_time: ServerTime;
+  schedules: Schedule[];
+}
+
+// api/schedule-update.request.json
+
+/**
+ * Change the given properties of a schedule; the route cannot change. With mode, the fields of the new mode are required and those of the other mode are cleared; without mode, only the fields of the current mode can be given. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/schedule.response.json.
+ */
+export interface ScheduleUpdateRequest {
+  name?: string;
+  /**
+   * Bit mask of start days: 1 = Monday, 2 = Tuesday, 4 = Wednesday, 8 = Thursday, 16 = Friday, 32 = Saturday, 64 = Sunday.
+   */
+  weekdays?: number;
+  mode?: "list" | "interval";
+  /**
+   * list mode: a sequence from the start day; an element not later than the previous one is on the next day (at most one such step, and then the last element is earlier than the first).
+   *
+   * @minItems 1
+   */
+  start_times?: [LocalTime, ...LocalTime[]];
+  interval_from?: LocalTime;
+  interval_to?: LocalTime;
+  interval_every_min?: number;
+  /**
+   * Time limit of a round in minutes; null = no limit.
+   */
+  time_limit_min?: number | null;
+  active?: boolean;
+}
+
+// api/schedule.response.json
+
+/**
+ * POST /schedules (201), GET and PATCH /schedules/{id} (200). Error responses use api/error.json.
+ */
+export interface ScheduleResponse {
+  server_time: ServerTime;
+  schedule: Schedule;
+}
+
+// api/site-create.request.json
+
+/**
+ * Create a site. Supervisor token only (not through the site phone). The creator is assigned to the new site. Absent timezone: Europe/Budapest; absent no_data_alert_after_min: 120. Response: 201, api/site.response.json.
+ */
+export interface SiteCreateRequest {
+  /**
+   * Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.
+   */
+  id?: Uuid;
+  name: string;
+  address?: string | null;
+  timezone?: Timezone;
+  /**
+   * Minutes after the deadline of the last expected round without any data from the device before supervisors are alerted.
+   */
+  no_data_alert_after_min?: number;
+}
+
+// api/site-list.response.json
+
+/**
+ * The sites of the caller (the site phone: its own site). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.
+ */
+export interface SiteListResponse {
+  server_time: ServerTime;
+  sites: Site[];
+}
+
+// api/site-update.request.json
+
+/**
+ * Change the given properties of a site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/site.response.json.
+ */
+export interface SiteUpdateRequest {
+  name?: string;
+  address?: string | null;
+  timezone?: Timezone;
+  /**
+   * Minutes after the deadline of the last expected round without any data from the device before supervisors are alerted.
+   */
+  no_data_alert_after_min?: number;
+}
+
+// api/site-user-attach.request.json
+
+/**
+ * Assign a user the caller can see to the site; only a user every site of whom is a site of the caller (otherwise 403 forbidden), as the new PIN goes to the caller. The user gets a new PIN (the given one, or a generated one returned once), unique among the users of all of their sites: the server only knows the hash of the old PIN, so it cannot check it against the users of the new site. A user already assigned to the site: nothing changes (no new PIN). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.
+ */
+export interface SiteUserAttachRequest {
+  user_id: Uuid;
+  pin?: Pin;
+}
+
+// api/site.response.json
+
+/**
+ * POST /sites (201), GET and PATCH /sites/{id} (200). Error responses use api/error.json.
+ */
+export interface SiteResponse {
+  server_time: ServerTime;
+  site: Site;
+}
+
 // api/sync-pull.response.json
 
 /**
- * Configuration changes since the cursor given in the "cursor" query parameter (none: full state). Device token: the device's site; supervisor token: the supervisor's sites. At most 500 records per page; while has_more is true, request the next page with the returned cursor right away. Every list is present, possibly empty. Error responses use api/error.json.
+ * Configuration changes since the cursor given in the "cursor" query parameter (none: full state). Device token: the device's site; supervisor token: the supervisor's sites. At most 500 records per page (a route version always comes with all of its checkpoints, so such a page may hold 501); while has_more is true, request the next page with the returned cursor right away. Every list is present, possibly empty. Error responses use api/error.json.
  */
 export interface SyncPullResponse {
   server_time: ServerTime;
   /**
-   * Opaque; send it back unchanged as the "cursor" query parameter of the next pull.
+   * Opaque; send it back unchanged as the "cursor" query parameter of the next pull. An unknown or malformed cursor is a validation error (422).
    */
   cursor: string;
   has_more: boolean;
+  /**
+   * True: this page starts a full state, because the request had no cursor, or the sites the caller sees changed since the cursor (e.g. the supervisor was assigned to another site). Before applying the page, the client deletes its local configuration records (in the same transaction); the following pages are incremental again. Absent means false.
+   */
+  reset?: boolean;
   /**
    * Created or updated records, in full.
    */
@@ -744,6 +1154,81 @@ export interface SyncPushResponse {
   media_missing: Uuid[];
 }
 
+// api/user-create.request.json
+
+/**
+ * Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/user.response.json.
+ */
+export interface UserCreateRequest {
+  /**
+   * Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.
+   */
+  id?: Uuid;
+  name: string;
+  role: "supervisor" | "guard";
+  email?: string;
+  /**
+   * Password of the supervisor for POST /auth/login.
+   */
+  password?: string;
+  pin?: Pin;
+  active?: boolean;
+  /**
+   * Sites of the caller the new user is assigned to.
+   *
+   * @minItems 1
+   */
+  site_ids: [Uuid, ...Uuid[]];
+}
+
+// api/user-list.response.json
+
+/**
+ * GET /users: the users who share a site with the caller, and the caller; ?site_id= limits them to one site. GET /sites/{id}/users: the users assigned to the site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.
+ */
+export interface UserListResponse {
+  server_time: ServerTime;
+  users: User[];
+}
+
+// api/user-pin.request.json
+
+/**
+ * Set a new PIN for the user: the given one, or (pin absent) a generated one, returned once (pin in the response). Unique among the users of all of the user's sites: a taken PIN is 409 conflict. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.
+ */
+export interface UserPinRequest {
+  pin?: Pin;
+}
+
+// api/user-update.request.json
+
+/**
+ * Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.
+ */
+export interface UserUpdateRequest {
+  name?: string;
+  email?: string;
+  /**
+   * Password of the supervisor for POST /auth/login.
+   */
+  password?: string;
+  active?: boolean;
+}
+
+// api/user.response.json
+
+/**
+ * POST /users (201), GET and PATCH /users/{id}, PUT /users/{id}/pin, POST /sites/{id}/users (200). The user as sync pull delivers it to the caller: site_ids limited to the caller's sites, the PIN fields only to the site phone. Error responses use api/error.json.
+ */
+export interface UserResponse {
+  server_time: ServerTime;
+  user: User;
+  /**
+   * Only when the server generated the PIN: the only time it is shown. Tell it to the user.
+   */
+  pin?: Pin;
+}
+
 /**
  * TypeScript type of each schema, keyed by its path under schemas/ without .json
  * (the schema's $id without https://waypost.dev/schema/ and .json).
@@ -756,8 +1241,10 @@ export interface SchemaTypes {
   "common/lat-e7": LatE7;
   "common/lng-e7": LngE7;
   "common/local-time": LocalTime;
+  "common/pin": Pin;
   "common/server-time": ServerTime;
   "common/timestamp": Timestamp;
+  "common/timezone": Timezone;
   "common/uuid": Uuid;
   "entities/checkpoint": Checkpoint;
   "entities/device": Device;
@@ -778,10 +1265,40 @@ export interface SchemaTypes {
   "api/auth-login.request": AuthLoginRequest;
   "api/auth-login.response": AuthLoginResponse;
   "api/auth-logout.response": AuthLogoutResponse;
+  "api/checkpoint-create.request": CheckpointCreateRequest;
+  "api/checkpoint-list.response": CheckpointListResponse;
+  "api/checkpoint-update.request": CheckpointUpdateRequest;
+  "api/checkpoint.response": CheckpointResponse;
+  "api/deleted.response": DeletedResponse;
   "api/devices-enroll.request": DevicesEnrollRequest;
   "api/devices-enroll.response": DevicesEnrollResponse;
   "api/error": ErrorResponse;
+  "api/report-subscription-create.request": ReportSubscriptionCreateRequest;
+  "api/report-subscription-list.response": ReportSubscriptionListResponse;
+  "api/report-subscription-update.request": ReportSubscriptionUpdateRequest;
+  "api/report-subscription.response": ReportSubscriptionResponse;
+  "api/route-create.request": RouteCreateRequest;
+  "api/route-list.response": RouteListResponse;
+  "api/route-update.request": RouteUpdateRequest;
+  "api/route-version-create.request": RouteVersionCreateRequest;
+  "api/route-version-list.response": RouteVersionListResponse;
+  "api/route-version.response": RouteVersionResponse;
+  "api/route.response": RouteResponse;
+  "api/schedule-create.request": ScheduleCreateRequest;
+  "api/schedule-list.response": ScheduleListResponse;
+  "api/schedule-update.request": ScheduleUpdateRequest;
+  "api/schedule.response": ScheduleResponse;
+  "api/site-create.request": SiteCreateRequest;
+  "api/site-list.response": SiteListResponse;
+  "api/site-update.request": SiteUpdateRequest;
+  "api/site-user-attach.request": SiteUserAttachRequest;
+  "api/site.response": SiteResponse;
   "api/sync-pull.response": SyncPullResponse;
   "api/sync-push.request": SyncPushRequest;
   "api/sync-push.response": SyncPushResponse;
+  "api/user-create.request": UserCreateRequest;
+  "api/user-list.response": UserListResponse;
+  "api/user-pin.request": UserPinRequest;
+  "api/user-update.request": UserUpdateRequest;
+  "api/user.response": UserResponse;
 }

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/schedule.response.json",
+  "title": "Schedule – response",
+  "description": "POST /schedules (201), GET and PATCH /schedules/{id} (200). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "schedule"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "schedule": {
+      "$ref": "../entities/schedule.json"
+    }
+  },
+  "additionalProperties": false
+}

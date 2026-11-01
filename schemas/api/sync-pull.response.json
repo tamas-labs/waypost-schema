@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/api/sync-pull.response.json",
   "title": "GET /sync/pull – 200 response",
-  "description": "Configuration changes since the cursor given in the \"cursor\" query parameter (none: full state). Device token: the device's site; supervisor token: the supervisor's sites. At most 500 records per page; while has_more is true, request the next page with the returned cursor right away. Every list is present, possibly empty. Error responses use api/error.json.",
+  "description": "Configuration changes since the cursor given in the \"cursor\" query parameter (none: full state). Device token: the device's site; supervisor token: the supervisor's sites. At most 500 records per page (a route version always comes with all of its checkpoints, so such a page may hold 501); while has_more is true, request the next page with the returned cursor right away. Every list is present, possibly empty. Error responses use api/error.json.",
   "type": "object",
   "required": [
     "server_time",
@@ -16,12 +16,16 @@
       "$ref": "../common/server-time.json"
     },
     "cursor": {
-      "description": "Opaque; send it back unchanged as the \"cursor\" query parameter of the next pull.",
+      "description": "Opaque; send it back unchanged as the \"cursor\" query parameter of the next pull. An unknown or malformed cursor is a validation error (422).",
       "type": "string",
       "minLength": 1,
       "maxLength": 255
     },
     "has_more": {
+      "type": "boolean"
+    },
+    "reset": {
+      "description": "True: this page starts a full state, because the request had no cursor, or the sites the caller sees changed since the cursor (e.g. the supervisor was assigned to another site). Before applying the page, the client deletes its local configuration records (in the same transaction); the following pages are incremental again. Absent means false.",
       "type": "boolean"
     },
     "changes": {

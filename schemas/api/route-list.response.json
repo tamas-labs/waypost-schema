@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/route-list.response.json",
+  "title": "GET /routes – 200 response",
+  "description": "The routes of the caller's sites; ?site_id= limits them to one site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "routes"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "$ref": "../entities/route.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/pin.json",
+  "title": "PIN",
+  "description": "Exactly 6 ASCII digits, a string (001234 is not 1234). Unique among the users of a site (pin/test-vectors.json: pin_pattern).",
+  "type": "string",
+  "pattern": "^[0-9]{6}$"
+}

@@ -10,6 +10,25 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 
 ## [Unreleased]
 
+## [0.2.0] – 2026-11-01
+
+Visszafelé kompatibilis bővítés: a konfigurációs CRUD végpontok sémái, PIN-tesztvektorok, a pull `reset` mezője, két új hibakód.
+
+### Added
+
+- PIN-tesztvektorok (Q11): `pin/test-vectors.json` – PIN, só és iterációszám → PBKDF2-HMAC-SHA256 ellenőrző (`pin_hash`), ugyanazokkal a mezőnevekkel, mint az `entities/user`; nem egyező PIN-ek és hibás alakú PIN-ek (köztük a záró sortörés). Generátor: `scripts/pin-vectors.js` (`npm run vectors:pin`); a teszt WebCryptóval, a generátortól függetlenül számolja újra. Elérés: `@waypost/schema/vectors` → `pinVectors` (típus: `PinVectors`), `@waypost/schema/pin/test-vectors.json`, Composer: `Paths::pinVectors()`.
+- Hibakódok: `bad_request` (minden más 4xx válasz, pl. 405, 413) és `server_error` (minden 5xx válasz, pl. 500, 503); a HTTP-státusz az eredeti marad.
+- A konfigurációs CRUD végpontok sémái (M5-01, a backend M2-16 – M2-21 feladataihoz előrehozva), `schemas/api/`:
+  - kérések: `site-create`, `site-update`, `site-user-attach`, `user-create`, `user-update`, `user-pin`, `checkpoint-create`, `checkpoint-update`, `route-create`, `route-update`, `route-version-create`, `schedule-create`, `schedule-update`, `report-subscription-create`, `report-subscription-update` (`.request`);
+  - válaszok: `site`, `site-list`, `user` (a generált PIN-nel, egyszer), `user-list`, `checkpoint`, `checkpoint-list`, `route`, `route-list`, `route-version` (a verzió, a pontjai és az útvonal), `route-version-list`, `schedule`, `schedule-list`, `report-subscription`, `report-subscription-list`, `deleted` (`.response`).
+  - A létrehozó kérésekben opcionális `id` (az app által generált UUIDv7, az outboxhoz).
+- Közös sémák: `common/timezone` (IANA időzóna neve), `common/pin` (6 számjegy, szövegként; a minta a `pin/test-vectors.json` `pin_pattern`-je, ezt teszt ellenőrzi).
+
+### Changed
+
+- `api/sync-pull.response`: új, opcionális `reset` mező (a hiánya `false`): `true`, ha az oldal teljes állapotot kezd, mert a kérésben nem volt kurzor, vagy a hívó által látott telephelyek köre a kurzor óta megváltozott; a kliens ilyenkor az oldal alkalmazása előtt törli a helyi konfigurációs rekordjait. A leírás szerint egy útvonalverzió mindig az összes pontjával együtt jön (egy ilyen oldalon 501 rekord is lehet), és a hibás kurzor validációs hiba (422).
+- `entities/site`: a `timezone` a `common/timezone`-ra hivatkozik (ugyanaz a minta, az érvényes példányok köre nem változik).
+
 ## [0.1.0] – 2026-10-27
 
 Az első telepíthető változat: a pull, push, enroll és login végpontok, az entitások és a láncbejegyzések sémái, a lánc- és menetrend-tesztvektorok, TS típusok.

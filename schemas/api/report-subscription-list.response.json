@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/report-subscription-list.response.json",
+  "title": "GET /report-subscriptions – 200 response",
+  "description": "The subscriptions of the caller's sites, whoever the subscriber is; ?site_id= or ?user_id= limits them. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "report_subscriptions"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "report_subscriptions": {
+      "type": "array",
+      "items": {
+        "$ref": "../entities/report-subscription.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

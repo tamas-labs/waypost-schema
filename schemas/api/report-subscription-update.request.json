@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/report-subscription-update.request.json",
+  "title": "PATCH /report-subscriptions/{id} – request",
+  "description": "Change the frequency of a subscription; an existing (user_id, site_id, frequency) is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/report-subscription.response.json.",
+  "type": "object",
+  "required": [
+    "frequency"
+  ],
+  "properties": {
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "shift",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

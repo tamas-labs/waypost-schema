@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/user-update.request.json",
+  "title": "PATCH /users/{id} – request",
+  "description": "Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "maxLength": 255
+    },
+    "password": {
+      "description": "Password of the supervisor for POST /auth/login.",
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 255
+    },
+    "active": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "minProperties": 1
+}

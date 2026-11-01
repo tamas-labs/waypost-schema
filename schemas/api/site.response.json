@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/site.response.json",
+  "title": "Site – response",
+  "description": "POST /sites (201), GET and PATCH /sites/{id} (200). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "site"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "site": {
+      "$ref": "../entities/site.json"
+    }
+  },
+  "additionalProperties": false
+}

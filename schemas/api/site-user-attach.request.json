@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/site-user-attach.request.json",
+  "title": "POST /sites/{id}/users – request",
+  "description": "Assign a user the caller can see to the site; only a user every site of whom is a site of the caller (otherwise 403 forbidden), as the new PIN goes to the caller. The user gets a new PIN (the given one, or a generated one returned once), unique among the users of all of their sites: the server only knows the hash of the old PIN, so it cannot check it against the users of the new site. A user already assigned to the site: nothing changes (no new PIN). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.",
+  "type": "object",
+  "required": [
+    "user_id"
+  ],
+  "properties": {
+    "user_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "pin": {
+      "$ref": "../common/pin.json"
+    }
+  },
+  "additionalProperties": false
+}

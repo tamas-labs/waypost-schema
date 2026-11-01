@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/route-version-list.response.json",
+  "title": "GET /routes/{id}/versions – 200 response",
+  "description": "Every version of the route by version number, and their checkpoints by version and position. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "route_versions",
+    "route_version_checkpoints"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "route_versions": {
+      "type": "array",
+      "items": {
+        "$ref": "../entities/route-version.json"
+      }
+    },
+    "route_version_checkpoints": {
+      "type": "array",
+      "items": {
+        "$ref": "../entities/route-version-checkpoint.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

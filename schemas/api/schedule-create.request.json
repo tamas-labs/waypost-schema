@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/schedule-create.request.json",
+  "title": "POST /schedules – request",
+  "description": "Create a schedule of a route of the caller. list mode: start_times; interval mode: interval_from, interval_to, interval_every_min. Absent time_limit_min: ceil(walk_duration_s × 1.5 / 300) × 5 minutes from the current version of the route (at most 1440), 20 without a measured walk; null: no limit. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/schedule.response.json.",
+  "type": "object",
+  "required": [
+    "route_id",
+    "name",
+    "weekdays",
+    "mode"
+  ],
+  "properties": {
+    "id": {
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "$ref": "../common/uuid.json"
+    },
+    "route_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "weekdays": {
+      "description": "Bit mask of start days: 1 = Monday, 2 = Tuesday, 4 = Wednesday, 8 = Thursday, 16 = Friday, 32 = Saturday, 64 = Sunday.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 127
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "list",
+        "interval"
+      ]
+    },
+    "start_times": {
+      "description": "list mode: a sequence from the start day; an element not later than the previous one is on the next day (at most one such step, and then the last element is earlier than the first).",
+      "type": "array",
+      "items": {
+        "$ref": "../common/local-time.json"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "interval_from": {
+      "$ref": "../common/local-time.json"
+    },
+    "interval_to": {
+      "$ref": "../common/local-time.json"
+    },
+    "interval_every_min": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440
+    },
+    "time_limit_min": {
+      "anyOf": [
+        {
+          "description": "Time limit of a round in minutes; null = no limit.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "active": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "mode": {
+            "const": "list"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "start_times"
+        ],
+        "properties": {
+          "interval_from": false,
+          "interval_to": false,
+          "interval_every_min": false
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "mode": {
+            "const": "interval"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "interval_from",
+          "interval_to",
+          "interval_every_min"
+        ],
+        "properties": {
+          "start_times": false
+        }
+      }
+    }
+  ]
+}

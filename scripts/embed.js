@@ -28,6 +28,7 @@ export function renderEmbedded() {
     'schemas.js': module('schemas/**/*.json', schemas),
     'chain-vectors.js': module('chain/test-vectors.json', readJson('chain/test-vectors.json')),
     'schedule-vectors.js': module('schedule/test-vectors.json', readJson('schedule/test-vectors.json')),
+    'pin-vectors.js': module('pin/test-vectors.json', readJson('pin/test-vectors.json')),
   };
 }
 

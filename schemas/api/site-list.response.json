@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/site-list.response.json",
+  "title": "GET /sites – 200 response",
+  "description": "The sites of the caller (the site phone: its own site). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "sites"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "sites": {
+      "type": "array",
+      "items": {
+        "$ref": "../entities/site.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

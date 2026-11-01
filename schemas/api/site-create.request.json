@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/site-create.request.json",
+  "title": "POST /sites – request",
+  "description": "Create a site. Supervisor token only (not through the site phone). The creator is assigned to the new site. Absent timezone: Europe/Budapest; absent no_data_alert_after_min: 120. Response: 201, api/site.response.json.",
+  "type": "object",
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "address": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timezone": {
+      "$ref": "../common/timezone.json"
+    },
+    "no_data_alert_after_min": {
+      "description": "Minutes after the deadline of the last expected round without any data from the device before supervisors are alerted.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/user-create.request.json",
+  "title": "POST /users – request",
+  "description": "Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/user.response.json.",
+  "type": "object",
+  "required": [
+    "name",
+    "role",
+    "site_ids"
+  ],
+  "properties": {
+    "id": {
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "$ref": "../common/uuid.json"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "supervisor",
+        "guard"
+      ]
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "maxLength": 255
+    },
+    "password": {
+      "description": "Password of the supervisor for POST /auth/login.",
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 255
+    },
+    "pin": {
+      "$ref": "../common/pin.json"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "site_ids": {
+      "description": "Sites of the caller the new user is assigned to.",
+      "type": "array",
+      "items": {
+        "$ref": "../common/uuid.json"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "role": {
+            "const": "supervisor"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "email",
+          "password"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "role": {
+            "const": "guard"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "email": false,
+          "password": false
+        }
+      }
+    }
+  ]
+}

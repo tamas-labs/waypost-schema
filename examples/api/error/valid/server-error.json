@@ -1,0 +1,7 @@
+{
+  "server_time": "2026-10-27T20:00:00.000Z",
+  "error": {
+    "code": "server_error",
+    "message": "Váratlan szerverhiba, próbáld újra később."
+  }
+}

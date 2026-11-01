@@ -1,6 +1,6 @@
 # waypost-schema
 
-A Waypost közös szerződése: JSON Schema (draft 2020-12) az API kéréseihez és válaszaihoz, az entitásokhoz és a láncbejegyzésekhez, valamint a lánc és a menetrend tesztvektorai. Két csomagként terjed:
+A Waypost közös szerződése: JSON Schema (draft 2020-12) az API kéréseihez és válaszaihoz, az entitásokhoz és a láncbejegyzésekhez, valamint a lánc, a menetrend és a PIN tesztvektorai. Két csomagként terjed:
 
 - npm: `@waypost/schema` – az app (`../waypost`) használja, `file:../waypost-schema` útvonalról; TS típusok a sémákból.
 - Composer: `waypost/schema` – a backend (`../laravel-waypost`) használja, `path` repositoryból; a bemenő JSON ellenőrzése opis/json-schema-val.
@@ -20,6 +20,7 @@ schemas/
   chain/      # entry.json, payload-<type>.json
 chain/test-vectors.json      # bemenet → canonical_json → hash
 schedule/test-vectors.json   # menetrend + időszak → várt időpontok (DST-vel)
+pin/test-vectors.json        # PIN + só + iterációszám → PBKDF2 ellenőrző; hibás alakú PIN-ek
 types/index.d.ts             # TS típusok, a sémákból generálva
 lib/          # npm-exportok: index.js (sémák, schemaId), vectors.js; generated/ = beágyazott JSON (generált)
 src/Paths.php # Composer: Waypost\Schema\Paths – sémák és vektorok útvonala
@@ -63,6 +64,7 @@ CHANGELOG.md
 - `npm run validate -- --verbose` – csak a sémaellenőrzés; `--verbose` mellett az érvénytelen példák elutasításának oka is látszik (ellenőrizd, hogy a szándékolt okból buknak-e el). `--root <dir>` másik könyvtárat ellenőriz.
 - `npm run vectors:chain` – a `chain/test-vectors.json` újragenerálása (`scripts/chain-vectors.js`). Ha a láncséma vagy a generátor változik, futtasd, és a változást a CHANGELOG-ban jelezd; az `npm test` elbukik, ha a fájl elavult.
 - `npm run vectors:schedule` – a `schedule/test-vectors.json` újragenerálása (`scripts/schedule-vectors.js`); a kézzel ellenőrzött várt értékek a `scripts/schedule-vectors.test.js`-ben vannak, szabályváltozásnál azokat is frissíteni kell.
+- `npm run vectors:pin` – a `pin/test-vectors.json` újragenerálása (`scripts/pin-vectors.js`); az `npm test` elbukik, ha a fájl elavult.
 - `npm run types` – a `types/index.d.ts` újragenerálása (`scripts/types.js`); az `npm test` elbukik, ha elavult, vagy ha a típusokkal a `scripts/types-sample.ts` vagy bármelyik érvényes példa nem fordul le.
 - `npm run embed` – a `lib/generated/` újragenerálása (`scripts/embed.js`): a sémák és a vektorok ES-modulként. `npm run build` = `types` + `embed`.
 - `sh scripts/composer-smoke.sh` – Composer-telepítés üres projektbe `path` repositoryból, és a `Paths` ellenőrzése (Docker). Az npm-telepítést az `npm test` próbálja ki (`scripts/package.test.js`).

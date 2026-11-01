@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/deleted.response.json",
+  "title": "DELETE of a configuration record – 200 response",
+  "description": "The record is deleted (soft delete: sync pull lists it under deleted), or the user is detached from the site (DELETE /sites/{id}/users/{user_id}). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    }
+  },
+  "additionalProperties": false
+}

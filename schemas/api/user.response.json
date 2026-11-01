@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/user.response.json",
+  "title": "User – response",
+  "description": "POST /users (201), GET and PATCH /users/{id}, PUT /users/{id}/pin, POST /sites/{id}/users (200). The user as sync pull delivers it to the caller: site_ids limited to the caller's sites, the PIN fields only to the site phone. Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "user"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "user": {
+      "$ref": "../entities/user.json"
+    },
+    "pin": {
+      "description": "Only when the server generated the PIN: the only time it is shown. Tell it to the user.",
+      "$ref": "../common/pin.json"
+    }
+  },
+  "additionalProperties": false
+}

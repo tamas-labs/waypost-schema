@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/timezone.json",
+  "title": "Time zone",
+  "description": "IANA time zone name, e.g. Europe/Budapest. The server also checks that the zone exists.",
+  "type": "string",
+  "maxLength": 64,
+  "pattern": "^(UTC|[A-Z][A-Za-z_-]+(/[A-Za-z0-9_+-]+){1,2})$"
+}

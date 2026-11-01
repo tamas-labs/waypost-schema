@@ -36,10 +36,8 @@
       ]
     },
     "timezone": {
-      "description": "IANA time zone name; schedules are interpreted in it.",
-      "type": "string",
-      "maxLength": 64,
-      "pattern": "^(UTC|[A-Z][A-Za-z_-]+(/[A-Za-z0-9_+-]+){1,2})$"
+      "description": "Schedules are interpreted in it.",
+      "$ref": "../common/timezone.json"
     },
     "no_data_alert_after_min": {
       "description": "Minutes after the deadline of the last expected round without any data from the device before supervisors are alerted.",

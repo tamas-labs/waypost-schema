@@ -1,0 +1,5 @@
+{
+  "mode": "interval",
+  "interval_from": "20:00",
+  "interval_every_min": 60
+}

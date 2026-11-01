@@ -1,4 +1,4 @@
-// @waypost/schema/vectors: the shared test vectors of the chain hash and the schedule expansion, for tests.
+// @waypost/schema/vectors: the shared test vectors of the chain hash, the schedule expansion and the PIN verifier, for tests.
 
 import type { Base64, Hash, LocalTime, Schedule, Timestamp, UnsignedChainEntry } from '../types/index.js';
 
@@ -64,5 +64,37 @@ export interface ScheduleVectors {
   time_limit_default: TimeLimitDefaultCase[];
 }
 
+/** A PIN and its verifier as stored on the user (entities/user: pin_hash, pin_salt, pin_iterations). */
+export interface PinVector {
+  /** 6 ASCII digits. */
+  pin: string;
+  /** Random salt, 16 bytes, base64. */
+  pin_salt: Base64;
+  pin_iterations: number;
+  /** PBKDF2-HMAC-SHA256 of pin with the decoded salt, 32 bytes, base64. */
+  pin_hash: Base64;
+}
+
+export interface PinVectorCase extends PinVector {
+  name: string;
+  description: string;
+}
+
+/** pin/test-vectors.json */
+export interface PinVectors {
+  description: string;
+  /** The pattern a PIN must match (JSON Schema / ECMAScript syntax). */
+  pin_pattern: string;
+  /** Parameters of a newly set PIN. */
+  defaults: { iterations: number; salt_bytes: number; hash_bytes: number };
+  /** pin matches the verifier. */
+  cases: PinVectorCase[];
+  /** pin does not match the verifier. */
+  mismatches: PinVectorCase[];
+  /** Strings that are not PINs; hashing them is an error. */
+  malformed_pins: string[];
+}
+
 export declare const chainVectors: ChainVectors;
 export declare const scheduleVectors: ScheduleVectors;
+export declare const pinVectors: PinVectors;

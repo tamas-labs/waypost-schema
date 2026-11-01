@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/common/error-code.json",
   "title": "Error code",
-  "description": "Machine-readable error code. Request level (HTTP status): unauthenticated (401), device_revoked (401), forbidden (403), not_found (404), conflict (409, e.g. PIN or tag already taken), validation_failed (422), rate_limited (429). Entry level, in the push response's rejected list: chain_gap, chain_fork, bad_hmac.",
+  "description": "Machine-readable error code. Request level (HTTP status): unauthenticated (401), device_revoked (401), forbidden (403), not_found (404), conflict (409, e.g. PIN or tag already taken), validation_failed (422), rate_limited (429); any other client error is bad_request (with its own 4xx status, e.g. 405, 413), any server error server_error (5xx, e.g. 500, 503 during maintenance). Entry level, in the push response's rejected list: chain_gap, chain_fork, bad_hmac.",
   "type": "string",
   "enum": [
     "unauthenticated",
@@ -14,6 +14,8 @@
     "chain_gap",
     "chain_fork",
     "bad_hmac",
-    "rate_limited"
+    "rate_limited",
+    "bad_request",
+    "server_error"
   ]
 }

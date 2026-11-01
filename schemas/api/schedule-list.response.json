@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/schedule-list.response.json",
+  "title": "GET /schedules – 200 response",
+  "description": "The schedules of the routes of the caller's sites; ?site_id= or ?route_id= limits them. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "schedules"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "schedules": {
+      "type": "array",
+      "items": {
+        "$ref": "../entities/schedule.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

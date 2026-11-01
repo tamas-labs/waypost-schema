@@ -7,7 +7,7 @@ import { schemaPaths } from './types.js';
 import { ROOT, tempModule, typecheck } from './typecheck.js';
 import { createAjv } from './validate.js';
 import { SCHEMA_ID_BASE, schemaId, schemas } from '../lib/index.js';
-import { chainVectors, scheduleVectors } from '../lib/vectors.js';
+import { chainVectors, pinVectors, scheduleVectors } from '../lib/vectors.js';
 
 const readJson = (path) => JSON.parse(readFileSync(resolve(ROOT, path), 'utf8'));
 
@@ -30,6 +30,7 @@ describe('lib/ (the JS exports)', () => {
   test('the vectors are the JSON files', () => {
     assert.deepEqual(chainVectors, readJson('chain/test-vectors.json'));
     assert.deepEqual(scheduleVectors, readJson('schedule/test-vectors.json'));
+    assert.deepEqual(pinVectors, readJson('pin/test-vectors.json'));
   });
 
   test('Ajv validates every example through the exported schemas and schemaId', () => {
@@ -47,11 +48,13 @@ describe('lib/ (the JS exports)', () => {
   });
 
   test('the vector files match the types in lib/vectors.d.ts', () => {
-    const source = (importPath) => `import type { ChainVectors, ScheduleVectors } from ${importPath('lib/vectors.d.ts')};
+    const source = (importPath) => `import type { ChainVectors, PinVectors, ScheduleVectors } from ${importPath('lib/vectors.d.ts')};
 
 export const chain: ChainVectors = ${readFileSync(resolve(ROOT, 'chain/test-vectors.json'), 'utf8')};
 
 export const schedule: ScheduleVectors = ${readFileSync(resolve(ROOT, 'schedule/test-vectors.json'), 'utf8')};
+
+export const pin: PinVectors = ${readFileSync(resolve(ROOT, 'pin/test-vectors.json'), 'utf8')};
 `;
     const { status, output } = typecheck([tempModule('vectors.mts', source)]);
     assert.equal(status, 0, output);

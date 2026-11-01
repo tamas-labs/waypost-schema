@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/checkpoint-list.response.json",
+  "title": "GET /checkpoints – 200 response",
+  "description": "The checkpoints of the caller's sites; ?site_id= limits them to one site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "checkpoints"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "checkpoints": {
+      "type": "array",
+      "items": {
+        "$ref": "../entities/checkpoint.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

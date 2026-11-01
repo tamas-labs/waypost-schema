@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/route-version.response.json",
+  "title": "Route version – response",
+  "description": "POST /routes/{id}/versions (201), GET /routes/{id}/versions/{version_id} (200): the version, its checkpoints by position and the route (current_version_id). Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "route",
+    "route_version",
+    "route_version_checkpoints"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "route": {
+      "$ref": "../entities/route.json"
+    },
+    "route_version": {
+      "$ref": "../entities/route-version.json"
+    },
+    "route_version_checkpoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../entities/route-version-checkpoint.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}
