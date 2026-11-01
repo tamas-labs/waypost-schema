@@ -153,6 +153,29 @@ export interface Device {
   last_seen_at: Timestamp | null;
 }
 
+// entities/media.json
+
+/**
+ * A photo. The storage path is server-side and never part of this representation. mime, size_bytes and uploaded_at are null until the file is uploaded. Every property is present; absent values are null.
+ */
+export interface Media {
+  id: Uuid;
+  /**
+   * The device that took a photo of a chain entry; null for a checkpoint photo of a supervisor.
+   */
+  device_id: Uuid | null;
+  owner_type: "scan" | "incident" | "checkpoint";
+  /**
+   * ID of the scan, incident or checkpoint the photo belongs to.
+   */
+  owner_id: Uuid;
+  sha256: Hash;
+  mime: "image/jpeg" | null;
+  size_bytes: number | null;
+  taken_at: Timestamp;
+  uploaded_at: Timestamp | null;
+}
+
 // entities/report-subscription.json
 
 /**
@@ -595,6 +618,10 @@ export interface CheckpointCreateRequest {
   lat_e7?: LatE7 | null;
   lng_e7?: LngE7 | null;
   accuracy_dm?: AccuracyDm | null;
+  /**
+   * A photo already uploaded with PUT /media/{id}, with this checkpoint as its owner; otherwise 422 validation_failed. null: no photo.
+   */
+  photo_media_id?: Uuid | null;
   active?: boolean;
 }
 
@@ -631,6 +658,10 @@ export interface CheckpointUpdateRequest {
   lat_e7?: LatE7 | null;
   lng_e7?: LngE7 | null;
   accuracy_dm?: AccuracyDm | null;
+  /**
+   * A photo already uploaded with PUT /media/{id}, with this checkpoint as its owner; otherwise 422 validation_failed. null: no photo.
+   */
+  photo_media_id?: Uuid | null;
   active?: boolean;
 }
 
@@ -706,6 +737,37 @@ export interface ErrorResponse {
       [k: string]: [string, ...string[]];
     };
   };
+}
+
+// api/media-upload.request.json
+
+/**
+ * The text fields of a multipart/form-data body; next to them a part named file holds the JPEG itself (image/jpeg), so that part is not in this schema. The server hashes the file and checks it against sha256, and for a photo of a chain entry also against the sha256 of the entry's payload; a mismatch is 422 validation_failed. Sending the same file again is not an error (200). A photo of a scan or incident: only after its entry is accepted, otherwise 404 not_found; only the device that wrote the entry, otherwise 403 forbidden; a revoked device until it closes its upload (api/sync-push-final.request). A checkpoint photo: sent before the checkpoint request that refers to it (photo_media_id), so the checkpoint need not exist yet; supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). A file over the server's limit is 413 bad_request. Requires an Idempotency-Key header. Response: 200, api/media-upload.response.json.
+ */
+export interface MediaUploadRequest {
+  /**
+   * SHA-256 of the file.
+   */
+  sha256: Hash;
+  owner_type: "scan" | "incident" | "checkpoint";
+  /**
+   * ID of the scan, incident or checkpoint the photo belongs to.
+   */
+  owner_id: Uuid;
+  /**
+   * When the shutter was pressed, by the device clock.
+   */
+  taken_at: Timestamp;
+}
+
+// api/media-upload.response.json
+
+/**
+ * The uploaded photo: mime, size_bytes and uploaded_at are set. Error responses use api/error.json.
+ */
+export interface MediaUploadResponse {
+  server_time: ServerTime;
+  media: Media;
 }
 
 // api/report-subscription-create.request.json
@@ -1106,6 +1168,32 @@ export interface SyncPullResponse {
   };
 }
 
+// api/sync-push-final.request.json
+
+/**
+ * The last upload of a revoked device, in as many requests as it takes: batches of its unacknowledged chain entries in ascending seq order, checked like POST /sync/push, then its photos (PUT /media/{id}), then a request with done true. After that request the upload is closed, even if entries were rejected or photos are missing: push-final and PUT /media/{id} answer 401 device_revoked. A device that is not revoked gets 403 forbidden. Token of the revoked device; requires an Idempotency-Key header. device_id must equal the token's device and the device_id of every entry. Response: 200, api/sync-push-final.response.json.
+ */
+export interface SyncPushFinalRequest {
+  device_id: Uuid;
+  /**
+   * May be empty: nothing is left to send in the request that closes the upload.
+   *
+   * @maxItems 200
+   */
+  entries: ChainEntry[];
+  /**
+   * true: this is the last request, close the upload after it.
+   */
+  done: boolean;
+}
+
+// api/sync-push-final.response.json
+
+/**
+ * Same as the response of POST /sync/push. Error responses use api/error.json.
+ */
+export type SyncPushFinalResponse = SyncPushResponse;
+
 // api/sync-push.request.json
 
 /**
@@ -1248,6 +1336,7 @@ export interface SchemaTypes {
   "common/uuid": Uuid;
   "entities/checkpoint": Checkpoint;
   "entities/device": Device;
+  "entities/media": Media;
   "entities/report-subscription": ReportSubscription;
   "entities/route": Route;
   "entities/route-version": RouteVersion;
@@ -1273,6 +1362,8 @@ export interface SchemaTypes {
   "api/devices-enroll.request": DevicesEnrollRequest;
   "api/devices-enroll.response": DevicesEnrollResponse;
   "api/error": ErrorResponse;
+  "api/media-upload.request": MediaUploadRequest;
+  "api/media-upload.response": MediaUploadResponse;
   "api/report-subscription-create.request": ReportSubscriptionCreateRequest;
   "api/report-subscription-list.response": ReportSubscriptionListResponse;
   "api/report-subscription-update.request": ReportSubscriptionUpdateRequest;
@@ -1294,6 +1385,8 @@ export interface SchemaTypes {
   "api/site-user-attach.request": SiteUserAttachRequest;
   "api/site.response": SiteResponse;
   "api/sync-pull.response": SyncPullResponse;
+  "api/sync-push-final.request": SyncPushFinalRequest;
+  "api/sync-push-final.response": SyncPushFinalResponse;
   "api/sync-push.request": SyncPushRequest;
   "api/sync-push.response": SyncPushResponse;
   "api/user-create.request": UserCreateRequest;

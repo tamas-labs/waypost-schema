@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/media-upload.request.json",
+  "title": "PUT /media/{id} – request",
+  "description": "The text fields of a multipart/form-data body; next to them a part named file holds the JPEG itself (image/jpeg), so that part is not in this schema. The server hashes the file and checks it against sha256, and for a photo of a chain entry also against the sha256 of the entry's payload; a mismatch is 422 validation_failed. Sending the same file again is not an error (200). A photo of a scan or incident: only after its entry is accepted, otherwise 404 not_found; only the device that wrote the entry, otherwise 403 forbidden; a revoked device until it closes its upload (api/sync-push-final.request). A checkpoint photo: sent before the checkpoint request that refers to it (photo_media_id), so the checkpoint need not exist yet; supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). A file over the server's limit is 413 bad_request. Requires an Idempotency-Key header. Response: 200, api/media-upload.response.json.",
+  "type": "object",
+  "required": [
+    "sha256",
+    "owner_type",
+    "owner_id",
+    "taken_at"
+  ],
+  "properties": {
+    "sha256": {
+      "description": "SHA-256 of the file.",
+      "$ref": "../common/hash.json"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "scan",
+        "incident",
+        "checkpoint"
+      ]
+    },
+    "owner_id": {
+      "description": "ID of the scan, incident or checkpoint the photo belongs to.",
+      "$ref": "../common/uuid.json"
+    },
+    "taken_at": {
+      "description": "When the shutter was pressed, by the device clock.",
+      "$ref": "../common/timestamp.json"
+    }
+  },
+  "additionalProperties": false
+}

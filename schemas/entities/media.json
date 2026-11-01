@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/entities/media.json",
+  "title": "Media",
+  "description": "A photo. The storage path is server-side and never part of this representation. mime, size_bytes and uploaded_at are null until the file is uploaded. Every property is present; absent values are null.",
+  "type": "object",
+  "required": [
+    "id",
+    "device_id",
+    "owner_type",
+    "owner_id",
+    "sha256",
+    "mime",
+    "size_bytes",
+    "taken_at",
+    "uploaded_at"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../common/uuid.json"
+    },
+    "device_id": {
+      "description": "The device that took a photo of a chain entry; null for a checkpoint photo of a supervisor.",
+      "anyOf": [
+        {
+          "$ref": "../common/uuid.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "scan",
+        "incident",
+        "checkpoint"
+      ]
+    },
+    "owner_id": {
+      "description": "ID of the scan, incident or checkpoint the photo belongs to.",
+      "$ref": "../common/uuid.json"
+    },
+    "sha256": {
+      "$ref": "../common/hash.json"
+    },
+    "mime": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "image/jpeg"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "size_bytes": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "taken_at": {
+      "$ref": "../common/timestamp.json"
+    },
+    "uploaded_at": {
+      "anyOf": [
+        {
+          "$ref": "../common/timestamp.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

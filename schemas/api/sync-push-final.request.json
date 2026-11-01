@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/sync-push-final.request.json",
+  "title": "POST /sync/push-final – request",
+  "description": "The last upload of a revoked device, in as many requests as it takes: batches of its unacknowledged chain entries in ascending seq order, checked like POST /sync/push, then its photos (PUT /media/{id}), then a request with done true. After that request the upload is closed, even if entries were rejected or photos are missing: push-final and PUT /media/{id} answer 401 device_revoked. A device that is not revoked gets 403 forbidden. Token of the revoked device; requires an Idempotency-Key header. device_id must equal the token's device and the device_id of every entry. Response: 200, api/sync-push-final.response.json.",
+  "type": "object",
+  "required": [
+    "device_id",
+    "entries",
+    "done"
+  ],
+  "properties": {
+    "device_id": {
+      "$ref": "../common/uuid.json"
+    },
+    "entries": {
+      "description": "May be empty: nothing is left to send in the request that closes the upload.",
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "../chain/entry.json"
+      }
+    },
+    "done": {
+      "description": "true: this is the last request, close the upload after it.",
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

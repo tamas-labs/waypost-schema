@@ -348,3 +348,22 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 - **Döntés:** A pull válasza opcionális `reset` mezőt kap (a hiánya `false`, a szerver mindig küldi). `true`, ha az oldal teljes állapotot kezd: a kérésben nem volt kurzor, vagy a hívó által látott telephelyek köre a kurzor kiadása óta megváltozott (a backend ezt a kurzorban tárolt lenyomatból tudja). A kliens ekkor ugyanabban a tranzakcióban, az oldal alkalmazása előtt törli a helyi konfigurációs rekordjait; a következő oldalak megint inkrementálisak. Egy útvonalverzió mindig az összes pontjával együtt jön, ezért egy ilyen oldalon 501 rekord is lehet. A hibás vagy ismeretlen kurzor validációs hiba (422).
 - **Indok:** Telephelyenkénti kurzor nem fér el egy rövid, átlátszatlan szövegben, és az új telephely teljes tartalmát úgyis lapozva kell átküldeni. A telephelyi telefon telephelye nem változik, így nála `reset` csak kurzor nélküli kérésre jön; a supervisor saját telefonján nincs futó kör, amelyet a törlés zavarna. Opcionális mező, hogy a 0.1.0-ra épülő fogyasztóknak ne legyen törő változás.
 - **Érintett:** `api/sync-pull.response.json`, laravel-waypost M2-23, M3-07.
+
+## 2026-11-01 – A visszavont eszköz utolsó feltöltése kötegekben
+
+- **Kérdés:** A specifikáció szerint a visszavont eszköz „még egyszer” tölthet fel (`POST /sync/push-final`). Egy hívásba legfeljebb 200 bejegyzés fér, és a fotók csak a bejegyzések után mehetnek fel, külön kérésben. Hogyan jut fel minden adat?
+- **Döntés:** Az „egyszer” egy feltöltési folyamatot jelent, nem egy HTTP-kérést. A sorrend: kötegek (`done: false`, legfeljebb 200 bejegyzés), fotók (`PUT /media/{id}`), végül egy `done: true` kérés (az `entries` lehet üres). Utána a `push-final` és a `PUT /media/{id}` is `401 device_revoked`. A `done: true` akkor is lezár, ha maradt elutasított bejegyzés vagy hiányzó fotó, mert ezeket az eszköz már nem tudja megjavítani. Nem visszavont eszköz: `403 forbidden`.
+- **Indok:** Egy kérés sem nagyobb korláttal, sem a fotók miatt nem elég: ami nem fér bele, az a tokenek törlésével elveszne. Hosszú offline időszak után 200-nál több bejegyzés is várhat (5 perces körökkel, 6 ponttal egy éjszaka ezernél is több). A kötegelés a push kódját használja újra, és megszakadt futás után folytatható.
+- **Érintett:** `api/sync-push-final.*.json`; eltér a specifikáció *Azonosítás* 5. pontjának szövegétől és az M4-08 eredeti elfogadásától („második hívás 401”): helyette a lezárás utáni hívás 401. M4-08, M4-11.
+
+## 2026-11-01 – A fotó feltöltése: `PUT /media/{id}`
+
+- **Kérdés:** Milyen mezőket visz a multipart kérés, és hogyan jön létre a pont fotójának `media` sora, ha a sorrend push, média, outbox, tehát a fotó a pont létrehozása előtt megy fel?
+- **Döntés:**
+  - **Mezők:** `sha256`, `owner_type` (`scan`, `incident`, `checkpoint`), `owner_id`, `taken_at`, mindig mind a négy; ezeket a telefon `media` sora tartalmazza. A `mime` és a `size_bytes` a fájlból adódik, csak `image/jpeg` engedett (az app mindig JPEG-et ment). A séma csak a szöveges mezőket írja le, így közvetlenül ellenőrizhető; a `file` rész a leírásban szerepel.
+  - **Lánc fotója (`scan`, `incident`):** a sor a bejegyzésből jön létre, ezért a bejegyzés elfogadása előtt `404 not_found`. A lenyomat a fájlra és a payloadra is ellenőrzött, eltérésnél `422 validation_failed`. Ugyanaz a fájl újra: `200`.
+  - **Pont fotója (`checkpoint`):** a feltöltés maga hozza létre a sort, a pontnak még nem kell léteznie (az `owner_id` az app által generált UUIDv7). A pont kérésének új, opcionális `photo_media_id` mezője erre hivatkozik; ha nincs ilyen fotó, vagy más a tulajdonosa: `422 validation_failed`.
+  - **`entities/media`:** a `path` szerveroldali, nincs benne. A pullba nem kerül, mert ebben a lépcsőben nincs végpont a fotó letöltésére.
+- **Indok:** A négy mező egységes, feltétel nélküli szerződés. A 2026-10-28-as döntés a `photo_media_id`-t ide halasztotta.
+- **Megjegyzés a backendnek:** a PHP a `PUT` multipart törzsét nem bontja ki automatikusan; PHP 8.4-től erre a `request_parse_body()` való (M4-07). A `media` tábla `taken_at` oszlopa kötelező, ezért a bejegyzésből létrejövő sorhoz a bejegyzés idejét kell használni, amíg a feltöltés a pontos értéket nem hozza.
+- **Érintett:** `api/media-upload.*.json`, `entities/media.json`, `api/checkpoint-create.request.json`, `api/checkpoint-update.request.json`, M4-07, M4-10, M5-13.

@@ -10,6 +10,20 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 
 ## [Unreleased]
 
+## [0.3.0] – 2026-11-01
+
+Visszafelé kompatibilis bővítés: a visszavont eszköz utolsó feltöltése, a fotófeltöltés és a `media` entitás (M4-01).
+
+### Added
+
+- `api/sync-push-final.request` és `.response`: a visszavont eszköz utolsó feltöltése, ugyanolyan kötegekben, mint a push; a `done: true` kérés zárja le. A válasz alakja a pushé (`$ref`).
+- `api/media-upload.request` (a `PUT /media/{id}` multipart szöveges mezői: `sha256`, `owner_type`, `owner_id`, `taken_at`; a fájl a `file` nevű rész) és `api/media-upload.response`.
+- `entities/media`: a fotó hálózati alakja, a szerveroldali `path` nélkül. Egyelőre csak a feltöltés válaszában szerepel, a pullban nem.
+
+### Changed
+
+- `api/checkpoint-create.request`, `api/checkpoint-update.request`: új, opcionális `photo_media_id`.
+
 ## [0.2.0] – 2026-11-01
 
 Visszafelé kompatibilis bővítés: a konfigurációs CRUD végpontok sémái, PIN-tesztvektorok, a pull `reset` mezője, két új hibakód.

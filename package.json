@@ -1,6 +1,6 @@
 {
   "name": "@waypost/schema",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Waypost shared contract: JSON Schemas (draft 2020-12) for entities, API and chain entries, plus chain, schedule and PIN test vectors.",
   "license": "UNLICENSED",
   "private": true,

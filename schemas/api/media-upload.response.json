@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/media-upload.response.json",
+  "title": "PUT /media/{id} – 200 response",
+  "description": "The uploaded photo: mime, size_bytes and uploaded_at are set. Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "media"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "media": {
+      "$ref": "../entities/media.json"
+    }
+  },
+  "additionalProperties": false
+}

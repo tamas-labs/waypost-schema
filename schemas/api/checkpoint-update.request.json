@@ -85,6 +85,17 @@
         }
       ]
     },
+    "photo_media_id": {
+      "description": "A photo already uploaded with PUT /media/{id}, with this checkpoint as its owner; otherwise 422 validation_failed. null: no photo.",
+      "anyOf": [
+        {
+          "$ref": "../common/uuid.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "active": {
       "type": "boolean"
     }
