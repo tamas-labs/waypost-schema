@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/api/checkpoint-create.request.json",
   "title": "POST /checkpoints – request",
-  "description": "Create a checkpoint on a site of the caller. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/checkpoint.response.json.",
+  "description": "Create a checkpoint on a site of the caller. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/checkpoint.response.json.",
   "type": "object",
   "required": [
     "site_id",
@@ -11,7 +11,7 @@
   ],
   "properties": {
     "id": {
-      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent. A create repeated with this id (the app's outbox, e.g. after its Idempotency-Key expired) creates nothing: if the record exists on the same site_id and the caller sees it, the response is 200 with the record as it is now. A deleted record, or another one with this id, is 409 conflict.",
       "$ref": "../common/uuid.json"
     },
     "site_id": {

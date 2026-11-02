@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/api/user.response.json",
   "title": "User – response",
-  "description": "POST /users (201), GET and PATCH /users/{id}, PUT /users/{id}/pin, POST /sites/{id}/users (200). The user as sync pull delivers it to the caller: site_ids limited to the caller's sites, the PIN fields only to the site phone. Error responses use api/error.json.",
+  "description": "POST /users (201; 200 for a repeated id), GET and PATCH /users/{id}, PUT /users/{id}/pin, POST /sites/{id}/users (200). The user as sync pull delivers it to the caller: site_ids limited to the caller's sites, the PIN fields only to the site phone. Error responses use api/error.json.",
   "type": "object",
   "required": [
     "server_time",

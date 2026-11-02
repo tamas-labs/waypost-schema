@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/api/user-create.request.json",
   "title": "POST /users – request",
-  "description": "Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/user.response.json.",
+  "description": "Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/user.response.json.",
   "type": "object",
   "required": [
     "name",
@@ -11,7 +11,7 @@
   ],
   "properties": {
     "id": {
-      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent. A create repeated with this id (the app's outbox, e.g. after its Idempotency-Key expired) creates nothing: if the record exists with the same role and the caller sees it, the response is 200 with the record as it is now. A PIN the server generated is not shown again (no pin in the response). A deleted record, or another one with this id, is 409 conflict.",
       "$ref": "../common/uuid.json"
     },
     "name": {

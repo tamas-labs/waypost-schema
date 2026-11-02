@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/api/route.response.json",
   "title": "Route – response",
-  "description": "POST /routes (201), GET and PATCH /routes/{id} (200). Error responses use api/error.json.",
+  "description": "POST /routes (201; 200 for a repeated id), GET and PATCH /routes/{id} (200). Error responses use api/error.json.",
   "type": "object",
   "required": [
     "server_time",

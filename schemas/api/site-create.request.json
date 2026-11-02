@@ -2,14 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/api/site-create.request.json",
   "title": "POST /sites – request",
-  "description": "Create a site. Supervisor token only (not through the site phone). The creator is assigned to the new site. Absent timezone: Europe/Budapest; absent no_data_alert_after_min: 120. Response: 201, api/site.response.json.",
+  "description": "Create a site. Supervisor token only (not through the site phone). The creator is assigned to the new site. Absent timezone: Europe/Budapest; absent no_data_alert_after_min: 120. Response: 201 (200 for a repeated id), api/site.response.json.",
   "type": "object",
   "required": [
     "name"
   ],
   "properties": {
     "id": {
-      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent. A create repeated with this id (the app's outbox, e.g. after its Idempotency-Key expired) creates nothing: if the record exists and the caller sees it, the response is 200 with the record as it is now. A deleted record, or another one with this id, is 409 conflict.",
       "$ref": "../common/uuid.json"
     },
     "name": {

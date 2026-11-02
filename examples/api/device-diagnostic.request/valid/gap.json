@@ -1,0 +1,11 @@
+{
+  "id": "019a2b3c-4d5e-7f00-8a00-000000000030",
+  "device_id": "019a2b3c-4d5e-7f00-8a00-000000000004",
+  "code": "chain_gap",
+  "entry_id": "019a2b3c-4d5e-7f00-8a00-000000000040",
+  "seq": 412,
+  "expected_seq": 411,
+  "server_last_seq": 410,
+  "rejected_count": 3,
+  "occurred_at": "2026-10-27T10:05:12.345Z"
+}

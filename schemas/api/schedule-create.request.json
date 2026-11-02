@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/api/schedule-create.request.json",
   "title": "POST /schedules – request",
-  "description": "Create a schedule of a route of the caller. list mode: start_times; interval mode: interval_from, interval_to, interval_every_min. Absent time_limit_min: ceil(walk_duration_s × 1.5 / 300) × 5 minutes from the current version of the route (at most 1440), 20 without a measured walk; null: no limit. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201, api/schedule.response.json.",
+  "description": "Create a schedule of a route of the caller. list mode: start_times; interval mode: interval_from, interval_to, interval_every_min. Absent time_limit_min: ceil(walk_duration_s × 1.5 / 300) × 5 minutes from the current version of the route (at most 1440), 20 without a measured walk; null: no limit. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/schedule.response.json.",
   "type": "object",
   "required": [
     "route_id",
@@ -12,7 +12,7 @@
   ],
   "properties": {
     "id": {
-      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent.",
+      "description": "Optional client-generated id (UUIDv7) of the new record; the server generates one if absent. A create repeated with this id (the app's outbox, e.g. after its Idempotency-Key expired) creates nothing: if the record exists with the same route_id and the caller sees it, the response is 200 with the record as it is now. A deleted record, or another one with this id, is 409 conflict.",
       "$ref": "../common/uuid.json"
     },
     "route_id": {

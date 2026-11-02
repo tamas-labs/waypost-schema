@@ -10,6 +10,18 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 
 ## [Unreleased]
 
+## [0.4.0] – 2026-11-02
+
+Visszafelé kompatibilis bővítés: a láncon kívüli diagnosztikai jelzés (Q2, M4-09), és az ismételt létrehozás leírása (M5-02).
+
+### Added
+
+- `api/device-diagnostic.request` és `.response`: `POST /devices/diagnostics`, amellyel az eszköz jelzi, hogy a szerver elutasította egy bejegyzését (`chain_gap`, `chain_fork`, `bad_hmac`). Az azonosítót az app generálja, ugyanaz újra nem változtat semmit.
+
+### Changed
+
+- A létrehozó kérések (`site`, `checkpoint`, `route`, `route-version`, `schedule`, `user`, `report-subscription`) `id` mezőjének leírása: ugyanazzal az azonosítóval megismételt létrehozás (az app outboxa, pl. lejárt `Idempotency-Key` után) nem hoz létre újat. Ha a rekord ugyanazzal a szülővel létezik, és a hívó látja, a válasz `200` a rekord jelenlegi állapotával; a törölt vagy más rekord azonosítója `409 conflict`. A válaszsémák leírásában is (`201; 200 for a repeated id`). Az érvényes példányok köre nem változik.
+
 ## [0.3.0] – 2026-11-01
 
 Visszafelé kompatibilis bővítés: a visszavont eszköz utolsó feltöltése, a fotófeltöltés és a `media` entitás (M4-01).

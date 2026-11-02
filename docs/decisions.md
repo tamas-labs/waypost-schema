@@ -367,3 +367,17 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 - **Indok:** A négy mező egységes, feltétel nélküli szerződés. A 2026-10-28-as döntés a `photo_media_id`-t ide halasztotta.
 - **Megjegyzés a backendnek:** a PHP a `PUT` multipart törzsét nem bontja ki automatikusan; PHP 8.4-től erre a `request_parse_body()` való (M4-07). A `media` tábla `taken_at` oszlopa kötelező, ezért a bejegyzésből létrejövő sorhoz a bejegyzés idejét kell használni, amíg a feltöltés a pontos értéket nem hozza.
 - **Érintett:** `api/media-upload.*.json`, `entities/media.json`, `api/checkpoint-create.request.json`, `api/checkpoint-update.request.json`, M4-07, M4-10, M5-13.
+
+## 2026-11-02 – A diagnosztikai jelzés (Q2)
+
+- **Kérdés:** A specifikáció szerint `chain_gap` és `chain_fork` esetén az app „diagnosztikai eseményt küld”, de erre nincs se bejegyzéstípus, se végpont. Mi legyen az?
+- **Döntés:** A feladatlista javaslata szerint külön, láncon kívüli végpont: `POST /devices/diagnostics` (`api/device-diagnostic.request` és `.response`). Egy jelzés egy push-válasz elutasításait foglalja össze: az első elutasított bejegyzés (`entry_id`, `seq`, `code`, `expected_seq`), a szerver `last_seq`-je, az elutasítások száma és a válasz `server_time`-ja. A `bad_hmac` is ide tartozik, mert azt sem javítja meg az újraküldés. Az `id`-t az app generálja, így az újraküldés nem hoz létre második sort. A visszavont eszköz a feltöltése lezárásáig küldhet.
+- **Indok:** Bejegyzéstípus nem lehet: maga a lánc a hibás, a jelzés nem érne fel. A szerver a rossz bejegyzést is eltárolja, de egy `seq` helyén az új lecseréli (`laravel-waypost/docs/decisions.md`, „A push feldolgozása”), így a jelzés őrzi meg az esemény nyomát.
+- **Érintett:** `api/device-diagnostic.*.json`, M4-09, M6 (a jelentés olvassa).
+
+## 2026-11-02 – Az ismételt létrehozás (M5-02)
+
+- **Kérdés:** Az outbox (M5-03) a létrehozást az app által generált `id`-val küldi. Ha a válasz elveszett, és az `Idempotency-Key` 24 órája lejárt (vagy az app új kulccsal próbálkozik), a foglalt `id` eddig `409 conflict` volt, pedig a rekord épp ettől a kéréstől jött létre. Mi a helyes válasz?
+- **Döntés:** Ugyanarra az `id`-ra a létrehozás idempotens. Ha a rekord létezik, ugyanazzal a nem változó szülővel (pont, útvonal: `site_id`; verzió: az útvonal; menetrend: `route_id`; felhasználó: `role`; előfizetés: `user_id` és `site_id`; telephely: nincs), és a hívó látja, a válasz `200` a rekord **jelenlegi** állapotával, és nem változik semmi. A törzs többi mezőjét a szerver nem veti össze, mert a rekord azóta módosulhatott, és a szerver normalizál (címke-UID, generált QR-kód, PIN-lenyomat). A szerver generálta PIN-t az ismétlés nem adja vissza. A törölt rekord, a más szülőjű, és amit a hívó nem lát: `409 conflict`, mint eddig.
+- **Indok:** Az outbox a 4xx-et a supervisornak jelzi, és nem küldi újra; egy sikeres létrehozás így hibának látszana. A `201` helyett `200`, mert ez a kérés nem hozott létre semmit; az app mindkettőt sikernek veszi. Leírásváltozás, az érvényes példányok köre nem változik, ezért a még ki nem adott 0.4.0-ba került.
+- **Érintett:** `api/*-create.request.json` (7), a válaszsémák leírása, laravel-waypost M5-02, waypost M5-03.
