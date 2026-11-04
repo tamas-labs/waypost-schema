@@ -57,8 +57,10 @@ foreach (['../package', 'chain/../../composer', 'chain/entry.json', 'Chain/Entry
     }
 }
 
+check(preg_match('/^[0-9]+\.[0-9]+\.[0-9]+$/', Paths::VERSION) === 1, 'Paths::VERSION');
+
 $installed = Composer\InstalledVersions::getPrettyVersion('waypost/schema');
-echo 'ok: waypost/schema ' . $installed . ', ' . count($names) . " schemas, vectors readable\n";
+echo 'ok: waypost/schema ' . Paths::VERSION . " (Composer: {$installed}), " . count($names) . " schemas, vectors readable\n";
 PHP
 
 docker run --rm \

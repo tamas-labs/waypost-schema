@@ -10,6 +10,16 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 
 ## [Unreleased]
 
+### Added
+
+- `SCHEMA_VERSION` (npm, `@waypost/schema`) és `Waypost\Schema\Paths::VERSION` (Composer): a csomag verziója futásidőben, hogy a fogyasztó tesztje és a backend `X-Waypost-Schema` fejléce ebből dolgozhasson (`path` repositoryból a Composer csak `dev-main`-t lát).
+- CI (`.github/workflows/ci.yml`): `npm test`, `npm run typecheck`, `composer validate --strict`, Composer-telepítési próba, opis-paritás (`scripts/opis-parity.sh`: minden példa opis/json-schema-val is), tagre a kiadás ellenőrzése (`scripts/release.js`: tag = `v<verzió>`, CHANGELOG-szakasz, egyező verziókonstansok).
+
+### Changed
+
+- `docs/decisions.md`: a Composer-verzióról szóló állítás javítva (`path` repositoryból `dev-main`); új döntés a CI-ről, a kiadás menetéről és a fogyasztói verziórögzítésről.
+- `composer.json`: a `/.github` kimarad a Composer-archívumból.
+
 ## [0.5.0] – 2026-11-04
 
 Visszafelé kompatibilis bővítés: a jelentésarchívum (M6-01).

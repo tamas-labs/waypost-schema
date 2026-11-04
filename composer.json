@@ -13,6 +13,7 @@
     },
     "archive": {
         "exclude": [
+            "/.github",
             "/node_modules",
             "/examples",
             "/scripts",

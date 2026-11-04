@@ -13,6 +13,9 @@ export interface JsonSchema {
   readonly [keyword: string]: unknown;
 }
 
+/** Version of this package (package.json), e.g. "0.5.0"; the backend has the same in Waypost\Schema\Paths::VERSION. */
+export declare const SCHEMA_VERSION: string;
+
 /** Common prefix of every schema $id. */
 export declare const SCHEMA_ID_BASE: 'https://waypost.dev/schema/';
 

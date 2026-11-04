@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Embeds the schemas and the test vectors as plain ES modules in lib/generated/, so they can be imported in
-// every JS runtime, including React Native (Metro), which cannot import JSON with import attributes.
+// Embeds the package version, the schemas and the test vectors as plain ES modules in lib/generated/, so they can
+// be imported in every JS runtime, including React Native (Metro), which cannot import JSON with import attributes.
 // Deterministic. Usage:
 //   node scripts/embed.js          write lib/generated/*.js
 //   node scripts/embed.js --check  exit 1 if a file differs from what would be written
@@ -25,6 +25,7 @@ export default ${JSON.stringify(value, null, 2).replace(/[\u2028\u2029]/g, (c) =
 export function renderEmbedded() {
   const schemas = Object.fromEntries(schemaPaths().map((path) => [path, readJson(`schemas/${path}.json`)]));
   return {
+    'version.js': module('package.json (version)', readJson('package.json').version),
     'schemas.js': module('schemas/**/*.json', schemas),
     'chain-vectors.js': module('chain/test-vectors.json', readJson('chain/test-vectors.json')),
     'schedule-vectors.js': module('schedule/test-vectors.json', readJson('schedule/test-vectors.json')),

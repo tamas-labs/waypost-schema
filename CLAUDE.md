@@ -22,10 +22,11 @@ chain/test-vectors.json      # bemenet → canonical_json → hash
 schedule/test-vectors.json   # menetrend + időszak → várt időpontok (DST-vel)
 pin/test-vectors.json        # PIN + só + iterációszám → PBKDF2 ellenőrző; hibás alakú PIN-ek
 types/index.d.ts             # TS típusok, a sémákból generálva
-lib/          # npm-exportok: index.js (sémák, schemaId), vectors.js; generated/ = beágyazott JSON (generált)
-src/Paths.php # Composer: Waypost\Schema\Paths – sémák és vektorok útvonala
+lib/          # npm-exportok: index.js (sémák, schemaId, SCHEMA_VERSION), vectors.js; generated/ = beágyazott JSON (generált)
+src/Paths.php # Composer: Waypost\Schema\Paths – sémák és vektorok útvonala, VERSION
 examples/     # <séma útvonala>/valid/*.json és <séma útvonala>/invalid/*.json
-scripts/      # sémaellenőrzés (Ajv), TS típusgenerálás, tesztvektor-generátor
+scripts/      # sémaellenőrzés (Ajv, opis), TS típusgenerálás, tesztvektor-generátor, kiadásellenőrzés
+.github/workflows/ci.yml     # CI: npm test, typecheck, Composer-próba, opis-paritás, kiadásellenőrzés
 docs/decisions.md
 CHANGELOG.md
 ```
@@ -50,7 +51,8 @@ CHANGELOG.md
 - Semver, a `CHANGELOG.md` `[Unreleased]` szakaszába minden változás bekerül.
 - Ha az API vagy a lánc formátuma változik, **előbb itt** kell módosítani, új verziószámmal, és csak utána a `laravel-waypost` és a `waypost` kódjában.
 - Törő változás = új major verzió és új `/vN` API.
-- A verziószám a `package.json`-ban van; a `composer.json` nem tartalmaz `version` mezőt (a Composer a git tagből olvassa).
+- A verziószám a `package.json`-ban és az `src/Paths.php` `VERSION` konstansában van (a kettő egyezését a `scripts/release.test.js` ellenőrzi; npm-en `SCHEMA_VERSION`, a `lib/generated/version.js`-ből). A `composer.json` nem tartalmaz `version` mezőt (`vcs` repositoryból a Composer a git tagből olvassa, `path` repositoryból `dev-main`-t lát).
+- Kiadás: verzió a `package.json`-ban, a `Paths::VERSION`-ben és a CHANGELOG-ban (`## [X.Y.Z] – <dátum>`), `npm run build`, commit a `main`-re; tag (`vX.Y.Z`) csak zöld CI után. A CI tagre a `scripts/release.js`-sel ellenőrzi, hogy a tag és a verzió egyezik.
 
 ## Nyelv
 
@@ -66,7 +68,10 @@ CHANGELOG.md
 - `npm run vectors:schedule` – a `schedule/test-vectors.json` újragenerálása (`scripts/schedule-vectors.js`); a kézzel ellenőrzött várt értékek a `scripts/schedule-vectors.test.js`-ben vannak, szabályváltozásnál azokat is frissíteni kell.
 - `npm run vectors:pin` – a `pin/test-vectors.json` újragenerálása (`scripts/pin-vectors.js`); az `npm test` elbukik, ha a fájl elavult.
 - `npm run types` – a `types/index.d.ts` újragenerálása (`scripts/types.js`); az `npm test` elbukik, ha elavult, vagy ha a típusokkal a `scripts/types-sample.ts` vagy bármelyik érvényes példa nem fordul le.
-- `npm run embed` – a `lib/generated/` újragenerálása (`scripts/embed.js`): a sémák és a vektorok ES-modulként. `npm run build` = `types` + `embed`.
+- `npm run embed` – a `lib/generated/` újragenerálása (`scripts/embed.js`): a verzió, a sémák és a vektorok ES-modulként. `npm run build` = `types` + `embed`.
 - `sh scripts/composer-smoke.sh` – Composer-telepítés üres projektbe `path` repositoryból, és a `Paths` ellenőrzése (Docker). Az npm-telepítést az `npm test` próbálja ki (`scripts/package.test.js`).
+- `sh scripts/opis-parity.sh` – minden példa opis/json-schema-val is (a backend validátora, Docker); elbukik, ha bármelyiket másképp dönti el, mint az Ajv.
+- `node scripts/release.js vX.Y.Z` – kiadhatóság: a tag = `v<package.json verzió>`, van CHANGELOG-szakasz, a verziókonstansok egyeznek.
+- CI: `.github/workflows/ci.yml` – `main`-pushra, PR-re és `v*` tagre: `npm test`, `npm run typecheck`, `composer validate --strict`, `composer-smoke.sh`, `opis-parity.sh`, tagre `release.js`.
 - `npm run typecheck` – `tsc` a `tsconfig.json` szerint (`strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`).
 - `composer validate` – a `composer.json` ellenőrzése. Helyben nincs Composer; Dockerrel: `docker run --rm -v "$PWD":/app -w /app composer:2 validate`.
