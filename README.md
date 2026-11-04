@@ -20,7 +20,7 @@ A szabályok és az eldöntött kérdések: [`docs/decisions.md`](docs/decisions
 | `schemas/api/` | `<végpont>.request.json`, `<végpont>.response.json`, `<lista>.query.json`, `error.json` |
 | `endpoints.json` | Mind a 48 végpont (lásd lent) |
 | `chain/test-vectors.json` | Bejegyzés → kanonikus JSON → HMAC; nyers szövegek normalizálása és elutasítása |
-| `schedule/test-vectors.json` | Menetrend + időszak → várt körök (DST, naptárhatárok, több időzóna); alapértelmezett időkeret |
+| `schedule/test-vectors.json` | Menetrend + időszak → várt körök (DST, naptárhatárok, több időzóna); alapértelmezett időkeret; `tzdata`: a generátor tzdata-verziója |
 | `pin/test-vectors.json` | PIN + só + iterációszám → PBKDF2-ellenőrző; hibás alakú PIN-ek |
 | `types/index.d.ts` | TS típusok a sémákból (generált) |
 | `lib/` | npm-exportok; `lib/generated/` = beágyazott JSON (generált) |

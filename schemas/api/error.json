@@ -19,7 +19,7 @@
           "maxLength": 1000
         },
         "details": {
-          "description": "Per-field messages (Hungarian), keyed by the dot-separated path of the offending field, e.g. {\"entries.3.seq\": [\"...\"]}; a header by its name (e.g. Idempotency-Key), the whole body by the empty key. The keys have no pattern: an unknown field is reported by the name the client sent. Present for validation_failed, optional otherwise.",
+          "description": "Per-field messages (Hungarian), keyed by the dot-separated path of the offending field, e.g. {\"entries.3.seq\": [\"...\"]}; a header by its name (e.g. Idempotency-Key), the whole body by the empty key. The keys have no pattern: an unknown field is reported by the name the client sent. Required for validation_failed (an error of the body as a whole, e.g. not JSON, under the empty key), optional otherwise.",
           "type": "object",
           "minProperties": 1,
           "additionalProperties": {
@@ -29,7 +29,9 @@
           }
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "if": { "properties": { "code": { "const": "validation_failed" } } },
+      "then": { "type": "object", "required": ["details"] }
     }
   },
   "additionalProperties": false

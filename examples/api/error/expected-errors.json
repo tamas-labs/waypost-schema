@@ -13,5 +13,6 @@
   "missing-message": { "path": "/error", "keyword": "required", "property": "message" },
   "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" },
   "server-time-without-milliseconds": { "path": "/server_time", "keyword": "pattern" },
-  "unknown-code": { "path": "/error/code", "keyword": "enum" }
+  "unknown-code": { "path": "/error/code", "keyword": "enum" },
+  "validation-failed-without-details": { "path": "/error", "keyword": "required", "property": "details" }
 }

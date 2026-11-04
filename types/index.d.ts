@@ -898,7 +898,7 @@ export interface ErrorResponse {
      */
     message: string;
     /**
-     * Per-field messages (Hungarian), keyed by the dot-separated path of the offending field, e.g. {"entries.3.seq": ["..."]}; a header by its name (e.g. Idempotency-Key), the whole body by the empty key. The keys have no pattern: an unknown field is reported by the name the client sent. Present for validation_failed, optional otherwise.
+     * Per-field messages (Hungarian), keyed by the dot-separated path of the offending field, e.g. {"entries.3.seq": ["..."]}; a header by its name (e.g. Idempotency-Key), the whole body by the empty key. The keys have no pattern: an unknown field is reported by the name the client sent. Required for validation_failed (an error of the body as a whole, e.g. not JSON, under the empty key), optional otherwise.
      */
     details?: {
       /**
@@ -1480,7 +1480,7 @@ export interface SyncPullResponse {
 export interface SyncPushFinalRequest {
   device_id: Uuid;
   /**
-   * May be empty: nothing is left to send in the request that closes the upload.
+   * Empty only in the request that closes the upload (done true), when nothing is left to send; a batch with done false has at least one entry.
    *
    * @maxItems 200
    */

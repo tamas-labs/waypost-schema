@@ -71,7 +71,7 @@ CHANGELOG.md
 - `npm test` – a szkriptek tesztjei (`node --test`), utána a teljes sémaellenőrzés.
 - `npm run validate -- --verbose` – csak a sémaellenőrzés; `--verbose` mellett az érvénytelen példák elutasításának oka is látszik (a szándékolt okot az `expected-errors.json` alapján a sima futás is ellenőrzi). `--root <dir>` másik könyvtárat ellenőriz.
 - `npm run vectors:chain` – a `chain/test-vectors.json` újragenerálása (`scripts/chain-vectors.js`). Ha a láncséma vagy a generátor változik, futtasd, és a változást a CHANGELOG-ban jelezd; az `npm test` elbukik, ha a fájl elavult.
-- `npm run vectors:schedule` – a `schedule/test-vectors.json` újragenerálása (`scripts/schedule-vectors.js`); a kézzel ellenőrzött várt értékek a `scripts/schedule-vectors.test.js`-ben vannak, szabályváltozásnál azokat is frissíteni kell.
+- `npm run vectors:schedule` – a `schedule/test-vectors.json` újragenerálása (`scripts/schedule-vectors.js`), a futtató Node tzdata-verziójával (`tzdata` mező; a `--check` a fájlban rögzítettel renderel, eltérésnél figyelmeztet); a kézzel ellenőrzött várt értékek a `scripts/schedule-vectors.test.js`-ben vannak, szabályváltozásnál azokat is frissíteni kell.
 - `npm run vectors:pin` – a `pin/test-vectors.json` újragenerálása (`scripts/pin-vectors.js`); az `npm test` elbukik, ha a fájl elavult.
 - `npm run types` – a `types/index.d.ts` újragenerálása (`scripts/types.js`); az `npm test` elbukik, ha elavult, vagy ha a típusokkal a `scripts/types-sample.ts` vagy bármelyik érvényes példa nem fordul le.
 - `npm run embed` – a `lib/generated/` újragenerálása (`scripts/embed.js`): a verzió, a sémák, a végponttábla és a vektorok ES-modulként. `npm run build` = `types` + `embed`.

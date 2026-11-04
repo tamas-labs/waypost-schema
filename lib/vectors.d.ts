@@ -86,6 +86,8 @@ export interface TimeLimitDefaultCase {
 /** schedule/test-vectors.json */
 export interface ScheduleVectors {
   description: string;
+  /** IANA tzdata version the rounds were computed with (the generator's Node), e.g. 2025b. */
+  tzdata: string;
   rules: string[];
   expansion: ScheduleExpansionCase[];
   time_limit_default: TimeLimitDefaultCase[];

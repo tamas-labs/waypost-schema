@@ -14,7 +14,7 @@
       "$ref": "../common/uuid.json"
     },
     "entries": {
-      "description": "May be empty: nothing is left to send in the request that closes the upload.",
+      "description": "Empty only in the request that closes the upload (done true), when nothing is left to send; a batch with done false has at least one entry.",
       "type": "array",
       "maxItems": 200,
       "items": {
@@ -26,5 +26,20 @@
       "type": "boolean"
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "if": {
+    "properties": {
+      "done": {
+        "const": false
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "entries": {
+        "type": "array",
+        "minItems": 1
+      }
+    }
+  }
 }

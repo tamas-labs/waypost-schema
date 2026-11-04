@@ -6,7 +6,7 @@
     "none": "No token.",
     "supervisor": "A supervisor's own token (POST /auth/login), Authorization: Bearer.",
     "device": "A site phone's device token (POST /devices/enroll), Authorization: Bearer.",
-    "acting": "A site phone's device token with an X-Acting-User header: the supervisor who logged in on the phone with their PIN; only on the phone's site.",
+    "acting": "A site phone's device token with an X-Acting-User header: the supervisor who logged in on the phone with their PIN; only on the phone's site. The server does not see the PIN: it checks only that the header names a supervisor of the device's site, so whoever holds the device token can act as any of them (docs/decisions.md, SCH-024).",
     "revoked": "The device token of a revoked phone, until it closes its upload (api/sync-push-final.request).",
     "signed_url": "No token: the signed, expiring URL is the permission."
   },

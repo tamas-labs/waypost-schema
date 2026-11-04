@@ -54,7 +54,7 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 ## 2026-10-27 – A hibaválasz `details` mezője
 
 - **Kérdés:** Mi a `details` pontos alakja?
-- **Döntés:** Nem üres objektum; kulcs a hibás mező pontokkal elválasztott útvonala (pl. `entries.3.seq`), érték nem üres, magyar nyelvű üzenetekből álló tömb. `validation_failed` esetén kötelezően jelen van, a többi kódnál elhagyható. A séma ezt nem kényszeríti ki kódonként, mert a feltételes ág csak bonyolítaná a generált TS típust.
+- **Döntés:** Nem üres objektum; kulcs a hibás mező pontokkal elválasztott útvonala (pl. `entries.3.seq`), érték nem üres, magyar nyelvű üzenetekből álló tömb. `validation_failed` esetén kötelezően jelen van, a többi kódnál elhagyható. A séma ezt nem kényszeríti ki kódonként, mert a feltételes ág csak bonyolítaná a generált TS típust. (Módosítva 2026-11-04: a séma kikényszeríti, a törzs egészét érintő hiba üres kulccsal; lásd „A `validation_failed` mindig `details`-szel”.)
 - **Indok:** Ez a Laravel validációs hibáinak alakja (`$validator->errors()->toArray()`), így a backendnek nem kell átalakítania; az app a kulcs alapján a megfelelő mező alá írhatja az üzenetet.
 - **Érintett:** `api/error.json`, M2-10, M2-11, M3-04.
 
@@ -430,7 +430,7 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - `monthly-period-with-dst-gap` (egy egész hónap napi 02:30-as köre, benne a tavaszi réssel), `weekly-period-with-dst-overlap` (egy hét, benne az őszi váltással);
   - `every-1440` (a legnagyobb lépés, az ablaknál hosszabb: naponta egy kör);
   - `new-york-spring-gap`, `new-york-autumn-repeat` (más dátumon és 02:00-kor váltó szabály), `santiago-spring-midnight-gap`, `santiago-autumn-repeat-before-midnight` (éjfélkor váltó szabály: a 00:00 nem létezik, illetve az éjfél előtti óra kétszer van).
-  - A vektorok tzdata-függők: a generátor a Node ICU-adatbázisát használja (2026-11-04: tzdata 2025b), a PHP a sajátját vagy a rendszerét. A választott dátumokra 2022 óta egyik szabály sem változott.
+  - A vektorok tzdata-függők: a generátor a Node ICU-adatbázisát használja (2026-11-04: tzdata 2025b), a PHP a sajátját vagy a rendszerét. A választott dátumokra 2022 óta egyik szabály sem változott. A fájl `tzdata` mezője rögzíti a generátor verzióját (SCH-026, lásd „A menetrend-vektorok tzdata-verziója”).
 - **Indok:** Az eltérés a fogyasztók között éppen ezeken a pontokon szokott előjönni. Az új esetek már az első futáskor találtak egy backend-hibát: az `every-1440` esetén a PHP `range()` `ValueError`-t dob, ha a lépés nagyobb az ablaknál. A javítás a backend feladata; az app mindegyik esetet helyesen bontja ki.
 - **Érintett:** `schedule/test-vectors.json`, `scripts/schedule-vectors.js`, `scripts/schedule-vectors.test.js`, M3-13, M6-02.
 
@@ -553,3 +553,45 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 - **Döntés:** Az `examples/` a Composer-archívumban marad, és a `Paths::examplesDirectory()` adja az útvonalát. A `scripts/composer-smoke.sh` a `composer archive` kimenetéből is telepít, és ellenőrzi, hogy a példák ott vannak. Az npm-csomag nem tartalmazza őket: az app nem olvassa.
 - **Indok:** A példák a szerződés futtatható részei: a fogyasztó a saját validátorán futtathatja őket. Saját fixture-ök a backendben a közös példák másolatai lennének.
 - **Érintett:** `composer.json`, `src/Paths.php`, `scripts/composer-smoke.sh`; a backend tesztjei a `Paths::examplesDirectory()`-t használhatják a `Paths::root() . '/examples'` helyett.
+
+## 2026-11-04 – A `validation_failed` mindig `details`-szel (SCH-029)
+
+- **Kérdés:** A 2026-10-27-i döntés szerint `validation_failed` esetén a `details` kötelező, a séma viszont nem kényszerítette ki. A backend négy esetben nélküle küldte: nem JSON tartalomtípus, érvénytelen JSON, nem objektum törzs (`ApiException::invalidBody()`), és a keretrendszer általános 422-es hibája. Kikényszerítsük, vagy igazítsuk a döntést a gyakorlathoz?
+- **Döntés:** Kikényszerítjük: az `api/error.json` `error` objektumában `if code = validation_failed then required: details`. A törzs egészét érintő hiba az üres kulcs alatt áll (`{"": ["A kérés törzse nem érvényes JSON."]}`), ahogy a sémaellenőrzés gyökérhibája is. A generált TS-típus nem változik (a feltételes ágat a típusok nem tükrözik).
+- **Indok:** Így az app minden `validation_failed` válasznál a `details`-re építhet, és nem kell külön ágat írnia a mező nélküli esetre. Az üres kulcs már a 0.7.0 óta rögzített jelentésű, így a backendnek nem kell új alakot kitalálnia.
+- **Érintett:** `api/error.json`; a backendnek az `invalidBody()` és az általános 422-es ág `details`-t ad (a `SchemaValidationTest` „not a JSON object” esetei a `details` hiányát várják, ezeket is át kell írni).
+
+## 2026-11-04 – Üres köteg csak a lezáró `push-final` kérésben (SCH-022)
+
+- **Kérdés:** A `push-final` kérés `entries: []`-t `done: false` mellett is elfogadott. Ez semmit nem csinál; engedjük?
+- **Döntés:** Nem: `done: false` mellett legalább egy bejegyzés kell (`if done = false then entries.minItems = 1`). Üres köteg csak a lezáró, `done: true` kérésben állhat.
+- **Indok:** Az app ilyet nem küld (a köteg mindig legalább egy bejegyzés, a lezárás külön `done: true` kérés), így a szigorítás a kompatibilitási szabály szerint minor. A backend egy tesztje (`SyncPushFinalTest`, „is forbidden for a device that is not revoked”, `done: false` adatsor) üres köteget küld, és mostantól 403 helyett 422-t kap; a tesztnek nem üres köteget kell küldenie.
+- **Érintett:** `api/sync-push-final.request.json`.
+
+## 2026-11-04 – A menetrend-vektorok tzdata-verziója (SCH-026)
+
+- **Kérdés:** A generátor a futtató Node tzdata-ját használja, és a fájlból nem derült ki, melyikkel készült. Egy másik tzdata-jú gépen a `--check` eltérhet. Hogyan legyen ez látható, anélkül hogy minden Node-frissítés elavulttá tenné a fájlt?
+- **Döntés:** A `schedule/test-vectors.json` `tzdata` mezője a generátor verziója (`process.versions.tz`, pl. `2025b`). A `--check` és a teszt a fájlban rögzített verzióval rendereli újra a fájlt, így más tzdata csak akkor buktatja el, ha a körök maguk térnek el; a verzió eltérésére figyelmeztet. Az újragenerálás az aktuális verziót írja be.
+- **Indok:** A körök csak akkor változnak, ha egy tzdata-frissítés egy eset időzónájának szabályát a választott dátumokra módosítja; ilyenkor a hibának látszania kell. A fogyasztó (PHP timezonedb, a telefon operációs rendszere) a mezőből látja, mihez hasonlítson.
+- **Érintett:** `schedule/test-vectors.json`, `scripts/schedule-vectors.js`, `scripts/schedule-vectors.test.js`, `lib/vectors.d.ts`.
+
+## 2026-11-04 – Ismert kockázat: a PIN-ellenőrző kinyerés után törhető (SCH-023)
+
+- **Kérdés:** A telephelyi telefon tárolja az őrök és a supervisorok PIN-ellenőrzőjét (`pin_hash`, `pin_salt`, `pin_iterations` ≥ 100 000, PBKDF2). 10⁶ lehetséges 6 jegyű PIN mellett ez a telefon adatbázisának kinyerése után egy GPU-n percek alatt végigpróbálható, és a kinyert PIN-nel más nevében lehet belépni. Kell-e ezért a sémán változtatni?
+- **Döntés:** A sémán nem. A séma a specifikáció *PIN-kód* szakaszát követi, és a lehetséges enyhítések egyike sem igényel most sémaváltozást. Ilyen enyhítés a magasabb iterációszám (a séma ezt már engedi), egy eszközhöz kötött titokkal kevert só, vagy a belépés utólagos ellenőrzése a lánc HMAC-jére építve. A kockázatot a specifikáció *Nyitott kérdései* közé a specifikáció gazdájának kell felvennie (a `../waypost/docs`-ban, nem ebben a repóban).
+- **Indok:** Ez fenyegetésmodell-döntés: a 6 jegyű PIN a terepi használhatóság miatt rövid, és a kinyeréshez a telefonhoz fizikai vagy rendszergazdai hozzáférés kell. Ha a döntés más eljárást ír elő (pl. új ellenőrzőt), az új mező vagy új sémaverzió a kompatibilitási szabály szerint.
+- **Érintett:** `entities/user.json` (`pin_hash`, `pin_salt`, `pin_iterations`), `pin/test-vectors.json`; specifikáció *PIN-kód*.
+
+## 2026-11-04 – Ismert kockázat: az `X-Acting-User` bizalmi határa (SCH-024)
+
+- **Kérdés:** A telephelyi telefon az `X-Acting-User` fejléccel annak a supervisornak a nevében ír, aki a telefonon PIN-nel belépett. A szerver a PIN-t nem látja: annyit ellenőriz, hogy a fejlécben álló felhasználó az eszköz telephelyének supervisora. Hol rögzítjük ezt a határt?
+- **Döntés:** Az `endpoints.json` `auth.acting` leírásában és itt. A fejléc sémája (`common/uuid`) az `endpoints.json` `headers` alatt van (SCH-006). Aki a telefon eszköztokenjét birtokolja, a telephely bármelyik supervisorának nevében küldhet `acting` kérést; a PIN a telefonon választja ki a supervisort, a szervernek nem bizonyít semmit. Szerveroldali bizonyíték (pl. PIN-ből származó, kérésenkénti aláírás) új mező vagy fejléc, a kompatibilitási szabály szerint.
+- **Indok:** Ez a specifikáció döntése. A határt a szerződésnek ki kell mondania, hogy a backend jogosultsági tesztjei és a naplózás ne feltételezzenek erősebb bizonyítékot. A tokent az eszköz visszavonása érvényteleníti.
+- **Érintett:** `endpoints.json` (`auth.acting`), a CRUD-kérések leírásai; specifikáció *PIN-kód*.
+
+## 2026-11-04 – A lánc formátumának változása (SCH-025)
+
+- **Kérdés:** A láncbejegyzésnek nincs formátumverziója. Ha a kanonizálás vagy a HMAC bemenete egyszer változik, egy bejegyzésből nem derül ki, melyik szabállyal készült. Kell-e most mező?
+- **Döntés:** Most nem. Ha a kanonizálás vagy a HMAC bemenete változik, az törő változás, új major verzió és új `/vN` API. A formátum az eszközé: a beléptetéskor (`POST /devices/enroll`) dől el, és egy eszköz láncában nem változik. Átálláskor a telefon új beléptetéssel, új eszközként kap új titkot és új láncot, így egy láncban nem keveredik két szabály. Bejegyzésenkénti mező (pl. `v`) vagy új bejegyzéstípus csak akkor kell, ha egy eszköz láncát a beléptetés megszakítása nélkül kellene átállítani.
+- **Indok:** Az adatmegőrzés rövid (31–62 nap), és a lánc a bejegyzéseket egymáshoz köti: egy láncon belüli váltáshoz átmeneti bejegyzés és kétféle ellenőrzés kellene. Az új bejegyzéstípus nem megoldás, mert a kanonizálás minden típusra egyformán vonatkozik. Egy most felvett, mindig azonos értékű mező csak a kötelező mezők számát növelné.
+- **Érintett:** `chain/entry.json`, `docs/decisions.md` („A küldött láncbejegyzés alakja és a HMAC bemenete”).

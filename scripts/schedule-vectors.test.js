@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { VECTORS_FILE, renderVectors } from './schedule-vectors.js';
+import { VECTORS_FILE, renderVectors, tzdataOf, tzdataWarning } from './schedule-vectors.js';
 import { SCHEMA_ID_BASE, createAjv } from './validate.js';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
@@ -154,9 +154,21 @@ describe('schedule/test-vectors.json – hand-checked cases', () => {
 });
 
 describe('schedule/test-vectors.json – consistency', () => {
-  test('is byte-identical to a fresh generator run, and the generator is deterministic', () => {
+  test('is byte-identical to a fresh generator run with its tzdata, and the generator is deterministic', (t) => {
     assert.equal(renderVectors(), renderVectors());
-    assert.equal(fileContent, renderVectors(), 'schedule/test-vectors.json is out of date; run: npm run vectors:schedule');
+    const tzdata = tzdataOf(fileContent);
+    assert.match(tzdata ?? '', /^[0-9]{4}[a-z]$/, 'the file records the tzdata version');
+    assert.equal(fileContent, renderVectors({ tzdata }), 'schedule/test-vectors.json is out of date; run: npm run vectors:schedule');
+    const warning = tzdataWarning(fileContent);
+    if (warning !== null) t.diagnostic(warning);
+  });
+
+  test('the tzdata version alone does not make the file stale', () => {
+    const other = renderVectors({ tzdata: '1999z' });
+    assert.equal(tzdataOf(other), '1999z');
+    assert.equal(other, renderVectors({ tzdata: '1999z' }));
+    assert.match(tzdataWarning(other) ?? '', /tzdata 1999z/);
+    assert.equal(tzdataWarning(renderVectors()), null);
   });
 
   test('every schedule is a valid entities/schedule.json instance', () => {

@@ -17,6 +17,17 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 
 ## [Unreleased]
 
+### Changed
+
+- **Szigorúbb hibaválasz:** `validation_failed` esetén a `details` kötelező (eddig csak a leírás mondta); a törzs egészét érintő hiba (nem JSON, nem objektum) az üres kulcs alatt áll. A TS-típus nem változik. A backendnek ezekben az esetekben `details`-t kell adnia (audit: SCH-029).
+- **Szigorúbb `push-final`:** `done: false` mellett legalább egy bejegyzés kell; üres köteg csak a lezáró, `done: true` kérésben állhat. Az app ilyet nem küld (audit: SCH-022).
+- `endpoints.json`: az `auth.acting` leírása kimondja a bizalmi határt: a szerver a PIN-t nem látja, a tokent birtokló bármelyik telephelyi supervisor nevében küldhet (audit: SCH-024).
+- `docs/decisions.md`: ismert kockázatként a PIN-ellenőrző törhetősége (audit: SCH-023) és az `X-Acting-User` bizalmi határa (audit: SCH-024); döntés a lánc formátumának jövőbeli változásáról: új major, a formátum az eszközé (audit: SCH-025).
+
+### Added
+
+- `schedule/test-vectors.json`: `tzdata` mező, a generátor tzdata-verziója (`process.versions.tz`). A `--check` és a teszt a rögzített verzióval renderel, így más tzdata csak eltérő köröknél bukik el, egyébként figyelmeztet (audit: SCH-026).
+
 ## [0.7.0] – 2026-11-04
 
 Az audit közepes és alacsony súlyú hibáinak javítása (SCH-003 – SCH-021): végponttábla, lapozás, `Idempotency-Key`, `$id` főverzióval, bővebb lánc- és menetrend-vektorok, szigorúbb sémák, a példák várt hibája. A szigorítások olyan értékeket zárnak ki, amelyeket a backend és az app nem küld (a backend tesztjei a 0.7.0 sémáival is zöldek, egyetlen ismert kivétellel: az új `every-1440` menetrend-vektor a backend kibontásának hibáját mutatja ki); 0.x alatt ezért minor.
