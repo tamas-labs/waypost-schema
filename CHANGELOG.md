@@ -17,6 +17,10 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 
 ## [Unreleased]
 
+## [0.7.0] – 2026-11-04
+
+Az audit közepes és alacsony súlyú hibáinak javítása (SCH-003 – SCH-021): végponttábla, lapozás, `Idempotency-Key`, `$id` főverzióval, bővebb lánc- és menetrend-vektorok, szigorúbb sémák, a példák várt hibája. A szigorítások olyan értékeket zárnak ki, amelyeket a backend és az app nem küld (a backend tesztjei a 0.7.0 sémáival is zöldek, egyetlen ismert kivétellel: az új `every-1440` menetrend-vektor a backend kibontásának hibáját mutatja ki); 0.x alatt ezért minor.
+
 ### Changed
 
 - **A sémák `$id`-ja főverziót kap:** `https://waypost.dev/schema/v1/<útvonal>` (eddig `https://waypost.dev/schema/<útvonal>`); `SCHEMA_ID_BASE` és `Paths::SCHEMA_ID_BASE` ennek megfelelően. A `v1` az API verziója (`/v1`), nem a csomagé; egy `/v2` készlet saját előtagot kap, így a kettő egy validátorban is megfér (audit: SCH-008). A fájlok helye nem változik. Aki a konstanson vagy a `schemaId()`-n át hivatkozik (mindkét fogyasztó), annak nincs teendője; aki kézzel írta le az `$id`-t, annak igen (0.x alatt nem major, lásd `docs/decisions.md` 2026-10-27).
