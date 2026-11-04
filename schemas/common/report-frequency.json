@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/common/report-frequency.json",
+  "title": "Report frequency",
+  "description": "Kind of a report, and of a report subscription: shift (a shift report after every shift), daily, weekly (Monday to Sunday) or monthly (a calendar month).",
+  "type": "string",
+  "enum": [
+    "shift",
+    "daily",
+    "weekly",
+    "monthly"
+  ]
+}

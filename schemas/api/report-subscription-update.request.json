@@ -9,13 +9,7 @@
   ],
   "properties": {
     "frequency": {
-      "type": "string",
-      "enum": [
-        "shift",
-        "daily",
-        "weekly",
-        "monthly"
-      ]
+      "$ref": "../common/report-frequency.json"
     }
   },
   "additionalProperties": false

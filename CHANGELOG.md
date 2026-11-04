@@ -10,6 +10,20 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 
 ## [Unreleased]
 
+## [0.5.0] – 2026-11-04
+
+Visszafelé kompatibilis bővítés: a jelentésarchívum (M6-01).
+
+### Added
+
+- `entities/report`: egy kiküldött vagy előkészített jelentés hálózati alakja (`type`, `period_start`, `period_end`, `generated_at`, `sent_at`), a címzettek e-mail-címei és a tárolási útvonal nélkül; a tárolt fájl (a heti és a havi PDF) aláírt, lejáró URL-je a `download` objektumban (`url`, `expires_at`), különben `null`.
+- `api/report-list.response`: `GET /reports` – a hívó telephelyeinek jelentései, a legújabb időszak elöl, oldalanként legfeljebb 100, `next_cursor`-ral lapozva; `?site_id=`, `?type=` szűrés. Csak supervisor token.
+- `common/report-frequency`: a jelentés fajtája (`shift`, `daily`, `weekly`, `monthly`).
+
+### Changed
+
+- `entities/report-subscription`, `api/report-subscription-create.request`, `api/report-subscription-update.request`: a `frequency` a `common/report-frequency`-re hivatkozik (ugyanaz a felsorolás; a TS-ben a mező típusa `ReportFrequency`).
+
 ## [0.4.0] – 2026-11-02
 
 Visszafelé kompatibilis bővítés: a láncon kívüli diagnosztikai jelzés (Q2, M4-09), és az ismételt létrehozás leírása (M5-02).

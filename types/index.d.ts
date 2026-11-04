@@ -71,6 +71,13 @@ export type LocalTime = string;
  */
 export type Pin = string;
 
+// common/report-frequency.json
+
+/**
+ * Kind of a report, and of a report subscription: shift (a shift report after every shift), daily, weekly (Monday to Sunday) or monthly (a calendar month).
+ */
+export type ReportFrequency = "shift" | "daily" | "weekly" | "monthly";
+
 // common/server-time.json
 
 /**
@@ -176,6 +183,40 @@ export interface Media {
   uploaded_at: Timestamp | null;
 }
 
+// entities/report.json
+
+/**
+ * A report the server generated for a site, as the report archive lists it. The recipients' e-mail addresses and the storage path are server-side and never part of this representation. Every property is present; absent values are null.
+ */
+export interface Report {
+  id: Uuid;
+  site_id: Uuid;
+  type: ReportFrequency;
+  /**
+   * Shift report: the start of the shift. Daily, weekly, monthly: the site's local midnight that starts the first day of the period (a day's rounds are those of the windows starting on it, so they may run into the next morning).
+   */
+  period_start: Timestamp;
+  /**
+   * Shift report: the end of the shift. Daily, weekly, monthly: the site's local midnight after the last day of the period (exclusive).
+   */
+  period_end: Timestamp;
+  generated_at: Timestamp;
+  /**
+   * When the e-mail went out; null until then.
+   */
+  sent_at: Timestamp | null;
+  /**
+   * The stored file of the report (the PDF of a weekly or monthly report) behind a signed, expiring URL that needs no token; null if the report has no stored file, or the data retention has deleted it.
+   */
+  download: {
+    /**
+     * Signed URL; after expires_at it answers 403 forbidden, so list the reports again for a new one.
+     */
+    url: string;
+    expires_at: Timestamp;
+  } | null;
+}
+
 // entities/report-subscription.json
 
 /**
@@ -185,7 +226,7 @@ export interface ReportSubscription {
   id: Uuid;
   user_id: Uuid;
   site_id: Uuid;
-  frequency: "shift" | "daily" | "weekly" | "monthly";
+  frequency: ReportFrequency;
 }
 
 // entities/route.json
@@ -817,6 +858,23 @@ export interface MediaUploadResponse {
   media: Media;
 }
 
+// api/report-list.response.json
+
+/**
+ * The report archive of the caller's sites, newest period first (ties by id); ?site_id= limits it to one site, ?type= to one kind of report. At most 100 reports per page; with next_cursor not null, request the next page with ?cursor=<next_cursor> (and the same filters). Supervisor token only. Error responses use api/error.json.
+ */
+export interface ReportListResponse {
+  server_time: ServerTime;
+  /**
+   * @maxItems 100
+   */
+  reports: Report[];
+  /**
+   * Opaque; null on the last page. An unknown or malformed cursor is a validation error (422).
+   */
+  next_cursor: string | null;
+}
+
 // api/report-subscription-create.request.json
 
 /**
@@ -829,7 +887,7 @@ export interface ReportSubscriptionCreateRequest {
   id?: Uuid;
   user_id: Uuid;
   site_id: Uuid;
-  frequency: "shift" | "daily" | "weekly" | "monthly";
+  frequency: ReportFrequency;
 }
 
 // api/report-subscription-list.response.json
@@ -848,7 +906,7 @@ export interface ReportSubscriptionListResponse {
  * Change the frequency of a subscription; an existing (user_id, site_id, frequency) is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/report-subscription.response.json.
  */
 export interface ReportSubscriptionUpdateRequest {
-  frequency: "shift" | "daily" | "weekly" | "monthly";
+  frequency: ReportFrequency;
 }
 
 // api/report-subscription.response.json
@@ -1377,6 +1435,7 @@ export interface SchemaTypes {
   "common/lng-e7": LngE7;
   "common/local-time": LocalTime;
   "common/pin": Pin;
+  "common/report-frequency": ReportFrequency;
   "common/server-time": ServerTime;
   "common/timestamp": Timestamp;
   "common/timezone": Timezone;
@@ -1384,6 +1443,7 @@ export interface SchemaTypes {
   "entities/checkpoint": Checkpoint;
   "entities/device": Device;
   "entities/media": Media;
+  "entities/report": Report;
   "entities/report-subscription": ReportSubscription;
   "entities/route": Route;
   "entities/route-version": RouteVersion;
@@ -1413,6 +1473,7 @@ export interface SchemaTypes {
   "api/error": ErrorResponse;
   "api/media-upload.request": MediaUploadRequest;
   "api/media-upload.response": MediaUploadResponse;
+  "api/report-list.response": ReportListResponse;
   "api/report-subscription-create.request": ReportSubscriptionCreateRequest;
   "api/report-subscription-list.response": ReportSubscriptionListResponse;
   "api/report-subscription-update.request": ReportSubscriptionUpdateRequest;

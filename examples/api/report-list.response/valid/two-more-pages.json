@@ -1,0 +1,29 @@
+{
+  "server_time": "2026-11-03T09:00:12.345Z",
+  "reports": [
+    {
+      "id": "019a2b3c-4d5e-7f00-8a00-000000000501",
+      "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+      "type": "shift",
+      "period_start": "2026-11-02T18:56:10.000Z",
+      "period_end": "2026-11-03T07:02:44.000Z",
+      "generated_at": "2026-11-03T07:32:44.000Z",
+      "sent_at": null,
+      "download": null
+    },
+    {
+      "id": "019a2b3c-4d5e-7f00-8a00-000000000500",
+      "site_id": "019a2b3c-4d5e-7f00-8a00-000000000001",
+      "type": "weekly",
+      "period_start": "2026-10-25T23:00:00.000Z",
+      "period_end": "2026-11-01T23:00:00.000Z",
+      "generated_at": "2026-11-02T09:00:04.512Z",
+      "sent_at": "2026-11-02T09:00:06.120Z",
+      "download": {
+        "url": "https://waypost.example.com/api/waypost/v1/reports/019a2b3c-4d5e-7f00-8a00-000000000500/file?expires=1793613612&signature=6c0f3b0d4f1e2a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b",
+        "expires_at": "2026-11-03T10:00:12.345Z"
+      }
+    }
+  ],
+  "next_cursor": "MjAyNi0xMC0yNVQyMzowMDowMC4wMDBaXzAxOWEyYjNjLTRkNWUtN2YwMC04YTAwLTAwMDAwMDAwMDUwMA"
+}

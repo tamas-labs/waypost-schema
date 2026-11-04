@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/api/report-list.response.json",
+  "title": "GET /reports – 200 response",
+  "description": "The report archive of the caller's sites, newest period first (ties by id); ?site_id= limits it to one site, ?type= to one kind of report. At most 100 reports per page; with next_cursor not null, request the next page with ?cursor=<next_cursor> (and the same filters). Supervisor token only. Error responses use api/error.json.",
+  "type": "object",
+  "required": [
+    "server_time",
+    "reports",
+    "next_cursor"
+  ],
+  "properties": {
+    "server_time": {
+      "$ref": "../common/server-time.json"
+    },
+    "reports": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "../entities/report.json"
+      }
+    },
+    "next_cursor": {
+      "description": "Opaque; null on the last page. An unknown or malformed cursor is a validation error (422).",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}
