@@ -1,0 +1,8 @@
+{
+  "float-walk-duration": { "path": "/walk_duration_s", "keyword": "type" },
+  "has-updated-at": { "path": "", "keyword": "additionalProperties", "property": "updated_at" },
+  "negative-walk-duration": { "path": "/walk_duration_s", "keyword": "minimum" },
+  "version-above-int32": { "path": "/version", "keyword": "maximum" },
+  "version-zero": { "path": "/version", "keyword": "minimum" },
+  "walk-duration-over-a-day": { "path": "/walk_duration_s", "keyword": "maximum" }
+}

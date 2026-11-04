@@ -1,6 +1,8 @@
 #!/bin/sh
 # Installs waypost/schema into an empty Composer project from a path repository and checks the PHP helper
-# (src/Paths.php) there. Needs Docker (composer:2 image); no local PHP or Composer. Usage:
+# (src/Paths.php) there; then the same from the package archive (composer archive, i.e. what a dist install gets,
+# without archive.exclude), which must contain examples/. Needs Docker (composer:2 image); no local PHP or
+# Composer. Usage:
 #   sh scripts/composer-smoke.sh
 set -eu
 
@@ -48,6 +50,8 @@ $schedule = json_decode((string) file_get_contents(Paths::scheduleVectors()), tr
 check(count($schedule['expansion']) > 0, 'schedule vectors');
 $pin = json_decode((string) file_get_contents(Paths::pinVectors()), true, flags: JSON_THROW_ON_ERROR);
 check(count($pin['cases']) > 0 && $pin['defaults']['iterations'] === 100000, 'pin vectors');
+$examples = glob(Paths::examplesDirectory() . '/*/*/{valid,invalid}/*.json', GLOB_BRACE) ?: [];
+check(count($examples) > 100 && is_dir(Paths::examplesDirectory() . '/chain/entry/invalid'), 'examples directory');
 $endpoints = json_decode((string) file_get_contents(Paths::endpoints()), true, flags: JSON_THROW_ON_ERROR);
 $pull = array_values(array_filter($endpoints['endpoints'], static fn (array $e): bool => $e['name'] === 'sync.pull'))[0] ?? null;
 check($pull !== null && $pull['path'] === '/sync/pull' && is_file(Paths::schema($pull['responses']['200']['schema'])), 'endpoint table');
@@ -63,10 +67,19 @@ foreach (['../package', 'chain/../../composer', 'chain/entry.json', 'Chain/Entry
 check(preg_match('/^[0-9]+\.[0-9]+\.[0-9]+$/', Paths::VERSION) === 1, 'Paths::VERSION');
 
 $installed = Composer\InstalledVersions::getPrettyVersion('waypost/schema');
-echo 'ok: waypost/schema ' . Paths::VERSION . " (Composer: {$installed}), " . count($names) . " schemas, " . count($endpoints['endpoints']) . " endpoints, vectors readable\n";
+echo 'ok: waypost/schema ' . Paths::VERSION . " (Composer: {$installed}), " . count($names) . " schemas, " . count($endpoints['endpoints']) . " endpoints, " . count($examples) . " examples, vectors readable\n";
 PHP
 
 docker run --rm \
   -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer \
   -v "$ROOT":/schema:ro -v "$WORK":/app -w /app \
-  composer:2 sh -c 'composer install --no-interaction --no-progress --quiet && php check.php'
+  composer:2 sh -c '
+    set -eu
+    composer install --no-interaction --no-progress --quiet && php check.php
+    composer archive --working-dir=/schema --format=tar --dir=/tmp/dist --file=schema --quiet
+    mkdir /tmp/dist/schema && tar -xf /tmp/dist/schema.tar -C /tmp/dist/schema
+    test ! -e /tmp/dist/schema/scripts || { echo "FAIL: the archive contains scripts/" >&2; exit 1; }
+    mkdir /tmp/from-archive && cp check.php /tmp/from-archive/ && cd /tmp/from-archive
+    sed "s|\"/schema\"|\"/tmp/dist/schema\"|" /app/composer.json > composer.json
+    printf "from the archive: "
+    composer install --no-interaction --no-progress --quiet && php check.php'

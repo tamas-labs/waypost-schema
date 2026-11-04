@@ -71,5 +71,26 @@
       "$ref": "../common/timestamp.json"
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "if": {
+    "properties": {
+      "code": {
+        "const": "chain_gap"
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "expected_seq": {
+        "type": "integer"
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "expected_seq": {
+        "type": "null"
+      }
+    }
+  }
 }

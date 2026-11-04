@@ -25,7 +25,7 @@ A szabályok és az eldöntött kérdések: [`docs/decisions.md`](docs/decisions
 | `types/index.d.ts` | TS típusok a sémákból (generált) |
 | `lib/` | npm-exportok; `lib/generated/` = beágyazott JSON (generált) |
 | `src/Paths.php` | Composer: `Waypost\Schema\Paths` – útvonalak, `$id`-k, verzió |
-| `examples/` | Minden sémához érvényes és érvénytelen példák |
+| `examples/` | Minden sémához érvényes és érvénytelen példák, és az érvénytelenek várt hibája (`expected-errors.json`); a Composer-csomagban is (`Paths::examplesDirectory()`) |
 
 Minden séma `$id`-ja `https://waypost.dev/schema/v1/<útvonal a schemas/ alatt>`, pl. `https://waypost.dev/schema/v1/api/sync-push.request.json`. A `v1` az API főverziója, nem a csomagé. A sémák egymásra relatív `$ref`-fel hivatkoznak. Az URI csak azonosító, a hálózatról soha nem töltődik le.
 
@@ -89,7 +89,7 @@ $validator->resolver()->registerPrefix(Paths::SCHEMA_ID_BASE, Paths::schemaDirec
 $result = $validator->validate(json_decode($json), Paths::schemaId('api/sync-push.request'));
 ```
 
-Az opis objektumokon dolgozik: `json_decode($json)` asszociatív tömb nélkül, különben az üres objektum tömb lesz. A formátumellenőrzés alapból be van kapcsolva.
+Az opis objektumokon dolgozik: `json_decode($json)` asszociatív tömb nélkül, különben az üres objektum tömb lesz. A formátumellenőrzés alapból be van kapcsolva. A `format` a két validátorban eltérhet, ezért minden `format` mellett minta is van; a példák mindkét validátorral ugyanúgy döntenek (`scripts/opis-parity.sh`), és a backend a saját tesztjében is futtathatja őket (`Paths::examplesDirectory()`).
 
 ## Végponttábla
 
@@ -109,7 +109,7 @@ Minden más státusz válasza `api/error.json`. A fogyasztók ebből ellenőrizh
 
 Mindkét fogyasztó tesztje közvetlenül a vektorfájlokat olvassa. npm-en a `@waypost/schema/vectors` (`chainVectors`, `scheduleVectors`, `pinVectors`, típusokkal) vagy a JSON-fájlok, Composerrel a `Paths::chainVectors()`, `Paths::scheduleVectors()`, `Paths::pinVectors()`.
 
-- **Lánc:** a `cases` és a `chain` minden elemére `canonical_json` = az `input` RFC 8785 alakja (Waypost-szűkítéssel: csak egész szám, nincs magányos surrogate), `hash` = HMAC-SHA256 a teszt-kulccsal. A `normalized` és az `invalid` nyers JSON-szöveget ad (`entry_json`), amelyet az ellenőrzőnek dekódolnia, a `chain/entry.json`-nal ellenőriznie és kanonizálnia kell. A `normalized` ugyanarra a lenyomatra jut, az `invalid` `invalid`-ra (422) vagy `bad_hmac`-ra. A PHP-recept a `docs/decisions.md`-ben van („A kanonikus JSON pontos szabályai”).
+- **Lánc:** a `cases` és a `chain` minden elemére `canonical_json` = az `input` RFC 8785 alakja (Waypost-szűkítéssel: csak egész szám, nincs magányos surrogate), `hash` = HMAC-SHA256 a teszt-kulccsal. A `normalized` és az `invalid` nyers JSON-szöveget ad (`entry_json`), amelyet az ellenőrzőnek dekódolnia, a `chain/entry.json`-nal ellenőriznie és kanonizálnia kell. A `normalized` ugyanarra a lenyomatra jut, az `invalid` `invalid`-ra (422) vagy `bad_hmac`-ra. A sémán túl egy szabályt kell ellenőrizni: a `payload.media` azonosítói egyediek (`duplicate-media-id`). A PHP-recept a `docs/decisions.md`-ben van („A kanonikus JSON pontos szabályai”).
 - **Menetrend:** `expansion[]`: menetrend, időzóna, időszak (helyi kezdőnapok) → a körök (`start_day`, `wall_time`, `local`, `utc`). A szabályok a fájl `rules` mezőjében és a `docs/decisions.md`-ben vannak (Q5: a kétszer előforduló időpontnál az első, a nem létezőnél a váltás pillanata).
 - **PIN:** PBKDF2-HMAC-SHA256; a `malformed` PIN-eket el kell utasítani.
 
@@ -118,8 +118,8 @@ Mindkét fogyasztó tesztje közvetlenül a vektorfájlokat olvassa. npm-en a `@
 **Új séma:**
 
 1. `schemas/<könyvtár>/<név>.json`, `$id`-val, `additionalProperties: false`-szal. A közös típusokra `$ref`-fel kell hivatkozni, nem másolni.
-2. Legalább egy érvényes és egy érvénytelen példa: `examples/<könyvtár>/<név>/valid|invalid/*.json`. Az érvénytelen példa egyetlen hibát tartalmazzon, és a fájlneve mondja meg, mi az.
-3. `npm run build` (típusok + `lib/generated/`), `npm test`, `npm run validate -- --verbose`: az érvénytelen példák a szándékolt okból buknak-e el.
+2. Legalább egy érvényes és egy érvénytelen példa: `examples/<könyvtár>/<név>/valid|invalid/*.json`. Az érvénytelen példa egyetlen hibát tartalmazzon, és a fájlneve mondja meg, mi az. A várt hiba az `examples/<könyvtár>/<név>/expected-errors.json`-ba kerül (`{ "path": "/mező", "keyword": "pattern" }`, `required` mellett `"property"` is); ha hiányzik, a `validate.js` kiírja a példa tényleges hibáit ebben az alakban.
+3. `npm run build` (típusok + `lib/generated/`), `npm test`.
 4. `CHANGELOG.md`, `[Unreleased]`; ha döntés kellett hozzá, `docs/decisions.md`.
 
 **Új végpont:** a kérés-, válasz- és query-séma a fenti lépésekkel, és egy új sor az `endpoints.json`-ban ugyanabban a változtatásban. A `validate.js` elbukik, ha egy `api/` séma egyik végponthoz sem tartozik.
@@ -146,7 +146,7 @@ Node ≥ 22. A PHP-s ellenőrzésekhez Docker kell, helyi PHP és Composer nem.
 | `npm run build` | `types/index.d.ts` és `lib/generated/` újragenerálása (sémaváltozás után kötelező) |
 | `npm run vectors:chain`, `vectors:schedule`, `vectors:pin` | A tesztvektorok újragenerálása (kézzel nem szerkesztjük őket) |
 | `npm run typecheck` | `tsc` szigorú beállításokkal |
-| `sh scripts/composer-smoke.sh` | Composer-telepítés üres projektbe, `Paths` |
+| `sh scripts/composer-smoke.sh` | Composer-telepítés üres projektbe (`path` repositoryból és a `composer archive` kimenetéből), `Paths` |
 | `sh scripts/opis-parity.sh` | Minden példa opis/json-schema-val is |
 | `sh scripts/chain-php.sh` | A lánc-vektorok PHP-val (recept + opis) |
 | `node scripts/release.js vX.Y.Z` | Kiadhatóság: tag, verziókonstansok, CHANGELOG |

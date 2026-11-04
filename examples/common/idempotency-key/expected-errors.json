@@ -1,0 +1,6 @@
+{
+  "braces": { "path": "", "keyword": "pattern" },
+  "empty": { "path": "", "keyword": "pattern" },
+  "no-hyphens": { "path": "", "keyword": "pattern" },
+  "not-a-uuid": { "path": "", "keyword": "pattern" }
+}

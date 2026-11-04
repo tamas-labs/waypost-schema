@@ -25,10 +25,7 @@
     },
     "secret": {
       "description": "32 random bytes, base64: the HMAC-SHA256 key of the device's chain. Store it in the secure store.",
-      "$ref": "../common/base64.json",
-      "type": "string",
-      "minLength": 44,
-      "maxLength": 44
+      "$ref": "../common/bytes32-base64.json"
     }
   },
   "additionalProperties": false

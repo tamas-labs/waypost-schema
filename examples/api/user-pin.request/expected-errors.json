@@ -1,0 +1,4 @@
+{
+  "pin-as-number": { "path": "/pin", "keyword": "type" },
+  "pin-null": { "path": "/pin", "keyword": "type" }
+}

@@ -91,8 +91,9 @@
       }
     },
     "media_missing": {
-      "description": "Photos referenced by an entry of this device that are not uploaded yet; upload them with PUT /media/{id}.",
+      "description": "Photos referenced by an entry of this device that are not uploaded yet, oldest first, at most 1000 (the rest come in a later response, once these are uploaded); upload them with PUT /media/{id}.",
       "type": "array",
+      "maxItems": 1000,
       "uniqueItems": true,
       "items": {
         "$ref": "../common/uuid.json"

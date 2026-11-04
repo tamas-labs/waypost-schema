@@ -1,0 +1,7 @@
+{
+  "above-90-degrees": { "path": "", "keyword": "maximum" },
+  "below-minus-90-degrees": { "path": "", "keyword": "minimum" },
+  "float-degrees": { "path": "", "keyword": "type" },
+  "fractional-e7": { "path": "", "keyword": "type" },
+  "numeric-string": { "path": "", "keyword": "type" }
+}

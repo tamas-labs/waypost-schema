@@ -1,0 +1,11 @@
+{
+  "duplicate-accepted": { "path": "/accepted", "keyword": "uniqueItems" },
+  "fork-with-expected-seq": { "path": "/rejected/0/expected_seq", "keyword": "type" },
+  "gap-without-expected-seq": { "path": "/rejected/0/expected_seq", "keyword": "type" },
+  "missing-media-missing": { "path": "", "keyword": "required", "property": "media_missing" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" },
+  "negative-last-seq": { "path": "/last_seq", "keyword": "minimum" },
+  "request-level-code": { "path": "/rejected/0/code", "keyword": "enum" },
+  "too-many-media-missing": { "path": "/media_missing", "keyword": "maxItems" },
+  "verify-status-as-code": { "path": "/rejected/0/code", "keyword": "enum" }
+}

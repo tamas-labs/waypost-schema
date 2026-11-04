@@ -13,9 +13,23 @@ export type AccuracyDm = number;
 // common/base64.json
 
 /**
- * Non-empty binary value in standard base64 (RFC 4648 section 4: alphabet A-Z a-z 0-9 + /, '=' padding required, no line breaks, no URL-safe alphabet). Used for PIN hash and salt and the device secret.
+ * Non-empty binary value in standard base64 (RFC 4648 section 4: alphabet A-Z a-z 0-9 + /, '=' padding required, no line breaks, no URL-safe alphabet) in its canonical form: the unused bits before the padding are zero (RFC 4648 section 3.5), so every value has exactly one text, e.g. AA== but not AB==. Used for PIN hash and salt and the device secret.
  */
 export type Base64 = string;
+
+// common/bytes16-base64.json
+
+/**
+ * Exactly 16 bytes in canonical standard base64 (common/base64.json), 24 characters: the PIN salt.
+ */
+export type Bytes16Base64 = Base64;
+
+// common/bytes32-base64.json
+
+/**
+ * Exactly 32 bytes in canonical standard base64 (common/base64.json), 44 characters: the device secret (HMAC-SHA256 key) and the PIN hash (PBKDF2-HMAC-SHA256 output).
+ */
+export type Bytes32Base64 = Base64;
 
 // common/cursor.json
 
@@ -23,6 +37,13 @@ export type Base64 = string;
  * Opaque paging cursor, 1–255 characters: the client sends back what the server returned, unchanged, as the "cursor" query parameter. An unknown or malformed cursor is 422 validation_failed.
  */
 export type Cursor = string;
+
+// common/email.json
+
+/**
+ * E-mail address of a supervisor: an ASCII local part of letters, digits and _ % + ' - in dot-separated parts, and a domain name of at least two labels (letters, digits, hyphen; an internationalized domain in its xn-- form). No quoted local part, no domain literal (a@[127.0.0.1]), no non-ASCII. The pattern makes the decision independent of the validator: format email alone is implementation-defined, and opis accepts domain literals that Ajv refuses (docs/decisions.md).
+ */
+export type Email = string;
 
 // common/error-code.json
 
@@ -98,6 +119,24 @@ export type Pin = string;
  * Kind of a report, and of a report subscription: shift (a shift report after every shift), daily, weekly (Monday to Sunday) or monthly (a calendar month).
  */
 export type ReportFrequency = "shift" | "daily" | "weekly" | "monthly";
+
+// common/request-error-code.json
+
+/**
+ * The error codes of a whole request, i.e. of an error response (api/error.json): every code of common/error-code.json except the entry-level chain_gap, chain_fork and bad_hmac, which only occur in the push response's rejected list.
+ */
+export type RequestErrorCode = Extract<
+  ErrorCode,
+  | "unauthenticated"
+  | "device_revoked"
+  | "forbidden"
+  | "not_found"
+  | "validation_failed"
+  | "conflict"
+  | "rate_limited"
+  | "bad_request"
+  | "server_error"
+>;
 
 // common/server-time.json
 
@@ -231,7 +270,7 @@ export interface Report {
    */
   download: {
     /**
-     * Signed URL; after expires_at it answers 403 forbidden, so list the reports again for a new one.
+     * Signed URL with the scheme and host of the API base; after expires_at it answers 403 forbidden, so list the reports again for a new one. The URL alone grants access, so it is https: http only if the API itself is served over http (local network development, never in production).
      */
     url: string;
     expires_at: Timestamp;
@@ -285,7 +324,7 @@ export interface RouteVersion {
    */
   version: number;
   /**
-   * Measured walk: last scan minus first scan during training, in seconds.
+   * Measured walk: last scan minus first scan during training, in seconds; at most 86400 (a day).
    */
   walk_duration_s: number | null;
   created_by: Uuid;
@@ -301,11 +340,11 @@ export interface RouteVersionCheckpoint {
   route_version_id: Uuid;
   checkpoint_id: Uuid;
   /**
-   * Order within the version, starting at 1.
+   * Order within the version, starting at 1; a version has at most 500 positions.
    */
   position: number;
   /**
-   * Measured walk from the previous position in seconds; null for position 1 and after reordering.
+   * Measured walk from the previous position in seconds (at most 86400, a day); null for position 1 and after reordering.
    */
   walk_time_from_prev_s: number | null;
 }
@@ -313,7 +352,7 @@ export interface RouteVersionCheckpoint {
 // entities/schedule.json
 
 /**
- * When rounds of a route are due, in the site's time zone. list mode: one round at every start_times entry. interval mode: from interval_from every interval_every_min minutes up to and including interval_to; if interval_to <= interval_from the window crosses midnight and belongs to its start day. list mode is a sequence from the start day: an element not later than the previous one is on the next day (at most one such step, ending before the first element). weekdays filters the start day, and every round of a window belongs to its start day. The fields of the other mode are null. DST: wall-clock times; a nonexistent time resolves to the moment of the change, a repeated one to its first occurrence. Every property is present; absent values are null.
+ * When rounds of a route are due, in the site's time zone. list mode: one round at every start_times entry. interval mode: from interval_from every interval_every_min minutes up to and including interval_to; if interval_to < interval_from the window crosses midnight and belongs to its start day; interval_to = interval_from is invalid (the server rejects it, docs/decisions.md). list mode is a sequence from the start day: an element not later than the previous one is on the next day (at most one such step, ending before the first element). weekdays filters the start day, and every round of a window belongs to its start day. The fields of the other mode are null. DST: wall-clock times; a nonexistent time resolves to the moment of the change, a repeated one to its first occurrence. Every property is present; absent values are null.
  */
 export interface Schedule {
   id: Uuid;
@@ -380,18 +419,20 @@ export interface User {
   /**
    * PBKDF2-HMAC-SHA256 output, 32 bytes.
    */
-  pin_hash: Base64 | null;
+  pin_hash: Bytes32Base64 | null;
   /**
    * Random salt, 16 bytes.
    */
-  pin_salt: Base64 | null;
+  pin_salt: Bytes16Base64 | null;
   pin_iterations: number | null;
   /**
    * Inactive users cannot log in.
    */
   active: boolean;
   /**
-   * Sites the user is assigned to (site_user), limited to the sites the recipient can see.
+   * Sites the user is assigned to (site_user), limited to the sites the recipient can see; at most 1000.
+   *
+   * @maxItems 1000
    */
   site_ids: Uuid[];
   created_at: Timestamp;
@@ -509,7 +550,7 @@ export interface IncidentPayload {
    */
   scan_id: Uuid | null;
   /**
-   * Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected.
+   * Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected. Every id occurs at most once: uniqueItems only compares whole items, so the app and the server check the ids (an entry with a repeated id is invalid, see the invalid chain test vectors).
    *
    * @maxItems 5
    */
@@ -579,7 +620,7 @@ export interface ScanPayload {
    */
   note: string | null;
   /**
-   * Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected.
+   * Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected. Every id occurs at most once: uniqueItems only compares whole items, so the app and the server check the ids (an entry with a repeated id is invalid, see the invalid chain test vectors).
    *
    * @maxItems 5
    */
@@ -616,7 +657,7 @@ export interface ShiftStartedPayload {
  * Supervisor login with e-mail and password. Guards cannot log in with a password. No token required.
  */
 export interface AuthLoginRequest {
-  email: string;
+  email: Email;
   password: string;
   /**
    * Shown in the token list, e.g. "Pixel 8 (Nagy Anna)".
@@ -638,7 +679,7 @@ export interface AuthLoginResponse {
   user: {
     id: Uuid;
     name: string;
-    email: string;
+    email: Email;
     role: "supervisor";
   };
 }
@@ -840,7 +881,7 @@ export interface DevicesEnrollResponse {
   /**
    * 32 random bytes, base64: the HMAC-SHA256 key of the device's chain. Store it in the secure store.
    */
-  secret: Base64;
+  secret: Bytes32Base64;
 }
 
 // api/error.json
@@ -851,13 +892,13 @@ export interface DevicesEnrollResponse {
 export interface ErrorResponse {
   server_time: ServerTime;
   error: {
-    code: ErrorCode;
+    code: RequestErrorCode;
     /**
      * Human-readable message in Hungarian, safe to show to the user.
      */
     message: string;
     /**
-     * Per-field messages (Hungarian), keyed by the dot-separated path of the offending field, e.g. {"entries.3.seq": ["..."]}. Present for validation_failed, optional otherwise.
+     * Per-field messages (Hungarian), keyed by the dot-separated path of the offending field, e.g. {"entries.3.seq": ["..."]}; a header by its name (e.g. Idempotency-Key), the whole body by the empty key. The keys have no pattern: an unknown field is reported by the name the client sent. Present for validation_failed, optional otherwise.
      */
     details?: {
       /**
@@ -1087,7 +1128,7 @@ export interface RouteVersionCreateRequest {
    */
   id?: Uuid;
   /**
-   * Measured walk: last scan minus first scan during training, in seconds.
+   * Measured walk: last scan minus first scan during training, in seconds; at most 86400 (a day).
    */
   walk_duration_s?: number | null;
   /**
@@ -1098,14 +1139,14 @@ export interface RouteVersionCreateRequest {
     {
       checkpoint_id: Uuid;
       /**
-       * Measured walk from the previous position in seconds.
+       * Measured walk from the previous position in seconds (at most 86400, a day).
        */
       walk_time_from_prev_s?: number | null;
     },
     ...{
       checkpoint_id: Uuid;
       /**
-       * Measured walk from the previous position in seconds.
+       * Measured walk from the previous position in seconds (at most 86400, a day).
        */
       walk_time_from_prev_s?: number | null;
     }[]
@@ -1500,7 +1541,9 @@ export interface SyncPushResponse {
     expected_seq: number | null;
   }[];
   /**
-   * Photos referenced by an entry of this device that are not uploaded yet; upload them with PUT /media/{id}.
+   * Photos referenced by an entry of this device that are not uploaded yet, oldest first, at most 1000 (the rest come in a later response, once these are uploaded); upload them with PUT /media/{id}.
+   *
+   * @maxItems 1000
    */
   media_missing: Uuid[];
 }
@@ -1517,7 +1560,7 @@ export interface UserCreateRequest {
   id?: Uuid;
   name: string;
   role: "supervisor" | "guard";
-  email?: string;
+  email?: Email;
   /**
    * Password of the supervisor for POST /auth/login.
    */
@@ -1525,9 +1568,10 @@ export interface UserCreateRequest {
   pin?: Pin;
   active?: boolean;
   /**
-   * Sites of the caller the new user is assigned to.
+   * Sites of the caller the new user is assigned to (at most 1000).
    *
    * @minItems 1
+   * @maxItems 1000
    */
   site_ids: [Uuid, ...Uuid[]];
 }
@@ -1578,7 +1622,7 @@ export interface UserPinRequest {
  */
 export interface UserUpdateRequest {
   name?: string;
-  email?: string;
+  email?: Email;
   /**
    * Password of the supervisor for POST /auth/login.
    */
@@ -1607,7 +1651,10 @@ export interface UserResponse {
 export interface SchemaTypes {
   "common/accuracy-dm": AccuracyDm;
   "common/base64": Base64;
+  "common/bytes16-base64": Bytes16Base64;
+  "common/bytes32-base64": Bytes32Base64;
   "common/cursor": Cursor;
+  "common/email": Email;
   "common/error-code": ErrorCode;
   "common/hash": Hash;
   "common/idempotency-key": IdempotencyKey;
@@ -1617,6 +1664,7 @@ export interface SchemaTypes {
   "common/next-cursor": NextCursor;
   "common/pin": Pin;
   "common/report-frequency": ReportFrequency;
+  "common/request-error-code": RequestErrorCode;
   "common/server-time": ServerTime;
   "common/timestamp": Timestamp;
   "common/timezone": Timezone;

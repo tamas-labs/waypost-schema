@@ -32,7 +32,10 @@ export interface ChainNormalizedCase {
 export interface ChainInvalidCase {
   name: string;
   description: string;
-  /** invalid: not a valid chain entry, or not canonicalizable (push: 422); bad_hmac: hash is not the HMAC of its canonical JSON. */
+  /**
+   * invalid: not a valid chain entry (chain/entry.json, and every payload.media id unique), or not canonicalizable
+   * (push: 422); bad_hmac: hash is not the HMAC of its canonical JSON.
+   */
   expected: 'invalid' | 'bad_hmac';
   entry_json: string;
 }

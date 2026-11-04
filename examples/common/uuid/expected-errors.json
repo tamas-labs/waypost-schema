@@ -1,0 +1,9 @@
+{
+  "bad-variant": { "path": "", "keyword": "pattern" },
+  "braces": { "path": "", "keyword": "pattern" },
+  "nil-uuid": { "path": "", "keyword": "pattern" },
+  "no-hyphens": { "path": "", "keyword": "pattern" },
+  "not-a-string": { "path": "", "keyword": "type" },
+  "uppercase": { "path": "", "keyword": "pattern" },
+  "version-4": { "path": "", "keyword": "pattern" }
+}

@@ -1,0 +1,8 @@
+{
+  "alert-after-zero": { "path": "/no_data_alert_after_min", "keyword": "minimum" },
+  "empty-name": { "path": "/name", "keyword": "minLength" },
+  "has-deleted-at": { "path": "", "keyword": "additionalProperties", "property": "deleted_at" },
+  "lowercase-timezone": { "path": "/timezone", "keyword": "pattern" },
+  "missing-address": { "path": "", "keyword": "required", "property": "address" },
+  "offset-as-timezone": { "path": "/timezone", "keyword": "pattern" }
+}

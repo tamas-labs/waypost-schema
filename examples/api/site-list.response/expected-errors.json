@@ -1,0 +1,4 @@
+{
+  "empty-next-cursor": { "path": "/next_cursor", "keyword": "minLength" },
+  "missing-sites": { "path": "", "keyword": "required", "property": "sites" }
+}

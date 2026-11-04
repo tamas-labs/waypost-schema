@@ -1,0 +1,4 @@
+{
+  "site-id-not-uuid": { "path": "/site_id", "keyword": "pattern" },
+  "unknown-type": { "path": "/type", "keyword": "enum" }
+}

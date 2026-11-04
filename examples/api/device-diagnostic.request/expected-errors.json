@@ -1,0 +1,9 @@
+{
+  "code-not-of-the-chain": { "path": "/code", "keyword": "enum" },
+  "extra-field": { "path": "", "keyword": "additionalProperties", "property": "message" },
+  "float-seq": { "path": "/seq", "keyword": "type" },
+  "fork-with-expected-seq": { "path": "/expected_seq", "keyword": "type" },
+  "gap-without-expected-seq": { "path": "/expected_seq", "keyword": "type" },
+  "missing-expected-seq": { "path": "", "keyword": "required", "property": "expected_seq" },
+  "rejected-count-zero": { "path": "/rejected_count", "keyword": "minimum" }
+}

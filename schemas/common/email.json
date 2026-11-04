@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/common/email.json",
+  "title": "E-mail address",
+  "description": "E-mail address of a supervisor: an ASCII local part of letters, digits and _ % + ' - in dot-separated parts, and a domain name of at least two labels (letters, digits, hyphen; an internationalized domain in its xn-- form). No quoted local part, no domain literal (a@[127.0.0.1]), no non-ASCII. The pattern makes the decision independent of the validator: format email alone is implementation-defined, and opis accepts domain literals that Ajv refuses (docs/decisions.md).",
+  "type": "string",
+  "minLength": 3,
+  "maxLength": 255,
+  "pattern": "^[A-Za-z0-9_%+'-]+(\\.[A-Za-z0-9_%+'-]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$",
+  "format": "email"
+}

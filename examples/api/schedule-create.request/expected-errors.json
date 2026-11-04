@@ -1,0 +1,9 @@
+{
+  "interval-from-null": { "path": "/interval_from", "keyword": "type" },
+  "interval-with-start-times": { "path": "/start_times", "keyword": "false schema" },
+  "interval-without-every": { "path": "", "keyword": "required", "property": "interval_every_min" },
+  "list-with-interval-from": { "path": "/interval_from", "keyword": "false schema" },
+  "list-without-start-times": { "path": "", "keyword": "required", "property": "start_times" },
+  "missing-route-id": { "path": "", "keyword": "required", "property": "route_id" },
+  "weekdays-zero": { "path": "/weekdays", "keyword": "minimum" }
+}

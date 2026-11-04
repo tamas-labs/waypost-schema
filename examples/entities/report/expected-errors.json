@@ -1,0 +1,10 @@
+{
+  "download-without-expiry": { "path": "/download", "keyword": "required", "property": "expires_at" },
+  "missing-download": { "path": "", "keyword": "required", "property": "download" },
+  "relative-url": { "path": "/download/url", "keyword": "pattern" },
+  "sent-at-not-iso": { "path": "/sent_at", "keyword": "pattern" },
+  "unknown-type": { "path": "/type", "keyword": "enum" },
+  "url-with-space": { "path": "/download/url", "keyword": "format" },
+  "url-with-unicode-host": { "path": "/download/url", "keyword": "format" },
+  "with-recipients": { "path": "", "keyword": "additionalProperties", "property": "recipients" }
+}

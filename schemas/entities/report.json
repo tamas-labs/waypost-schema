@@ -57,7 +57,7 @@
           ],
           "properties": {
             "url": {
-              "description": "Signed URL; after expires_at it answers 403 forbidden, so list the reports again for a new one.",
+              "description": "Signed URL with the scheme and host of the API base; after expires_at it answers 403 forbidden, so list the reports again for a new one. The URL alone grants access, so it is https: http only if the API itself is served over http (local network development, never in production).",
               "type": "string",
               "format": "uri",
               "pattern": "^https?://",

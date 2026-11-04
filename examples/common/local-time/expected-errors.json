@@ -1,0 +1,7 @@
+{
+  "am-pm": { "path": "", "keyword": "pattern" },
+  "hour-24": { "path": "", "keyword": "pattern" },
+  "minute-60": { "path": "", "keyword": "pattern" },
+  "single-digit-hour": { "path": "", "keyword": "pattern" },
+  "with-seconds": { "path": "", "keyword": "pattern" }
+}

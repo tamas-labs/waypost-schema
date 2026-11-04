@@ -15,9 +15,10 @@
     "walk_duration_s": {
       "anyOf": [
         {
-          "description": "Measured walk: last scan minus first scan during training, in seconds.",
+          "description": "Measured walk: last scan minus first scan during training, in seconds; at most 86400 (a day).",
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 86400
         },
         {
           "type": "null"
@@ -40,9 +41,10 @@
           "walk_time_from_prev_s": {
             "anyOf": [
               {
-                "description": "Measured walk from the previous position in seconds.",
+                "description": "Measured walk from the previous position in seconds (at most 86400, a day).",
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0,
+                "maximum": 86400
               },
               {
                 "type": "null"

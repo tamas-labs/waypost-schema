@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/common/bytes16-base64.json",
+  "title": "16 bytes, base64",
+  "description": "Exactly 16 bytes in canonical standard base64 (common/base64.json), 24 characters: the PIN salt.",
+  "$ref": "base64.json",
+  "type": "string",
+  "pattern": "^[A-Za-z0-9+/]{21}[AQgw]==$"
+}

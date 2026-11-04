@@ -1,0 +1,4 @@
+{
+  "missing-user-id": { "path": "", "keyword": "required", "property": "user_id" },
+  "user-id-v4": { "path": "/user_id", "keyword": "pattern" }
+}

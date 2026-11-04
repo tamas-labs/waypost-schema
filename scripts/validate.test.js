@@ -44,6 +44,11 @@ function goodFiles() {
     'examples/entities/site/valid/minimal.json': goodSite,
     'examples/entities/site/invalid/missing-name.json': { id: goodSite.id },
     'examples/entities/site/invalid/bad-id-via-ref.json': { ...goodSite, id: 'not-a-uuid' },
+    'examples/common/uuid/expected-errors.json': { 'uuid-v4': { path: '', keyword: 'pattern' } },
+    'examples/entities/site/expected-errors.json': {
+      'missing-name': { path: '', keyword: 'required', property: 'name' },
+      'bad-id-via-ref': [{ path: '/id', keyword: 'pattern' }],
+    },
   };
 }
 
@@ -84,6 +89,28 @@ describe('validateRepo', () => {
   test('fails when an invalid example validates', () => {
     const result = run({ ...goodFiles(), 'examples/entities/site/invalid/actually-fine.json': goodSite });
     assertFails(result, /site\/invalid\/actually-fine\.json: expected invalid, but it validates/);
+  });
+
+  test('fails when an invalid example fails for another reason than its expected error', () => {
+    const files = goodFiles();
+    files['examples/entities/site/expected-errors.json'] = {
+      'missing-name': { path: '', keyword: 'required', property: 'id' },
+      'bad-id-via-ref': { path: '/id', keyword: 'format' },
+    };
+    const result = run(files);
+    assertFails(result, /site\/invalid\/missing-name\.json: fails, but not with \{"path":"","keyword":"required","property":"id"\}.*its errors: \{"path":"","keyword":"required","property":"name"\}/);
+    assertFails(result, /site\/invalid\/bad-id-via-ref\.json: fails, but not with \{"path":"\/id","keyword":"format"\}/);
+  });
+
+  test('fails on a missing, a superfluous or a malformed expected error', () => {
+    const files = goodFiles();
+    files['examples/entities/site/expected-errors.json'] = { 'missing-name': { path: '', keyword: 'required', extra: 1 }, gone: { path: '', keyword: 'type' } };
+    const result = run(files);
+    assertFails(result, /site\/invalid\/bad-id-via-ref\.json: no entry in examples\/entities\/site\/expected-errors\.json; its errors: \{"path":"\/id","keyword":"pattern"\}/);
+    assertFails(result, /site\/invalid\/missing-name\.json: the entry must be \{ path, keyword\[, property\] \}/);
+    assertFails(result, /examples\/entities\/site\/expected-errors\.json: gone is not an invalid example of entities\/site that fails/);
+    delete files['examples/common/uuid/expected-errors.json'];
+    assertFails(run(files), /examples\/common\/uuid\/expected-errors\.json: missing; .* e\.g\. \{"path":"","keyword":"pattern"\}/);
   });
 
   test('fails when a schema has an unresolvable $ref', () => {

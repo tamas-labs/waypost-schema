@@ -1,0 +1,17 @@
+{
+  "detail-message-too-long": { "path": "/error/details/name/0", "keyword": "maxLength" },
+  "details-empty-array": { "path": "/error/details/name", "keyword": "minItems" },
+  "details-empty-object": { "path": "/error/details", "keyword": "minProperties" },
+  "details-value-not-array": { "path": "/error/details/name", "keyword": "type" },
+  "empty-message": { "path": "/error/message", "keyword": "minLength" },
+  "entry-level-code": { "path": "/error/code", "keyword": "enum" },
+  "extra-error-property": { "path": "/error", "keyword": "additionalProperties", "property": "status" },
+  "extra-top-level-property": { "path": "", "keyword": "additionalProperties", "property": "status" },
+  "laravel-default-shape": [{ "path": "", "keyword": "required", "property": "error" }, { "path": "", "keyword": "additionalProperties", "property": "errors" }],
+  "message-too-long": { "path": "/error/message", "keyword": "maxLength" },
+  "missing-error": { "path": "", "keyword": "required", "property": "error" },
+  "missing-message": { "path": "/error", "keyword": "required", "property": "message" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" },
+  "server-time-without-milliseconds": { "path": "/server_time", "keyword": "pattern" },
+  "unknown-code": { "path": "/error/code", "keyword": "enum" }
+}

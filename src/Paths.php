@@ -92,6 +92,16 @@ final class Paths
         return $names;
     }
 
+    /**
+     * Directory of the example instances (examples/), without a trailing slash: <schema name>/valid/*.json and
+     * <schema name>/invalid/*.json, e.g. examples/api/sync-push.request/valid/. Part of the package, also of its
+     * archive, so that a consumer's tests can run them against its own validator.
+     */
+    public static function examplesDirectory(): string
+    {
+        return self::root() . '/examples';
+    }
+
     /** endpoints.json: every endpoint of the API (method, path, auth, headers, query, request and response schemas). */
     public static function endpoints(): string
     {

@@ -1,0 +1,5 @@
+{
+  "above-int32": { "path": "", "keyword": "maximum" },
+  "float-metres": { "path": "", "keyword": "type" },
+  "negative": { "path": "", "keyword": "minimum" }
+}

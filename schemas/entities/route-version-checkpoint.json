@@ -18,16 +18,18 @@
       "$ref": "../common/uuid.json"
     },
     "position": {
-      "description": "Order within the version, starting at 1.",
+      "description": "Order within the version, starting at 1; a version has at most 500 positions.",
       "type": "integer",
-      "minimum": 1
+      "minimum": 1,
+      "maximum": 500
     },
     "walk_time_from_prev_s": {
       "anyOf": [
         {
-          "description": "Measured walk from the previous position in seconds; null for position 1 and after reordering.",
+          "description": "Measured walk from the previous position in seconds (at most 86400, a day); null for position 1 and after reordering.",
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 86400
         },
         {
           "type": "null"

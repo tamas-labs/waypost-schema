@@ -1,0 +1,4 @@
+{
+  "empty": { "path": "", "keyword": "required", "property": "frequency" },
+  "move-site": { "path": "", "keyword": "additionalProperties", "property": "site_id" }
+}

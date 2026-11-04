@@ -1,0 +1,9 @@
+{
+  "client-sent-position": { "path": "/checkpoints/0", "keyword": "additionalProperties", "property": "position" },
+  "client-sent-version": { "path": "", "keyword": "additionalProperties", "property": "version" },
+  "negative-walk-time": { "path": "/checkpoints/0/walk_time_from_prev_s", "keyword": "minimum" },
+  "no-checkpoints": { "path": "/checkpoints", "keyword": "minItems" },
+  "walk-duration-1e300": { "path": "/walk_duration_s", "keyword": "maximum" },
+  "walk-duration-over-a-day": { "path": "/walk_duration_s", "keyword": "maximum" },
+  "walk-time-over-a-day": { "path": "/checkpoints/1/walk_time_from_prev_s", "keyword": "maximum" }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/common/request-error-code.json",
+  "title": "Request error code",
+  "description": "The error codes of a whole request, i.e. of an error response (api/error.json): every code of common/error-code.json except the entry-level chain_gap, chain_fork and bad_hmac, which only occur in the push response's rejected list.",
+  "$ref": "error-code.json",
+  "enum": [
+    "unauthenticated",
+    "device_revoked",
+    "forbidden",
+    "not_found",
+    "validation_failed",
+    "conflict",
+    "rate_limited",
+    "bad_request",
+    "server_error"
+  ]
+}

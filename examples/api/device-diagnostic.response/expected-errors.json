@@ -1,0 +1,4 @@
+{
+  "extra-id": { "path": "", "keyword": "additionalProperties", "property": "id" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" }
+}

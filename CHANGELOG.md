@@ -21,6 +21,14 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 
 - **A sémák `$id`-ja főverziót kap:** `https://waypost.dev/schema/v1/<útvonal>` (eddig `https://waypost.dev/schema/<útvonal>`); `SCHEMA_ID_BASE` és `Paths::SCHEMA_ID_BASE` ennek megfelelően. A `v1` az API verziója (`/v1`), nem a csomagé; egy `/v2` készlet saját előtagot kap, így a kettő egy validátorban is megfér (audit: SCH-008). A fájlok helye nem változik. Aki a konstanson vagy a `schemaId()`-n át hivatkozik (mindkét fogyasztó), annak nincs teendője; aki kézzel írta le az `$id`-t, annak igen (0.x alatt nem major, lásd `docs/decisions.md` 2026-10-27).
 - `scripts/types.js`: a `$ref` melletti `enum` / `const` szűkíti a hivatkozott típust (`Extract<ErrorCode, "chain_gap" | "chain_fork" | "bad_hmac">`). Eddig elveszett, így a `device-diagnostic.request` `code` és a `sync-push.response` `rejected[].code` típusa mind a 12 hibakódot elfogadta (audit: SCH-005).
+- **Szigorúbb base64:** a `common/base64.json` csak kanonikus alakot fogad el (a kitöltés előtti nem használt bitek nullák: `AA==` igen, `AB==` nem). A `secret` és a `pin_hash` `common/bytes32-base64.json`, a `pin_salt` `common/bytes16-base64.json`: pontosan 32, illetve 16 bájt (eddig a hosszkorlát 31–33, illetve 16–18 bájtot engedett) (audit: SCH-012).
+- **Szigorúbb diagnosztika:** a `device-diagnostic.request`-ben `chain_gap` ⇔ `expected_seq` egész, egyébként `null`, ahogy a push-válaszban (audit: SCH-013).
+- **Szigorúbb hibaválasz:** az `api/error.json` `code`-ja csak a 9 kérésszintű kód (`common/request-error-code.json`; a `chain_gap`, `chain_fork`, `bad_hmac` csak a push `rejected` listájában fordul elő); az `error.message` és a `details` üzenetei legfeljebb 1000 karakteresek (audit: SCH-014).
+- **Felső korlátok:** `walk_duration_s` és `walk_time_from_prev_s` ≤ 86 400, a `route-version` `version` ≤ 2³¹−1, a `position` ≤ 500, a `site_ids` és a push-válasz `media_missing` ≤ 1000 elem (a `media_missing`-ből a legrégebbiek, a többi egy későbbi válaszban) (audit: SCH-015).
+- **E-mail:** a négy e-mail-mező a közös `common/email.json`-ra hivatkozik: a `format: email` mellett minta (ASCII, legalább kétcímkés domain, domain-literál és idézett helyi rész nélkül), hogy az opis és az Ajv ugyanúgy döntsön (az opis a domain-literált elfogadta) (audit: SCH-018).
+- Leírások: az `entities/schedule.json` szerint `interval_to = interval_from` érvénytelen (eddig a leírás `<=`-t írt) (audit: SCH-017); a jelentés letöltési URL-je az API-alap sémáját használja, `http` csak helyi hálózati fejlesztésben (audit: SCH-020); a `media` azonosítói egy bejegyzésen belül egyediek (audit: SCH-016).
+- `composer.json`: az `examples/` a Composer-archívumban is benne van (eddig kizártuk, pedig a backend tesztjei olvassák) (audit: SCH-011).
+- `docs/decisions.md`: az elavult példa- és körszámok helyett dátumozott állítások, a `Paths` teljes listája (audit: SCH-019).
 
 ### Added
 
@@ -33,6 +41,10 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 - Query-sémák: `api/list.query`, `api/sync-pull.query`, `api/report-list.query`, `api/user-list.query`, `api/checkpoint-list.query`, `api/route-list.query`, `api/schedule-list.query`, `api/report-subscription-list.query`; `common/cursor.json` (a pull `cursor`-ja és a `common/next-cursor.json` erre hivatkozik, az alakjuk nem változott) (audit: SCH-006).
 - `common/idempotency-key.json`: az `Idempotency-Key` fejléc alakja és a protokoll leírása (hatókör, 24 órás visszajátszás, tárolt 4xx, `409` + `Retry-After` a még futó kérésre); a kérés-sémák leírása erre hivatkozik, a `conflict` hibakód leírása megemlíti a `Retry-After`-t, a `devices-enroll.response` és a `user.response` leírása a visszajátszást (audit: SCH-007).
 - `common/next-cursor.json`: a lapozott listák közös kurzora; a `report-list.response` erre hivatkozik (az alakja nem változott), a hét CRUD-lista (`site-`, `user-`, `checkpoint-`, `route-`, `route-version-`, `schedule-`, `report-subscription-list.response`) opcionális `next_cursor` mezőt kap. Hiányzik vagy `null`: a lista teljes; szöveg: a következő oldalt `?cursor=`-ral kell kérni (audit: SCH-009).
+- `chain/test-vectors.json` `invalid`: `duplicate-media-id` – a séma szerint érvényes, helyes lenyomatú bejegyzés, amelyben ugyanaz a fotóazonosító kétszer szerepel; az ellenőrzőnek ezt is el kell utasítania (`scripts/chain-vectors.js` `mediaIdsUnique()`, `scripts/chain-php.sh`) (audit: SCH-016).
+- `Paths::examplesDirectory()`: a példák könyvtára; a `scripts/composer-smoke.sh` a `composer archive` kimenetéből is telepít (audit: SCH-011).
+- `examples/<séma>/expected-errors.json`: minden érvénytelen példa várt hibája (`path`, `keyword`, `property`); a `validate.js` elbukik, ha egy példa más okból bukik el, vagy nincs bejegyzése (audit: SCH-021).
+- Differenciális példák az opis és az Ajv közé: e-mail (`examples/common/email/`), záró sortörésű időbélyeg, szóközös és Unicode gazdájú URL (audit: SCH-018).
 
 ## [0.6.0] – 2026-11-04
 

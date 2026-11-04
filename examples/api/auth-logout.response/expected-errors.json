@@ -1,0 +1,4 @@
+{
+  "extra-message": { "path": "", "keyword": "additionalProperties", "property": "message" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" }
+}

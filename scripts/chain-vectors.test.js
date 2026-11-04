@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import canonicalize from 'canonicalize';
 import { CanonicalJsonError, canonicalJson } from './jcs.js';
-import { GENESIS_PREV_HASH, VECTORS_FILE, buildVectors, entryHash, renderVectors, verifyEntryJson } from './chain-vectors.js';
+import { GENESIS_PREV_HASH, VECTORS_FILE, buildVectors, entryHash, mediaIdsUnique, renderVectors, verifyEntryJson } from './chain-vectors.js';
 import { SCHEMA_ID_BASE, createAjv } from './validate.js';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
@@ -122,6 +122,14 @@ describe('chain/test-vectors.json', () => {
     const cases = vectors.invalid.cases;
     assert.deepEqual(new Set(cases.map((v) => v.expected)), new Set(['invalid', 'bad_hmac']));
     for (const v of cases) assert.equal(verifyEntryJson(v.entry_json, validate).result, v.expected, v.name);
+  });
+
+  test('a repeated media id is refused by the verifier, not by the schema', () => {
+    const text = vectors.invalid.cases.find((v) => v.name === 'duplicate-media-id').entry_json;
+    const { hash, ...unsigned } = JSON.parse(text);
+    assert.ok(entryValidator()(JSON.parse(text)), 'valid against chain/entry.json');
+    assert.equal(entryHash(unsigned), hash, 'hash is right');
+    assert.equal(mediaIdsUnique(JSON.parse(text)), false);
   });
 
   test('the file is what buildVectors() describes', () => {

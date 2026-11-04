@@ -1,0 +1,13 @@
+{
+  "duplicate-site-ids": { "path": "/site_ids", "keyword": "uniqueItems" },
+  "has-email": { "path": "", "keyword": "additionalProperties", "property": "email" },
+  "has-password": { "path": "", "keyword": "additionalProperties", "property": "password" },
+  "missing-site-ids": { "path": "", "keyword": "required", "property": "site_ids" },
+  "pin-hash-without-salt": { "path": "/pin_salt", "keyword": "not" },
+  "pin-hash-wrong-length": { "path": "/pin_hash", "keyword": "pattern" },
+  "pin-iterations-too-low": { "path": "/pin_iterations", "keyword": "minimum" },
+  "plain-pin": { "path": "", "keyword": "additionalProperties", "property": "pin" },
+  "salt-without-pin-hash": { "path": "/pin_salt", "keyword": "type" },
+  "too-many-sites": { "path": "/site_ids", "keyword": "maxItems" },
+  "unknown-role": { "path": "/role", "keyword": "enum" }
+}

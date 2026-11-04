@@ -36,10 +36,7 @@
       "anyOf": [
         {
           "description": "PBKDF2-HMAC-SHA256 output, 32 bytes.",
-          "$ref": "../common/base64.json",
-          "type": "string",
-          "minLength": 44,
-          "maxLength": 44
+          "$ref": "../common/bytes32-base64.json"
         },
         {
           "type": "null"
@@ -50,10 +47,7 @@
       "anyOf": [
         {
           "description": "Random salt, 16 bytes.",
-          "$ref": "../common/base64.json",
-          "type": "string",
-          "minLength": 24,
-          "maxLength": 24
+          "$ref": "../common/bytes16-base64.json"
         },
         {
           "type": "null"
@@ -77,11 +71,12 @@
       "type": "boolean"
     },
     "site_ids": {
-      "description": "Sites the user is assigned to (site_user), limited to the sites the recipient can see.",
+      "description": "Sites the user is assigned to (site_user), limited to the sites the recipient can see; at most 1000.",
       "type": "array",
       "items": {
         "$ref": "../common/uuid.json"
       },
+      "maxItems": 1000,
       "uniqueItems": true
     },
     "created_at": {

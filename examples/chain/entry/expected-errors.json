@@ -1,0 +1,19 @@
+{
+  "app-local-synced-at": { "path": "", "keyword": "additionalProperties", "property": "synced_at" },
+  "boot-id-with-space": { "path": "/boot_id", "keyword": "pattern" },
+  "device-time-with-offset": { "path": "/device_time", "keyword": "pattern" },
+  "first-entry-nonzero-prev-hash": { "path": "/prev_hash", "keyword": "const" },
+  "float-uptime": { "path": "/uptime_ms", "keyword": "type" },
+  "missing-hash": { "path": "", "keyword": "required", "property": "hash" },
+  "missing-null-gnss-time": { "path": "", "keyword": "required", "property": "gnss_time" },
+  "missing-null-in-payload": { "path": "/payload", "keyword": "required", "property": "note" },
+  "partial-sync-reference": { "path": "/ref_uptime_ms", "keyword": "not" },
+  "payload-of-other-type": [{ "path": "/payload", "keyword": "required", "property": "scan_id" }, { "path": "/payload", "keyword": "additionalProperties", "property": "shift_id" }],
+  "scan-float-coordinate": { "path": "/payload/lat_e7", "keyword": "type" },
+  "seq-above-safe-integer": { "path": "/seq", "keyword": "maximum" },
+  "seq-zero": { "path": "/seq", "keyword": "minimum" },
+  "server-side-flags": { "path": "", "keyword": "additionalProperties", "property": "flags" },
+  "sync-reference-without-time": [{ "path": "/ref_uptime_ms", "keyword": "type" }, { "path": "/ref_boot_id", "keyword": "type" }],
+  "unknown-type-sos": { "path": "/type", "keyword": "enum" },
+  "uppercase-hash": { "path": "/hash", "keyword": "pattern" }
+}

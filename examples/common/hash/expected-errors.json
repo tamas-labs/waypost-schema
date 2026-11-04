@@ -1,0 +1,7 @@
+{
+  "63-chars": { "path": "", "keyword": "pattern" },
+  "65-chars": { "path": "", "keyword": "pattern" },
+  "hex-prefix": { "path": "", "keyword": "pattern" },
+  "non-hex-char": { "path": "", "keyword": "pattern" },
+  "uppercase": { "path": "", "keyword": "pattern" }
+}

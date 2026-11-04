@@ -1,0 +1,6 @@
+{
+  "empty-token": { "path": "/token", "keyword": "minLength" },
+  "guard-role": { "path": "/user/role", "keyword": "const" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" },
+  "user-with-pin-hash": { "path": "/user", "keyword": "additionalProperties", "property": "pin_hash" }
+}

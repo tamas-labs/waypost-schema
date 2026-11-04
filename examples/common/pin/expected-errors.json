@@ -1,0 +1,5 @@
+{
+  "five-digits": { "path": "", "keyword": "pattern" },
+  "number": { "path": "", "keyword": "type" },
+  "trailing-newline": { "path": "", "keyword": "pattern" }
+}

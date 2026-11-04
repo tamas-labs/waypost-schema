@@ -1,0 +1,6 @@
+{
+  "empty-password": { "path": "/password", "keyword": "minLength" },
+  "missing-device-name": { "path": "", "keyword": "required", "property": "device_name" },
+  "not-an-email": { "path": "/email", "keyword": "pattern" },
+  "pin-instead-of-password": [{ "path": "", "keyword": "required", "property": "password" }, { "path": "", "keyword": "additionalProperties", "property": "pin" }]
+}

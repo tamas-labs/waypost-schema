@@ -1,0 +1,4 @@
+{
+  "checkpoint-not-in-list": { "path": "/checkpoints", "keyword": "type" },
+  "empty-next-cursor": { "path": "/next_cursor", "keyword": "minLength" }
+}

@@ -1,0 +1,4 @@
+{
+  "guard-id-not-uuid": { "path": "/guard_id", "keyword": "pattern" },
+  "missing-site-id": { "path": "", "keyword": "required", "property": "site_id" }
+}

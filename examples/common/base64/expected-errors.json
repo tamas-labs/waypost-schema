@@ -1,0 +1,9 @@
+{
+  "empty": { "path": "", "keyword": "pattern" },
+  "line-break": { "path": "", "keyword": "pattern" },
+  "missing-padding": { "path": "", "keyword": "pattern" },
+  "padding-bits-not-zero": { "path": "", "keyword": "pattern" },
+  "padding-bits-not-zero-two-bytes": { "path": "", "keyword": "pattern" },
+  "padding-in-middle": { "path": "", "keyword": "pattern" },
+  "url-safe-alphabet": { "path": "", "keyword": "pattern" }
+}

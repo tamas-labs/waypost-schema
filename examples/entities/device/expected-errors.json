@@ -1,0 +1,7 @@
+{
+  "empty-app-version": { "path": "/app_version", "keyword": "minLength" },
+  "has-last-seq": { "path": "", "keyword": "additionalProperties", "property": "last_seq" },
+  "has-secret": { "path": "", "keyword": "additionalProperties", "property": "secret" },
+  "missing-revoked-at": { "path": "", "keyword": "required", "property": "revoked_at" },
+  "unknown-platform": { "path": "/platform", "keyword": "enum" }
+}

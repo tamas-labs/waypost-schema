@@ -1,0 +1,5 @@
+{
+  "alert-zero": { "path": "/no_data_alert_after_min", "keyword": "minimum" },
+  "change-id": { "path": "", "keyword": "additionalProperties", "property": "id" },
+  "empty": { "path": "", "keyword": "minProperties" }
+}

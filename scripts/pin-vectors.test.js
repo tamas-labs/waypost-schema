@@ -52,7 +52,7 @@ describe('pin/test-vectors.json', () => {
 
   test('every case is a valid PIN verifier of entities/user.json', () => {
     const ajv = createAjv();
-    for (const file of ['common/uuid', 'common/timestamp', 'common/base64', 'entities/user']) {
+    for (const file of ['common/uuid', 'common/timestamp', 'common/base64', 'common/bytes16-base64', 'common/bytes32-base64', 'entities/user']) {
       ajv.addSchema(JSON.parse(readFileSync(resolve(ROOT, 'schemas', `${file}.json`), 'utf8')));
     }
     const validate = ajv.getSchema(`${SCHEMA_ID_BASE}entities/user.json`);

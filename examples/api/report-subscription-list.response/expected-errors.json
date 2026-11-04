@@ -1,0 +1,4 @@
+{
+  "empty-next-cursor": { "path": "/next_cursor", "keyword": "minLength" },
+  "missing-subscriptions": { "path": "", "keyword": "required", "property": "report_subscriptions" }
+}

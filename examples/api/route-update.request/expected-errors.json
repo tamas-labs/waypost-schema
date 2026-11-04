@@ -1,0 +1,4 @@
+{
+  "empty": { "path": "", "keyword": "minProperties" },
+  "unknown-order-mode": { "path": "/order_mode", "keyword": "enum" }
+}

@@ -1,0 +1,15 @@
+{
+  "checkpoint-with-float-location": { "path": "/changes/checkpoints/0/lat_e7", "keyword": "type" },
+  "deleted-id-not-uuid": { "path": "/deleted/users/0", "keyword": "pattern" },
+  "deleted-route-versions": { "path": "/deleted", "keyword": "additionalProperties", "property": "route_versions" },
+  "device-with-secret": { "path": "/changes/devices/0", "keyword": "additionalProperties", "property": "secret" },
+  "missing-changes-list": { "path": "/changes", "keyword": "required", "property": "schedules" },
+  "missing-deleted-list": { "path": "/deleted", "keyword": "required", "property": "users" },
+  "missing-has-more": { "path": "", "keyword": "required", "property": "has_more" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" },
+  "null-cursor": { "path": "/cursor", "keyword": "type" },
+  "reset-not-boolean": { "path": "/reset", "keyword": "type" },
+  "spec-example-verbatim-abbreviated": { "path": "/changes", "keyword": "required", "property": "devices" },
+  "unknown-change-list": { "path": "/changes", "keyword": "additionalProperties", "property": "shifts" },
+  "user-with-email": { "path": "/changes/users/0", "keyword": "additionalProperties", "property": "email" }
+}

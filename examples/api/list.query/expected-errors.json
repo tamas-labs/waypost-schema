@@ -1,0 +1,4 @@
+{
+  "empty-cursor": { "path": "/cursor", "keyword": "minLength" },
+  "unknown-parameter": { "path": "", "keyword": "additionalProperties", "property": "site_id" }
+}

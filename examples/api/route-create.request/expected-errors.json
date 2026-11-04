@@ -1,0 +1,4 @@
+{
+  "current-version-id": { "path": "", "keyword": "additionalProperties", "property": "current_version_id" },
+  "missing-order-mode": { "path": "", "keyword": "required", "property": "order_mode" }
+}

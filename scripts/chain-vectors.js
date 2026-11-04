@@ -213,9 +213,9 @@ const NORMALIZED = [
 ];
 
 /**
- * Raw texts a verifier must refuse: "invalid" = not a valid chain entry, or one that cannot be canonicalized (the
- * push is a 422 validation_failed); "bad_hmac" = a valid entry whose hash is not the HMAC of its canonical JSON
- * (the push rejects the entry with bad_hmac).
+ * Raw texts a verifier must refuse: "invalid" = not a valid chain entry (schema, unique media ids), or one that
+ * cannot be canonicalized (the push is a 422 validation_failed); "bad_hmac" = a valid entry whose hash is not the
+ * HMAC of its canonical JSON (the push rejects the entry with bad_hmac).
  */
 const INVALID = [
   {
@@ -267,6 +267,15 @@ const INVALID = [
     entry_json: edit(RAW_TEXT, [`"payload":${JSON.stringify(RAW_BASE.payload)}`, '"payload":{}']),
   },
   {
+    name: 'duplicate-media-id',
+    description: 'media lists the same photo id twice, with two different sha256: valid against the schema (uniqueItems compares whole items), but a photo has one hash, and a hashed entry cannot be corrected later. Every media id of an entry must be unique; the verifier checks it after the schema.',
+    expected: 'invalid',
+    entry_json: signedWithHashOf(
+      edit(canonicalJson(RAW_BASE), ['"media":[]', `"media":[{"id":"${MEDIA1}","sha256":"${SHA_A}"},{"id":"${MEDIA1}","sha256":"${SHA_B}"}]`]),
+      edit(RAW_TEXT, ['"media":[]', `"media":[{"id":"${MEDIA1}","sha256":"${SHA_A}"},{"id":"${MEDIA1}","sha256":"${SHA_B}"}]`]),
+    ),
+  },
+  {
     name: 'hash-of-unsorted-json',
     description: 'hash is the HMAC of the entry without hash as JSON with its keys in the specification\'s order, not sorted.',
     expected: 'bad_hmac',
@@ -288,16 +297,22 @@ const INVALID = [
   },
 ];
 
+/** Whether every media id of the entry's payload is unique: the one rule of an entry the schema cannot express. */
+export function mediaIdsUnique(entry) {
+  const media = entry.payload?.media;
+  return !Array.isArray(media) || new Set(media.map((item) => item.id)).size === media.length;
+}
+
 /**
- * The reference verifier of a raw entry text: decode, validate (validate: a chain/entry.json validator, e.g. Ajv),
- * canonicalize without hash, compare the HMAC. Returns { result: 'ok', canonical_json, hash } or { result: 'invalid' }
+ * The reference verifier of a raw entry text: decode, validate (validate: a chain/entry.json validator, e.g. Ajv;
+ * then mediaIdsUnique), canonicalize without hash, compare the HMAC. Returns { result: 'ok', canonical_json, hash } or { result: 'invalid' }
  * or { result: 'bad_hmac' }, as the normalized and invalid vectors expect.
  */
 export function verifyEntryJson(text, validate, key = KEY) {
   let entry, canonical;
   try {
     entry = JSON.parse(text);
-    if (!validate(entry)) return { result: 'invalid' };
+    if (!validate(entry) || !mediaIdsUnique(entry)) return { result: 'invalid' };
     const { hash: _hash, ...unsigned } = entry;
     canonical = canonicalJson(unsigned);
   } catch {
@@ -336,13 +351,13 @@ export function buildVectors() {
       entries: buildChain(),
     },
     normalized: {
-      description: 'Raw JSON texts of one signed chain entry (with hash), as a verifier receives them, written in ways that decode to the same entry. A verifier decodes entry_json, validates it against chain/entry.json, and computes the HMAC of the canonical JSON without hash: the result is canonical_json and hash, and hash equals the one in entry_json.',
+      description: 'Raw JSON texts of one signed chain entry (with hash), as a verifier receives them, written in ways that decode to the same entry. A verifier decodes entry_json, validates it against chain/entry.json (and that the media ids of the payload are unique), and computes the HMAC of the canonical JSON without hash: the result is canonical_json and hash, and hash equals the one in entry_json.',
       cases: NORMALIZED.map(({ name, description, entry_json }) => ({
         name, description, entry_json, canonical_json: canonicalJson(RAW_BASE), hash: RAW_SIGNED.hash,
       })),
     },
     invalid: {
-      description: 'Raw JSON texts of signed chain entries a verifier must refuse. expected "invalid": the text does not decode to a valid chain/entry.json instance, or the entry cannot be canonicalized (push: 422 validation_failed); expected "bad_hmac": a valid entry whose hash is not the HMAC of its canonical JSON (push: rejected with bad_hmac).',
+      description: 'Raw JSON texts of signed chain entries a verifier must refuse. expected "invalid": the text does not decode to a valid chain/entry.json instance, an id occurs twice in payload.media (a rule the schema cannot express), or the entry cannot be canonicalized (push: 422 validation_failed); expected "bad_hmac": a valid entry whose hash is not the HMAC of its canonical JSON (push: rejected with bad_hmac).',
       cases: INVALID.map(({ name, description, expected, entry_json }) => ({ name, description, expected, entry_json })),
     },
   };

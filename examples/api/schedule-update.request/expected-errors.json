@@ -1,0 +1,7 @@
+{
+  "empty": { "path": "", "keyword": "minProperties" },
+  "move-route": { "path": "", "keyword": "additionalProperties", "property": "route_id" },
+  "start-times-null": { "path": "/start_times", "keyword": "type" },
+  "switch-to-interval-without-to": { "path": "", "keyword": "required", "property": "interval_to" },
+  "switch-to-list-with-every": { "path": "/interval_every_min", "keyword": "false schema" }
+}

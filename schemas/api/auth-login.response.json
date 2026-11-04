@@ -37,9 +37,7 @@
           "maxLength": 255
         },
         "email": {
-          "type": "string",
-          "format": "email",
-          "maxLength": 255
+          "$ref": "../common/email.json"
         },
         "role": {
           "const": "supervisor"

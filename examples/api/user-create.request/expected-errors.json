@@ -1,0 +1,11 @@
+{
+  "client-sent-pin-hash": { "path": "", "keyword": "additionalProperties", "property": "pin_hash" },
+  "duplicate-site": { "path": "/site_ids", "keyword": "uniqueItems" },
+  "guard-with-email": { "path": "/email", "keyword": "false schema" },
+  "no-sites": { "path": "/site_ids", "keyword": "minItems" },
+  "password-too-short": { "path": "/password", "keyword": "minLength" },
+  "pin-five-digits": { "path": "/pin", "keyword": "pattern" },
+  "supervisor-without-password": { "path": "", "keyword": "required", "property": "password" },
+  "too-many-sites": { "path": "/site_ids", "keyword": "maxItems" },
+  "unknown-role": { "path": "/role", "keyword": "enum" }
+}

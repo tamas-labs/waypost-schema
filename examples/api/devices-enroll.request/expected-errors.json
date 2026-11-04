@@ -1,0 +1,5 @@
+{
+  "client-sent-secret": { "path": "", "keyword": "additionalProperties", "property": "secret" },
+  "missing-site-id": { "path": "", "keyword": "required", "property": "site_id" },
+  "unknown-platform": { "path": "/platform", "keyword": "enum" }
+}

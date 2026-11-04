@@ -1,0 +1,6 @@
+{
+  "empty-cursor": { "path": "/next_cursor", "keyword": "minLength" },
+  "missing-next-cursor": { "path": "", "keyword": "required", "property": "next_cursor" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" },
+  "report-with-path": { "path": "/reports/0", "keyword": "additionalProperties", "property": "path" }
+}

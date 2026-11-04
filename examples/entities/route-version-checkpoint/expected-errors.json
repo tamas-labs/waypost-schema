@@ -1,0 +1,7 @@
+{
+  "has-id": { "path": "", "keyword": "additionalProperties", "property": "id" },
+  "missing-walk-time": { "path": "", "keyword": "required", "property": "walk_time_from_prev_s" },
+  "position-above-500": { "path": "/position", "keyword": "maximum" },
+  "position-zero": { "path": "/position", "keyword": "minimum" },
+  "walk-time-over-a-day": { "path": "/walk_time_from_prev_s", "keyword": "maximum" }
+}

@@ -1,0 +1,3 @@
+{
+  "user-id-not-uuid": { "path": "/user_id", "keyword": "pattern" }
+}

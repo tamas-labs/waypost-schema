@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/common/bytes32-base64.json",
+  "title": "32 bytes, base64",
+  "description": "Exactly 32 bytes in canonical standard base64 (common/base64.json), 44 characters: the device secret (HMAC-SHA256 key) and the PIN hash (PBKDF2-HMAC-SHA256 output).",
+  "$ref": "base64.json",
+  "type": "string",
+  "pattern": "^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$"
+}

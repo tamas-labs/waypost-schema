@@ -1,0 +1,4 @@
+{
+  "pin-without-leading-zero": { "path": "/pin", "keyword": "pattern" },
+  "with-email": { "path": "/user", "keyword": "additionalProperties", "property": "email" }
+}

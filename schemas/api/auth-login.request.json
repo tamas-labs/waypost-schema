@@ -11,10 +11,7 @@
   ],
   "properties": {
     "email": {
-      "type": "string",
-      "format": "email",
-      "minLength": 3,
-      "maxLength": 255
+      "$ref": "../common/email.json"
     },
     "password": {
       "type": "string",

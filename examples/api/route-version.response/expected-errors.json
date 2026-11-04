@@ -1,0 +1,4 @@
+{
+  "missing-route": { "path": "", "keyword": "required", "property": "route" },
+  "no-checkpoints": { "path": "/route_version_checkpoints", "keyword": "minItems" }
+}

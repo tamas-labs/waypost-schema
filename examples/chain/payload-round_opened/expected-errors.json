@@ -1,0 +1,6 @@
+{
+  "has-status": { "path": "", "keyword": "additionalProperties", "property": "status" },
+  "missing-null-time-limit": { "path": "", "keyword": "required", "property": "time_limit_min" },
+  "scheduled-at-local-time": { "path": "/scheduled_at", "keyword": "pattern" },
+  "time-limit-zero": { "path": "/time_limit_min", "keyword": "minimum" }
+}

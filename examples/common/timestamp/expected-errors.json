@@ -1,0 +1,15 @@
+{
+  "date-only": { "path": "", "keyword": "pattern" },
+  "february-30": { "path": "", "keyword": "format" },
+  "hour-24": { "path": "", "keyword": "pattern" },
+  "leap-second": { "path": "", "keyword": "pattern" },
+  "lowercase-z": { "path": "", "keyword": "pattern" },
+  "microseconds": { "path": "", "keyword": "pattern" },
+  "no-milliseconds": { "path": "", "keyword": "pattern" },
+  "no-timezone": { "path": "", "keyword": "pattern" },
+  "not-a-leap-year": { "path": "", "keyword": "format" },
+  "offset-instead-of-z": { "path": "", "keyword": "pattern" },
+  "space-separator": { "path": "", "keyword": "pattern" },
+  "trailing-newline": { "path": "", "keyword": "pattern" },
+  "unix-milliseconds": { "path": "", "keyword": "type" }
+}

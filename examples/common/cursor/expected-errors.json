@@ -1,0 +1,5 @@
+{
+  "empty": { "path": "", "keyword": "minLength" },
+  "null": { "path": "", "keyword": "type" },
+  "too-long": { "path": "", "keyword": "maxLength" }
+}

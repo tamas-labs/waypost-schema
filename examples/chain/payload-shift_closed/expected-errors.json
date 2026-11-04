@@ -1,0 +1,4 @@
+{
+  "null-closed-by": { "path": "/closed_by", "keyword": "type" },
+  "unknown-closed-by": { "path": "/closed_by", "keyword": "enum" }
+}

@@ -1,0 +1,4 @@
+{
+  "missing-site": { "path": "", "keyword": "required", "property": "site" },
+  "site-with-deleted-at": { "path": "/site", "keyword": "additionalProperties", "property": "deleted_at" }
+}

@@ -1,0 +1,8 @@
+{
+  "float-longitude": { "path": "/lng_e7", "keyword": "type" },
+  "has-flags": { "path": "", "keyword": "additionalProperties", "property": "flags" },
+  "media-duplicate": { "path": "/media", "keyword": "uniqueItems" },
+  "media-uppercase-sha256": { "path": "/media/0/sha256", "keyword": "pattern" },
+  "missing-null-scan-id": { "path": "", "keyword": "required", "property": "scan_id" },
+  "unknown-category": { "path": "/category", "keyword": "enum" }
+}

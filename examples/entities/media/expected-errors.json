@@ -1,0 +1,8 @@
+{
+  "float-size": { "path": "/size_bytes", "keyword": "type" },
+  "missing-uploaded-at": { "path": "", "keyword": "required", "property": "uploaded_at" },
+  "png": { "path": "/mime", "keyword": "enum" },
+  "unknown-owner-type": { "path": "/owner_type", "keyword": "enum" },
+  "uppercase-sha256": { "path": "/sha256", "keyword": "pattern" },
+  "with-path": { "path": "", "keyword": "additionalProperties", "property": "path" }
+}

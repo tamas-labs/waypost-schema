@@ -99,7 +99,7 @@
       ]
     },
     "media": {
-      "description": "Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected.",
+      "description": "Photos taken with the camera, each with the SHA-256 of the uploaded file, so a replaced photo is detected. Every id occurs at most once: uniqueItems only compares whole items, so the app and the server check the ids (an entry with a repeated id is invalid, see the invalid chain test vectors).",
       "type": "array",
       "maxItems": 5,
       "uniqueItems": true,

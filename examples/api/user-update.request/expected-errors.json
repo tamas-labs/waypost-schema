@@ -1,0 +1,5 @@
+{
+  "change-role": { "path": "", "keyword": "additionalProperties", "property": "role" },
+  "empty": { "path": "", "keyword": "minProperties" },
+  "pin": { "path": "", "keyword": "additionalProperties", "property": "pin" }
+}

@@ -1,0 +1,4 @@
+{
+  "site-id-uppercase": { "path": "/site_id", "keyword": "pattern" },
+  "unknown-parameter": { "path": "", "keyword": "additionalProperties", "property": "role" }
+}

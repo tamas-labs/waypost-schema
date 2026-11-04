@@ -1,0 +1,7 @@
+{
+  "empty": { "path": "", "keyword": "minProperties" },
+  "lng-without-lat": { "path": "", "keyword": "required", "property": "lat_e7" },
+  "move-site": { "path": "", "keyword": "additionalProperties", "property": "site_id" },
+  "nfc-tag-uid-null": { "path": "/tag_uid", "keyword": "not" },
+  "photo-media-id-not-uuid": { "path": "/photo_media_id", "keyword": "pattern" }
+}

@@ -1,0 +1,4 @@
+{
+  "missing-frequency": { "path": "", "keyword": "required", "property": "frequency" },
+  "yearly": { "path": "/frequency", "keyword": "enum" }
+}

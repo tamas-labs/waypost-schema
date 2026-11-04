@@ -1,0 +1,4 @@
+{
+  "empty-next-cursor": { "path": "/next_cursor", "keyword": "minLength" },
+  "missing-checkpoints": { "path": "", "keyword": "required", "property": "route_version_checkpoints" }
+}

@@ -422,7 +422,7 @@
     ]
   },
   "normalized": {
-    "description": "Raw JSON texts of one signed chain entry (with hash), as a verifier receives them, written in ways that decode to the same entry. A verifier decodes entry_json, validates it against chain/entry.json, and computes the HMAC of the canonical JSON without hash: the result is canonical_json and hash, and hash equals the one in entry_json.",
+    "description": "Raw JSON texts of one signed chain entry (with hash), as a verifier receives them, written in ways that decode to the same entry. A verifier decodes entry_json, validates it against chain/entry.json (and that the media ids of the payload are unique), and computes the HMAC of the canonical JSON without hash: the result is canonical_json and hash, and hash equals the one in entry_json.",
     "cases": [
       {
         "name": "integers-written-as-floats",
@@ -448,7 +448,7 @@
     ]
   },
   "invalid": {
-    "description": "Raw JSON texts of signed chain entries a verifier must refuse. expected \"invalid\": the text does not decode to a valid chain/entry.json instance, or the entry cannot be canonicalized (push: 422 validation_failed); expected \"bad_hmac\": a valid entry whose hash is not the HMAC of its canonical JSON (push: rejected with bad_hmac).",
+    "description": "Raw JSON texts of signed chain entries a verifier must refuse. expected \"invalid\": the text does not decode to a valid chain/entry.json instance, an id occurs twice in payload.media (a rule the schema cannot express), or the entry cannot be canonicalized (push: 422 validation_failed); expected \"bad_hmac\": a valid entry whose hash is not the HMAC of its canonical JSON (push: rejected with bad_hmac).",
     "cases": [
       {
         "name": "fractional-integer",
@@ -497,6 +497,12 @@
         "description": "payload is {}: not a valid payload. (PHP json_decode(..., true) would make it [], which canonicalizes differently from {}.)",
         "expected": "invalid",
         "entry_json": "{\"id\":\"019a2b3c-4d5e-7f00-8a00-000000000110\",\"device_id\":\"019a2b3c-4d5e-7f00-8a00-000000000004\",\"seq\":9,\"type\":\"incident\",\"payload\":{},\"device_time\":\"2026-10-27T21:30:00.000Z\",\"uptime_ms\":86400000,\"boot_id\":\"android-17\",\"gnss_time\":null,\"ref_server_time\":\"2026-10-27T19:58:02.511Z\",\"ref_uptime_ms\":82500000,\"ref_boot_id\":\"android-17\",\"prev_hash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"hash\":\"61966d3f35b4fd99a494a77deddb05175af912d6890664335855bdcd6651acb5\"}"
+      },
+      {
+        "name": "duplicate-media-id",
+        "description": "media lists the same photo id twice, with two different sha256: valid against the schema (uniqueItems compares whole items), but a photo has one hash, and a hashed entry cannot be corrected later. Every media id of an entry must be unique; the verifier checks it after the schema.",
+        "expected": "invalid",
+        "entry_json": "{\"id\":\"019a2b3c-4d5e-7f00-8a00-000000000110\",\"device_id\":\"019a2b3c-4d5e-7f00-8a00-000000000004\",\"seq\":9,\"type\":\"incident\",\"payload\":{\"incident_id\":\"019a2b3c-4d5e-7f00-8a00-000000000026\",\"shift_id\":\"019a2b3c-4d5e-7f00-8a00-000000000020\",\"category\":\"open_door\",\"note\":\"Ázsió/fék\\b\\f\\u0000 🚨\",\"lat_e7\":474979000,\"lng_e7\":190402000,\"accuracy_dm\":0,\"nearest_checkpoint_id\":\"019a2b3c-4d5e-7f00-8a00-000000000005\",\"scan_id\":null,\"media\":[{\"id\":\"019a2b3c-4d5e-7f00-8a00-000000000024\",\"sha256\":\"677e912d1a8aa1101fe271bab42c91be187bd6076ff1281335db85e3477f6ce1\"},{\"id\":\"019a2b3c-4d5e-7f00-8a00-000000000024\",\"sha256\":\"b1946ac92492d2347c6235b4d2611184b1946ac92492d2347c6235b4d2611184\"}]},\"device_time\":\"2026-10-27T21:30:00.000Z\",\"uptime_ms\":86400000,\"boot_id\":\"android-17\",\"gnss_time\":null,\"ref_server_time\":\"2026-10-27T19:58:02.511Z\",\"ref_uptime_ms\":82500000,\"ref_boot_id\":\"android-17\",\"prev_hash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"hash\":\"4387c5d37b571fa42068d4d609e166b90eecd219aeb35dd54beba61d66495774\"}"
       },
       {
         "name": "hash-of-unsorted-json",

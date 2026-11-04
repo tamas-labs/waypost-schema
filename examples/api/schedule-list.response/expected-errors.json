@@ -1,0 +1,4 @@
+{
+  "empty-next-cursor": { "path": "/next_cursor", "keyword": "minLength" },
+  "missing-schedules": { "path": "", "keyword": "required", "property": "schedules" }
+}

@@ -1,0 +1,10 @@
+{
+  "domain-literal": { "path": "", "keyword": "pattern" },
+  "double-dot": { "path": "", "keyword": "pattern" },
+  "no-at-sign": { "path": "", "keyword": "pattern" },
+  "quoted-local-part": { "path": "", "keyword": "pattern" },
+  "single-label-domain": { "path": "", "keyword": "pattern" },
+  "trailing-newline": { "path": "", "keyword": "pattern" },
+  "unicode-domain": { "path": "", "keyword": "pattern" },
+  "unicode-local-part": { "path": "", "keyword": "pattern" }
+}

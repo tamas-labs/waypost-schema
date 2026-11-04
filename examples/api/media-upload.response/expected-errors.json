@@ -1,0 +1,5 @@
+{
+  "media-with-path": { "path": "/media", "keyword": "additionalProperties", "property": "path" },
+  "missing-media": { "path": "", "keyword": "required", "property": "media" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" }
+}

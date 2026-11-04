@@ -41,6 +41,9 @@ sort($files, SORT_STRING);
 $failures = 0;
 $counts = ['valid' => 0, 'invalid' => 0];
 foreach ($files as $file) {
+    if (str_ends_with($file, '/expected-errors.json')) {
+        continue; // the expected Ajv errors of the invalid examples (scripts/validate.js)
+    }
     if (preg_match('~^(.+)/(valid|invalid)/[^/]+\.json$~', $file, $match) !== 1) {
         fwrite(STDERR, "FAIL examples/{$file}: not examples/<schema path>/(valid|invalid)/<name>.json\n");
         $failures++;

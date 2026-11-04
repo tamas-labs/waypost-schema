@@ -1,0 +1,5 @@
+{
+  "client-sent-created-by": { "path": "", "keyword": "additionalProperties", "property": "created_by" },
+  "missing-name": { "path": "", "keyword": "required", "property": "name" },
+  "unknown-timezone-format": { "path": "/timezone", "keyword": "pattern" }
+}

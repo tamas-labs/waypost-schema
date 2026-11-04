@@ -1,0 +1,5 @@
+{
+  "http-status": { "path": "", "keyword": "type" },
+  "unknown-code": { "path": "", "keyword": "enum" },
+  "uppercase": { "path": "", "keyword": "enum" }
+}

@@ -22,14 +22,16 @@
     "version": {
       "description": "Sequence number within the route, starting at 1.",
       "type": "integer",
-      "minimum": 1
+      "minimum": 1,
+      "maximum": 2147483647
     },
     "walk_duration_s": {
       "anyOf": [
         {
-          "description": "Measured walk: last scan minus first scan during training, in seconds.",
+          "description": "Measured walk: last scan minus first scan during training, in seconds; at most 86400 (a day).",
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 86400
         },
         {
           "type": "null"

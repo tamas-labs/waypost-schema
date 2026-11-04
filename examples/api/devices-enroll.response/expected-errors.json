@@ -1,0 +1,7 @@
+{
+  "device-with-secret": { "path": "/device", "keyword": "additionalProperties", "property": "secret" },
+  "missing-secret": { "path": "", "keyword": "required", "property": "secret" },
+  "missing-server-time": { "path": "", "keyword": "required", "property": "server_time" },
+  "secret-16-bytes": { "path": "/secret", "keyword": "pattern" },
+  "secret-url-safe-base64": { "path": "/secret", "keyword": "pattern" }
+}

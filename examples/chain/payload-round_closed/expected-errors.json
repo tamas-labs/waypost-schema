@@ -1,0 +1,5 @@
+{
+  "null-finished-at": { "path": "/finished_at", "keyword": "type" },
+  "status-in-progress": { "path": "/status", "keyword": "enum" },
+  "status-open": { "path": "/status", "keyword": "enum" }
+}

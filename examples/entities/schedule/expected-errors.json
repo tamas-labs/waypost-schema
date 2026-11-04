@@ -1,0 +1,15 @@
+{
+  "interval-to-24-00": { "path": "/interval_to", "keyword": "pattern" },
+  "interval-with-start-times": { "path": "/start_times", "keyword": "type" },
+  "interval-without-every": { "path": "/interval_every_min", "keyword": "not" },
+  "list-duplicate-start-time": { "path": "/start_times", "keyword": "uniqueItems" },
+  "list-empty-start-times": { "path": "/start_times", "keyword": "minItems" },
+  "list-start-time-with-seconds": { "path": "/start_times/0", "keyword": "pattern" },
+  "list-with-interval-fields": { "path": "/interval_from", "keyword": "type" },
+  "list-without-start-times": { "path": "/start_times", "keyword": "not" },
+  "time-limit-zero": { "path": "/time_limit_min", "keyword": "minimum" },
+  "unknown-mode": { "path": "/mode", "keyword": "enum" },
+  "weekdays-128": { "path": "/weekdays", "keyword": "maximum" },
+  "weekdays-as-array": { "path": "/weekdays", "keyword": "type" },
+  "weekdays-zero": { "path": "/weekdays", "keyword": "minimum" }
+}

@@ -1,0 +1,6 @@
+{
+  "batch-of-201": { "path": "/entries", "keyword": "maxItems" },
+  "done-not-boolean": { "path": "/done", "keyword": "type" },
+  "missing-device-id": { "path": "", "keyword": "required", "property": "device_id" },
+  "missing-done": { "path": "", "keyword": "required", "property": "done" }
+}

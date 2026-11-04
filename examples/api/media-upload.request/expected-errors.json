@@ -1,0 +1,8 @@
+{
+  "client-sent-mime": { "path": "", "keyword": "additionalProperties", "property": "mime" },
+  "missing-owner-id": { "path": "", "keyword": "required", "property": "owner_id" },
+  "missing-sha256": { "path": "", "keyword": "required", "property": "sha256" },
+  "missing-taken-at": { "path": "", "keyword": "required", "property": "taken_at" },
+  "short-sha256": { "path": "/sha256", "keyword": "pattern" },
+  "unknown-owner-type": { "path": "/owner_type", "keyword": "enum" }
+}

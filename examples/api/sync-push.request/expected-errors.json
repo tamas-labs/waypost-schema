@@ -1,0 +1,8 @@
+{
+  "batch-of-201": { "path": "/entries", "keyword": "maxItems" },
+  "empty-batch": { "path": "/entries", "keyword": "minItems" },
+  "entry-float-coordinate": { "path": "/entries/0/payload/lng_e7", "keyword": "type" },
+  "entry-without-device-id": { "path": "/entries/0", "keyword": "required", "property": "device_id" },
+  "missing-device-id": { "path": "", "keyword": "required", "property": "device_id" },
+  "spec-media-ids": [{ "path": "/entries/0/payload", "keyword": "required", "property": "media" }, { "path": "/entries/0/payload", "keyword": "additionalProperties", "property": "media_ids" }]
+}

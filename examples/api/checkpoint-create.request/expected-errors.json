@@ -1,0 +1,12 @@
+{
+  "accuracy-without-location": { "path": "", "keyword": "required", "property": "lat_e7" },
+  "float-latitude": { "path": "/lat_e7", "keyword": "type" },
+  "lat-null-lng-set": { "path": "/lng_e7", "keyword": "type" },
+  "lat-without-lng": { "path": "", "keyword": "required", "property": "lng_e7" },
+  "missing-site-id": { "path": "", "keyword": "required", "property": "site_id" },
+  "nfc-tag-uid-null": { "path": "/tag_uid", "keyword": "not" },
+  "nfc-without-tag-uid": { "path": "", "keyword": "required", "property": "tag_uid" },
+  "photo-media-id-not-uuid": { "path": "/photo_media_id", "keyword": "pattern" },
+  "qr-payload-null": { "path": "/qr_payload", "keyword": "not" },
+  "tag-uid-3-bytes": { "path": "/tag_uid", "keyword": "pattern" }
+}

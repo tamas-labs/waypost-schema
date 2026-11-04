@@ -75,6 +75,11 @@ function verify(string $text, Validator $validator, string $key): array
             return ['result' => 'invalid'];
         }
         $entry = json_decode($text, true, flags: JSON_THROW_ON_ERROR);
+        // Every media id unique: the schema's uniqueItems compares whole items.
+        $media = array_column($entry['payload']['media'] ?? [], 'id');
+        if (count($media) !== count(array_unique($media))) {
+            return ['result' => 'invalid'];
+        }
         $hash = $entry['hash'];
         unset($entry['hash']);
         $canonical = canonicalJson($entry);

@@ -1,0 +1,19 @@
+{
+  "accuracy-in-metres-float": { "path": "/accuracy_dm", "keyword": "type" },
+  "accuracy-without-location": { "path": "/accuracy_dm", "keyword": "type" },
+  "float-latitude": { "path": "/lat_e7", "keyword": "type" },
+  "has-lat-decimal-column": { "path": "", "keyword": "additionalProperties", "property": "lat" },
+  "latitude-without-longitude": { "path": "/lng_e7", "keyword": "not" },
+  "missing-photo-media-id": { "path": "", "keyword": "required", "property": "photo_media_id" },
+  "nfc-without-tag-uid": { "path": "/tag_uid", "keyword": "not" },
+  "qr-code-15-chars": { "path": "/qr_payload", "keyword": "pattern" },
+  "qr-code-special-char": { "path": "/qr_payload", "keyword": "pattern" },
+  "qr-uppercase-uuid": { "path": "/qr_payload", "keyword": "pattern" },
+  "qr-without-payload": { "path": "/qr_payload", "keyword": "not" },
+  "qr-wrong-prefix": { "path": "/qr_payload", "keyword": "pattern" },
+  "tag-uid-lowercase": { "path": "/tag_uid", "keyword": "pattern" },
+  "tag-uid-odd-length": { "path": "/tag_uid", "keyword": "pattern" },
+  "tag-uid-too-short": { "path": "/tag_uid", "keyword": "pattern" },
+  "tag-uid-with-colons": { "path": "/tag_uid", "keyword": "pattern" },
+  "unknown-tag-type": { "path": "/tag_type", "keyword": "enum" }
+}

@@ -27,9 +27,7 @@
       ]
     },
     "email": {
-      "type": "string",
-      "format": "email",
-      "maxLength": 255
+      "$ref": "../common/email.json"
     },
     "password": {
       "description": "Password of the supervisor for POST /auth/login.",
@@ -44,12 +42,13 @@
       "type": "boolean"
     },
     "site_ids": {
-      "description": "Sites of the caller the new user is assigned to.",
+      "description": "Sites of the caller the new user is assigned to (at most 1000).",
       "type": "array",
       "items": {
         "$ref": "../common/uuid.json"
       },
       "minItems": 1,
+      "maxItems": 1000,
       "uniqueItems": true
     }
   },

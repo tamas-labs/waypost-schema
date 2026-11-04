@@ -1,0 +1,6 @@
+{
+  "above-180-degrees": { "path": "", "keyword": "maximum" },
+  "below-minus-180-degrees": { "path": "", "keyword": "minimum" },
+  "float-degrees": { "path": "", "keyword": "type" },
+  "null": { "path": "", "keyword": "type" }
+}

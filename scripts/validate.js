@@ -3,7 +3,8 @@
 //   1. every schemas/**/*.json is a draft 2020-12 schema whose $id matches its path and which compiles
 //      (all schemas are registered first, so cross-file $refs resolve);
 //   2. every examples/<schema path>/valid/*.json validates against schemas/<schema path>.json;
-//   3. every examples/<schema path>/invalid/*.json fails against it;
+//   3. every examples/<schema path>/invalid/*.json fails against it, with the error its entry in
+//      examples/<schema path>/expected-errors.json names (so that it fails for the reason in its name);
 //   4. every schema has at least one valid and one invalid example;
 //   5. endpoints.json (required once there is an api/ schema) passes scripts/endpoints.js.
 // Exits with 1 if anything fails. Usage: node scripts/validate.js [--verbose] [--root <dir>]
@@ -19,6 +20,7 @@ export const SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
 export const SCHEMA_ID_BASE = 'https://waypost.dev/schema/v1/';
 
 const EXAMPLE_KINDS = ['valid', 'invalid'];
+const EXPECTED_ERRORS = 'expected-errors.json';
 
 /** Recursively lists files under dir (sorted, relative POSIX paths). Missing dir → []. */
 function listFiles(dir) {
@@ -60,6 +62,29 @@ export function createAjv() {
 
 function formatErrors(errors) {
   return (errors ?? []).map((e) => `${e.instancePath || '/'} ${e.message}`).join('; ');
+}
+
+/** The property an error is about (required, additionalProperties, dependentRequired), if any. */
+const errorProperty = (e) => e.params?.missingProperty ?? e.params?.additionalProperty;
+
+/** An Ajv error as an expected-errors.json entry: { path, keyword[, property] }. */
+function expectationOf(e) {
+  const property = errorProperty(e);
+  return JSON.stringify({ path: e.instancePath, keyword: e.keyword, ...(property === undefined ? {} : { property }) });
+}
+
+/**
+ * Problems of one example's expected errors against its actual errors: every expectation ({ path, keyword[, property] },
+ * path = the JSON Pointer of the instance) must match one of them.
+ */
+function expectationProblems(expected, errors) {
+  const list = Array.isArray(expected) ? expected : [expected];
+  const wellFormed = (x) => x !== null && typeof x === 'object' && typeof x.path === 'string' && typeof x.keyword === 'string'
+    && (x.property === undefined || typeof x.property === 'string') && Object.keys(x).every((k) => ['path', 'keyword', 'property'].includes(k));
+  if (list.length === 0 || !list.every(wellFormed)) return ['the entry must be { path, keyword[, property] } or a non-empty list of them'];
+  return list
+    .filter((x) => !errors.some((e) => e.instancePath === x.path && e.keyword === x.keyword && (x.property === undefined || errorProperty(e) === x.property)))
+    .map((x) => `fails, but not with ${JSON.stringify(x)}`);
 }
 
 /**
@@ -119,9 +144,23 @@ export function validateRepo(root, { verbose = false } = {}) {
 
   // 3. Validate the examples.
   const exampleCounts = new Map([...validators.keys()].map((name) => [name, { valid: 0, invalid: 0 }]));
+  const expectedFiles = new Map(); // schema path → expected-errors.json content
+  const rejections = new Map(); // schema path → Map(example name → Ajv errors)
   for (const file of listFiles(examplesDir)) {
     const rel = `examples/${file}`;
     const parts = file.split('/');
+    if (parts.at(-1) === EXPECTED_ERRORS) {
+      const name = parts.slice(0, -1).join('/');
+      try {
+        const content = readJson(join(examplesDir, file));
+        if (content === null || typeof content !== 'object' || Array.isArray(content)) throw new Error('must be an object');
+        expectedFiles.set(name, content);
+      } catch (err) {
+        errors.push(`${rel}: invalid JSON: ${err.message}`);
+        expectedFiles.set(name, {});
+      }
+      continue;
+    }
     const kindIndex = parts.findIndex((p) => EXAMPLE_KINDS.includes(p));
     if (kindIndex < 1 || kindIndex !== parts.length - 2 || !file.endsWith('.json')) {
       errors.push(`${rel}: must be examples/<schema path>/(valid|invalid)/<name>.json`);
@@ -151,8 +190,36 @@ export function validateRepo(root, { verbose = false } = {}) {
       errors.push(`${rel}: expected valid, but: ${formatErrors(validate.errors)}`);
     } else if (kind === 'invalid' && ok) {
       errors.push(`${rel}: expected invalid, but it validates`);
-    } else if (verbose) {
+    } else if (kind === 'invalid' && !ok) {
+      if (!rejections.has(name)) rejections.set(name, new Map());
+      rejections.get(name).set(parts.at(-1).replace(/\.json$/, ''), [...validate.errors]);
+    }
+    if (verbose && (kind === 'valid') === ok) {
       info.push(kind === 'valid' ? `ok   ${rel}` : `ok   ${rel} (rejected: ${formatErrors(validate.errors)})`);
+    }
+  }
+
+  // The reason of each rejection.
+  for (const name of new Set([...rejections.keys(), ...expectedFiles.keys()])) {
+    const file = `examples/${name}/${EXPECTED_ERRORS}`;
+    const expected = expectedFiles.get(name);
+    const rejected = rejections.get(name) ?? new Map();
+    if (expected === undefined) {
+      errors.push(`${file}: missing; it names the expected error of each invalid example, e.g. ${expectationOf([...rejected.values()][0][0])}`);
+      continue;
+    }
+    for (const [example, exampleErrors] of rejected) {
+      const rel = `examples/${name}/invalid/${example}.json`;
+      if (!(example in expected)) {
+        errors.push(`${rel}: no entry in ${file}; its errors: ${exampleErrors.map(expectationOf).join(', ')}`);
+        continue;
+      }
+      for (const problem of expectationProblems(expected[example], exampleErrors)) {
+        errors.push(`${rel}: ${problem} (${file}); its errors: ${exampleErrors.map(expectationOf).join(', ')}`);
+      }
+    }
+    for (const example of Object.keys(expected)) {
+      if (!rejected.has(example)) errors.push(`${file}: ${example} is not an invalid example of ${name} that fails`);
     }
   }
 
