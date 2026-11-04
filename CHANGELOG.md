@@ -17,6 +17,10 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 
 ## [Unreleased]
 
+## [0.8.0] – 2026-11-04
+
+Az audit INFO-tételei (SCH-022 – SCH-029): két szigorítás, a menetrend-vektorok tzdata-verziója, valamint döntések és ismert kockázatok. A `push-final` szigorítását az app nem érinti. A `validation_failed` `details`-e viszont olyan esetet zár ki, amelyet a backend ma küld (nem JSON vagy nem objektum törzs). A backendnek ezért a 0.8.0-ra lépéskor ezt és egy tesztjét igazítania kell (`docs/decisions.md`, SCH-029, SCH-022). 0.x alatt ez minor.
+
 ### Changed
 
 - **Szigorúbb hibaválasz:** `validation_failed` esetén a `details` kötelező (eddig csak a leírás mondta); a törzs egészét érintő hiba (nem JSON, nem objektum) az üres kulcs alatt áll. A TS-típus nem változik. A backendnek ezekben az esetekben `details`-t kell adnia (audit: SCH-029).
