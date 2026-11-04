@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/user-list.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/user-list.response.json",
   "title": "GET /users, GET /sites/{id}/users – 200 response",
   "description": "GET /users: the users who share a site with the caller, and the caller; ?site_id= limits them to one site. GET /sites/{id}/users: the users assigned to the site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
   "type": "object",
@@ -17,6 +17,10 @@
       "items": {
         "$ref": "../entities/user.json"
       }
+    },
+    "next_cursor": {
+      "description": "Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.",
+      "$ref": "../common/next-cursor.json"
     }
   },
   "additionalProperties": false

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/schedule-update.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/schedule-update.request.json",
   "title": "PATCH /schedules/{id} – request",
-  "description": "Change the given properties of a schedule; the route cannot change. With mode, the fields of the new mode are required and those of the other mode are cleared; without mode, only the fields of the current mode can be given. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/schedule.response.json.",
+  "description": "Change the given properties of a schedule; the route cannot change. With mode, the fields of the new mode are required and those of the other mode are cleared; without mode, only the fields of the current mode can be given. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/schedule.response.json.",
   "type": "object",
   "properties": {
     "name": {

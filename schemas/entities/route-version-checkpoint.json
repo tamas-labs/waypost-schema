@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/route-version-checkpoint.json",
+  "$id": "https://waypost.dev/schema/v1/entities/route-version-checkpoint.json",
   "title": "Route version checkpoint",
   "description": "A checkpoint at a position of a route version. Identified by (route_version_id, position); immutable like its version. Every property is present; absent values are null.",
   "type": "object",

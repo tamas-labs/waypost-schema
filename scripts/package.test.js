@@ -10,36 +10,41 @@ import { join } from 'node:path';
 import { ROOT, tsc } from './typecheck.js';
 
 const NODE_CHECK = `import assert from 'node:assert/strict';
-import { SCHEMA_ID_BASE, SCHEMA_VERSION, schemaId, schemas } from '@waypost/schema';
+import { SCHEMA_ID_BASE, SCHEMA_VERSION, endpoints, schemaId, schemas } from '@waypost/schema';
 import { chainVectors, pinVectors, scheduleVectors } from '@waypost/schema/vectors';
 import entry from '@waypost/schema/schemas/chain/entry.json' with { type: 'json' };
 import chainJson from '@waypost/schema/chain/test-vectors.json' with { type: 'json' };
 import scheduleJson from '@waypost/schema/schedule/test-vectors.json' with { type: 'json' };
 import pinJson from '@waypost/schema/pin/test-vectors.json' with { type: 'json' };
+import endpointsJson from '@waypost/schema/endpoints.json' with { type: 'json' };
 import pkg from '@waypost/schema/package.json' with { type: 'json' };
 
-assert.equal(SCHEMA_ID_BASE, 'https://waypost.dev/schema/');
+assert.equal(SCHEMA_ID_BASE, 'https://waypost.dev/schema/v1/');
 assert.equal(SCHEMA_VERSION, pkg.version);
 assert.ok(Object.keys(schemas).length >= 35);
 assert.deepEqual(schemas['chain/entry'], entry);
-assert.equal(schemaId('api/sync-push.request'), 'https://waypost.dev/schema/api/sync-push.request.json');
+assert.equal(schemaId('api/sync-push.request'), 'https://waypost.dev/schema/v1/api/sync-push.request.json');
 assert.deepEqual(chainVectors, chainJson);
 assert.deepEqual(scheduleVectors, scheduleJson);
 assert.deepEqual(pinVectors, pinJson);
+assert.deepEqual(endpoints, endpointsJson);
+assert.ok(endpoints.endpoints.every((e) => e.query === null || e.query in schemas));
 await assert.rejects(import('@waypost/schema/scripts/types.js'), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
 console.log(\`ok \${pkg.version}\`);
 `;
 
-const TS_CHECK = `import { SCHEMA_VERSION, schemaId, schemas, type ChainEntry, type SchemaPath, type SchemaTypes, type SyncPullResponse } from '@waypost/schema';
+const TS_CHECK = `import { SCHEMA_VERSION, endpoints, schemaId, schemas, type ChainEntry, type Endpoint, type SchemaPath, type SchemaTypes, type SyncPullResponse } from '@waypost/schema';
 import { chainVectors, pinVectors, scheduleVectors, type ChainVector, type PinVectorCase } from '@waypost/schema/vectors';
 
-export const id: 'https://waypost.dev/schema/chain/entry.json' = schemaId('chain/entry');
+export const id: 'https://waypost.dev/schema/v1/chain/entry.json' = schemaId('chain/entry');
 export const version: string = SCHEMA_VERSION;
 const path: SchemaPath = 'api/sync-pull.response';
 export const schemaIdOfPath: string = schemas[path].$id;
 export const firstVector: ChainVector | undefined = chainVectors.cases[0];
 export const firstSchedule: SchemaTypes['entities/schedule'] | undefined = scheduleVectors.expansion[0]?.schedule;
 export const firstPin: PinVectorCase | undefined = pinVectors.cases[0];
+export const pullEndpoint: Endpoint | undefined = endpoints.endpoints.find((e) => e.name === 'sync.pull');
+export const pullQuery: SchemaPath | null | undefined = pullEndpoint?.query;
 
 export function method(entry: ChainEntry): string | null {
   return entry.type === 'scan' ? entry.payload.method : null;

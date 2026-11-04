@@ -129,8 +129,8 @@ function schedule(fields) {
     time_limit_min: 20, active: true, created_at: '2026-01-05T08:00:00.000Z', updated_at: '2026-01-05T08:00:00.000Z',
   };
 }
-const ALL_DAYS = 127, MON_FRI = 31, TUE = 2, FRI = 16, SUN = 64;
-const BUDAPEST = 'Europe/Budapest';
+const ALL_DAYS = 127, MON_FRI = 31, TUE = 2, FRI = 16, SAT = 32, SUN = 64;
+const BUDAPEST = 'Europe/Budapest', NEW_YORK = 'America/New_York', SANTIAGO = 'America/Santiago';
 
 const EXPANSION_CASES = [
   {
@@ -222,6 +222,72 @@ const EXPANSION_CASES = [
     description: '01:30–03:30 every 30 minutes on 2026-10-25: 02:00 and 02:30 in CEST, 03:00 and 03:30 in CET; the repeated hour has no rounds of its own.',
     schedule: schedule({ name: 'Félóránként', weekdays: SUN, mode: 'interval', interval_from: '01:30', interval_to: '03:30', interval_every_min: 30 }),
     timezone: BUDAPEST, from_date: '2026-10-25', to_date: '2026-10-25',
+  },
+  {
+    name: 'month-boundary',
+    description: 'A window from the last day of a month into the first of the next (2026-10-31 → 11-01); the rounds after midnight belong to October 31.',
+    schedule: schedule({ name: 'Éjszaka négyóránként', weekdays: ALL_DAYS, mode: 'interval', interval_from: '20:00', interval_to: '08:00', interval_every_min: 240 }),
+    timezone: BUDAPEST, from_date: '2026-10-31', to_date: '2026-10-31',
+  },
+  {
+    name: 'year-boundary',
+    description: 'A list window from New Year\'s Eve into 2027-01-01; every round belongs to 2026-12-31.',
+    schedule: schedule({ name: 'Szilveszter', weekdays: ALL_DAYS, mode: 'list', start_times: ['22:00', '00:00', '02:00'] }),
+    timezone: BUDAPEST, from_date: '2026-12-31', to_date: '2026-12-31',
+  },
+  {
+    name: 'leap-day',
+    description: 'Windows of 2028-02-28 and 02-29 (a leap year): into February 29, then into March 1.',
+    schedule: schedule({ name: 'Szökőnap', weekdays: ALL_DAYS, mode: 'interval', interval_from: '22:00', interval_to: '02:00', interval_every_min: 120 }),
+    timezone: BUDAPEST, from_date: '2028-02-28', to_date: '2028-02-29',
+  },
+  {
+    name: 'sunday-into-monday',
+    description: 'weekdays = Sunday over a Monday–Sunday period: the only window starts on the last day and ends on the Monday after the period, and all of it belongs to the period.',
+    schedule: schedule({ name: 'Vasárnap éjjel', weekdays: SUN, mode: 'interval', interval_from: '22:00', interval_to: '02:00', interval_every_min: 60 }),
+    timezone: BUDAPEST, from_date: '2026-11-02', to_date: '2026-11-08',
+  },
+  {
+    name: 'monthly-period-with-dst-gap',
+    description: 'A whole month (March 2026) of a daily 02:30 round: 31 rounds; on 03-29 02:30 does not exist and moves to 03:00 CEST, and from then on the UTC time is an hour earlier.',
+    schedule: schedule({ name: 'Hajnali', weekdays: ALL_DAYS, mode: 'list', start_times: ['02:30'] }),
+    timezone: BUDAPEST, from_date: '2026-03-01', to_date: '2026-03-31',
+  },
+  {
+    name: 'weekly-period-with-dst-overlap',
+    description: 'A week (2026-10-19 … 10-25) of a nightly interval: the window of Saturday 10-24 crosses the autumn change (02:00 is its first, CEST occurrence), the one of Sunday 10-25 is in CET.',
+    schedule: schedule({ name: 'Éjszaka háromóránként', weekdays: ALL_DAYS, mode: 'interval', interval_from: '20:00', interval_to: '08:00', interval_every_min: 180 }),
+    timezone: BUDAPEST, from_date: '2026-10-19', to_date: '2026-10-25',
+  },
+  {
+    name: 'every-1440',
+    description: 'interval_every_min = 1440 (the largest step) in a window of 08:00 → 07:59 the next day: one round a day.',
+    schedule: schedule({ name: 'Naponta', weekdays: ALL_DAYS, mode: 'interval', interval_from: '08:00', interval_to: '07:59', interval_every_min: 1440 }),
+    timezone: BUDAPEST, from_date: '2026-11-03', to_date: '2026-11-04',
+  },
+  {
+    name: 'new-york-spring-gap',
+    description: 'America/New_York, 2026-03-08 (02:00 EST → 03:00 EDT): 02:30 does not exist and moves to 03:00 EDT.',
+    schedule: schedule({ name: 'Vasárnap hajnal', weekdays: SUN, mode: 'list', start_times: ['01:30', '02:30', '03:30'] }),
+    timezone: NEW_YORK, from_date: '2026-03-08', to_date: '2026-03-08',
+  },
+  {
+    name: 'new-york-autumn-repeat',
+    description: 'America/New_York, 2026-11-01 (02:00 EDT → 01:00 EST): 01:30 occurs twice; the first (EDT) is used.',
+    schedule: schedule({ name: 'Vasárnap hajnal', weekdays: SUN, mode: 'list', start_times: ['00:30', '01:30', '02:30'] }),
+    timezone: NEW_YORK, from_date: '2026-11-01', to_date: '2026-11-01',
+  },
+  {
+    name: 'santiago-spring-midnight-gap',
+    description: 'America/Santiago changes at midnight: on 2026-09-06 00:00 -04 → 01:00 -03, so the 00:00 of the Saturday window does not exist, moves to 01:00 -03, and is one round with the 01:00 step.',
+    schedule: schedule({ name: 'Szombat éjjel', weekdays: SAT, mode: 'list', start_times: ['23:00', '00:00', '01:00'] }),
+    timezone: SANTIAGO, from_date: '2026-09-05', to_date: '2026-09-05',
+  },
+  {
+    name: 'santiago-autumn-repeat-before-midnight',
+    description: 'America/Santiago, 2026-04-05 00:00 -03 → 2026-04-04 23:00 -04: the hour before midnight occurs twice, so 23:30 of Saturday 04-04 is its first (-03) occurrence.',
+    schedule: schedule({ name: 'Szombat este', weekdays: SAT, mode: 'list', start_times: ['22:30', '23:30'] }),
+    timezone: SANTIAGO, from_date: '2026-04-04', to_date: '2026-04-04',
   },
   {
     name: 'utc-timezone',

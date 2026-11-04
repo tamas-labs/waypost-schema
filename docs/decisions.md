@@ -16,6 +16,7 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 - **Kérdés:** Milyen `$id`-t kapjanak a sémák, hogy a fájlok közötti `$ref`-ek az Ajv-ben (app) és az opis/json-schema-ban (backend) is ugyanúgy feloldódjanak?
 - **Döntés:** `$id` = `https://waypost.dev/schema/<útvonal a schemas/ alatt>`, pl. `https://waypost.dev/schema/entities/site.json`. A sémák egymásra relatív `$ref`-fel hivatkoznak (`../common/uuid.json`). A `scripts/validate.js` ellenőrzi, hogy az `$id` megegyezik a fájl útvonalával.
 - **Indok:** A relatív `$ref` feloldásához abszolút alap-URI kell. Az URI csak azonosító, a hálózatról soha nem töltődik le: az Ajv-be minden séma előre be van töltve, az opis-ban a prefix egy könyvtárra képezhető le (`registerPrefix`). Ha később saját domain lesz, egy helyen cserélhető (major verzió nélkül, ha a fogyasztók még nem hivatkoznak rá közvetlenül – 0.x alatt ez megengedett).
+- **Módosítva 2026-11-04:** az `$id` főverziót kap: `https://waypost.dev/schema/v1/<útvonal>` (lásd „Kompatibilitás a verziók között”).
 - **Érintett:** minden séma; M0-02, M0-10, M2-11.
 
 ## 2026-10-27 – A példák helye és a kötelező példák
@@ -74,7 +75,7 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
 ## 2026-10-27 – Egész számok és a `1.0` alak
 
 - **Kérdés:** A JSON Schema szerint az `1.0` is `integer`, és a JSON-értelmezők (JS `JSON.parse`) nem is különböztetik meg az `1`-től. Elég-e ez a „lebegőpontos szám sehol” szabályhoz?
-- **Döntés:** A séma azt garantálja, hogy az érték matematikailag egész; az `47.4979` és a `474979000.5` elbukik. A küldő félnek egészként, tizedesrész nélkül kell kiírnia a számot. Az RFC 8785 kanonikus alakja `1.0`-ra és `1`-re is `1`, így a lenyomatban nincs eltérés. Az `accuracy_dm` felső korlátja 2³¹ − 1, a koordináták a fok × 10⁷ tartományában maradnak, így mindhárom elfér egy 32 bites egész oszlopban.
+- **Döntés:** A séma azt garantálja, hogy az érték matematikailag egész; az `47.4979` és a `474979000.5` elbukik. A küldő félnek egészként, tizedesrész nélkül kell kiírnia a számot. Az RFC 8785 kanonikus alakja `1.0`-ra és `1`-re is `1`, így a lenyomatban nincs eltérés. Ehhez a dekódolónak az egész értékű lebegőpontos számot vissza kell alakítania egésszé (PHP `json_decode`: `1.0` → `float`); ezt a `chain/test-vectors.json` `normalized` része rögzíti (2026-11-04, lásd „Lánc-tesztvektorok: nyers szöveg, normalizálás és elutasítás”). Az `accuracy_dm` felső korlátja 2³¹ − 1, a koordináták a fok × 10⁷ tartományában maradnak, így mindhárom elfér egy 32 bites egész oszlopban.
 - **Indok:** Nyers JSON-szöveg szintű ellenőrzés egyik oldalon sem kell; a valódi kockázat (lebegőpontos érték a hash-elt adatban) a sémával kiszűrhető.
 - **Érintett:** `common/lat-e7.json`, `common/lng-e7.json`, `common/accuracy-dm.json`, M0-05, M0-07.
 
@@ -220,7 +221,7 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - a kulcsok UTF-16 kódegységek szerint rendezve, minden szinten; a szöveg pontosan az ECMAScript `JSON.stringify` szerint: csak a `"`, a `\` és az U+0000–U+001F escape-elődik (`\b \t \n \f \r`, egyébként `\u00xx` kisbetűvel); a `/`, a nem ASCII karakterek és az U+2028/U+2029 betű szerint maradnak;
   - a HMAC bemenete a kanonikus szöveg UTF-8 bájtjai.
   - A hash-elt adatban minden kulcs ASCII (`[a-z0-9_]`, ezt a sémák `additionalProperties: false`-a biztosítja), ezért a bájt szerinti rendezés (PHP `ksort(..., SORT_STRING)`) itt egyenértékű a UTF-16 szerintivel.
-  - PHP-ban: rekurzív `ksort(SORT_STRING)` a nem-lista tömbökön, majd `json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS | JSON_THROW_ON_ERROR)`. Alapértelmezett flagekkel a vektorok közül kettő eltörik (ékezet, `/`, U+2028). Vigyázat: `json_decode(..., true)` után az üres objektum (`{}`) üres tömb lesz, és `[]`-ként íródik ki; a mai sémákban hash-elt üres objektum nem fordulhat elő.
+  - PHP-ban: rekurzív `ksort(SORT_STRING)` a nem-lista tömbökön, majd `json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS | JSON_THROW_ON_ERROR)`. Alapértelmezett flagekkel a vektorok közül kettő eltörik (ékezet, `/`, U+2028). Vigyázat: `json_decode(..., true)` után az üres objektum (`{}`) üres tömb lesz, és `[]`-ként íródik ki; a mai sémákban hash-elt üres objektum nem fordulhat elő. A `json_decode` az egész értékű számot (`9.0`, `8.64e7`, `-0.0`) `float`-ként adja: a `json_encode` előtt egésszé kell alakítani, a nem egész vagy ±(2⁵³ − 1) feletti értékre kivételt kell dobni – e nélkül a recept `9.0`-t írna ki (2026-11-04, a `normalized` és az `invalid` vektorok ellenőrzik; a recept a `scripts/chain-php.sh`-ban fut).
 - **Indok:** A JS és a PHP alapértelmezett JSON-kimenete több ponton eltér; ezek a pontok mind szerepelnek a tesztvektorokban. A vektorokat egy független JS-implementáció (`canonicalize`, az RFC társszerzőjétől) és egy PHP-s próba (PHP 8.5, a fenti recepttel) is bájtra azonosan reprodukálja.
 - **Érintett:** `scripts/jcs.js`, `chain/test-vectors.json`, M3-10, M3-11, M4-02.
 
@@ -274,7 +275,7 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - `expansion[]`: `{ name, description, schedule (érvényes entities/schedule.json), timezone, from_date, to_date, expected[] }`, ahol egy kör `{ start_day, wall_time, local, utc }`: a kezdő nap, a menetrendben megadott faliórás idő, a tényleges helyi idő eltolással (pl. `2026-03-29T03:00:00+02:00`) és az UTC időbélyeg.
   - `time_limit_default[]`: `{ walk_duration_s, time_limit_min }`.
   - A fájlt a `scripts/schedule-vectors.js` állítja elő (`npm run vectors:schedule`), kézzel nem szerkesztjük; a teszt bájtazonosságot ellenőriz.
-  - Kézi ellenőrzés: a `scripts/schedule-vectors.test.js` a kritikus esetek (13 kör, éjfélen átnyúló lista, péntek–szombat, mindkét DST-éjszaka, nem létező és kétszer előforduló időpont, időkeret) várt értékeit a generátortól függetlenül, kézzel számolva tartalmazza. Ezen felül a PHP 8.5 (tzdata 2026.5) mind a 75 kör helyi ↔ UTC megfeleltetését megerősítette; eltérés csak a Q5-szabály két esetében van, ahol a PHP alapviselkedése más (lásd fent).
+  - Kézi ellenőrzés: a `scripts/schedule-vectors.test.js` a kritikus esetek (13 kör, éjfélen átnyúló lista, péntek–szombat, mindkét DST-éjszaka, nem létező és kétszer előforduló időpont, időkeret) várt értékeit a generátortól függetlenül, kézzel számolva tartalmazza. Ezen felül a PHP 8.5 (tzdata 2026.5) az akkori 75 kör helyi ↔ UTC megfeleltetését megerősítette (0.1.0); eltérés csak a Q5-szabály két esetében van, ahol a PHP alapviselkedése más (lásd fent). 2026-11-04: hónap-, év- és hétváltás, szökőnap, többnapos időszak DST-váltással, `interval_every_min = 1440`, valamint `America/New_York` és `America/Santiago` (éjfélkor vált) esetek (SCH-004); a kézi várt értékek ezekre is a tesztben vannak.
 - **Érintett:** `schedule/test-vectors.json`, M3-13, M3-14, M6-02, M6-03.
 
 ## 2026-10-27 – TS típusok a sémákból
@@ -363,7 +364,7 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - **Mezők:** `sha256`, `owner_type` (`scan`, `incident`, `checkpoint`), `owner_id`, `taken_at`, mindig mind a négy; ezeket a telefon `media` sora tartalmazza. A `mime` és a `size_bytes` a fájlból adódik, csak `image/jpeg` engedett (az app mindig JPEG-et ment). A séma csak a szöveges mezőket írja le, így közvetlenül ellenőrizhető; a `file` rész a leírásban szerepel.
   - **Lánc fotója (`scan`, `incident`):** a sor a bejegyzésből jön létre, ezért a bejegyzés elfogadása előtt `404 not_found`. A lenyomat a fájlra és a payloadra is ellenőrzött, eltérésnél `422 validation_failed`. Ugyanaz a fájl újra: `200`.
   - **Pont fotója (`checkpoint`):** a feltöltés maga hozza létre a sort, a pontnak még nem kell léteznie (az `owner_id` az app által generált UUIDv7). A pont kérésének új, opcionális `photo_media_id` mezője erre hivatkozik; ha nincs ilyen fotó, vagy más a tulajdonosa: `422 validation_failed`.
-  - **`entities/media`:** a `path` szerveroldali, nincs benne. A pullba nem kerül, mert ebben a lépcsőben nincs végpont a fotó letöltésére.
+  - **`entities/media`:** a `path` szerveroldali, nincs benne. A pullba nem kerül, mert ebben a lépcsőben nincs tokennel hívható végpont a fotó letöltésére. (Pontosítás 2026-11-04: a jelentések bélyegképeihez a backend aláírt URL-es `GET /media/{media}/file` végpontot ad, token nélkül; az `endpoints.json` `media.file` néven tartalmazza.)
 - **Indok:** A négy mező egységes, feltétel nélküli szerződés. A 2026-10-28-as döntés a `photo_media_id`-t ide halasztotta.
 - **Megjegyzés a backendnek:** a PHP a `PUT` multipart törzsét nem bontja ki automatikusan; PHP 8.4-től erre a `request_parse_body()` való (M4-07). A `media` tábla `taken_at` oszlopa kötelező, ezért a bejegyzésből létrejövő sorhoz a bejegyzés idejét kell használni, amíg a feltöltés a pontos értéket nem hozza.
 - **Érintett:** `api/media-upload.*.json`, `entities/media.json`, `api/checkpoint-create.request.json`, `api/checkpoint-update.request.json`, M4-07, M4-10, M5-13.
@@ -406,3 +407,94 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - Nem választott: npm `git+https://…#vX.Y.Z` és Composer `vcs` repository. Az app Metro- és Jest-beállítása a szimlinkre épül (lásd „Csomagolás”), a kiadott archívumból pedig hiányozna az `examples/`, amelyre a backend tesztjei épülnek (SCH-011); a rögzítő fájl + CI-checkout + verzióteszt ugyanazt a reprodukálhatóságot adja.
 - **Indok:** A kiadás egy push és egy tag, a szimlink miatt pedig a fogyasztók azonnal megkapják; hibás vagy elavult generált fájl, elbukó példa vagy eltérő opis-döntés így nem kerülhet tagre. A verziókonstans nélkül a fogyasztó tesztje nem tudná megmondani, melyik szerződésen fut, és a két oldal észrevétlenül eltérő verzióval kerülhetne ki.
 - **Érintett:** `.github/workflows/ci.yml`, `scripts/opis-parity.sh`, `scripts/release.js`, `scripts/release.test.js`, `src/Paths.php`, `lib/index.js`, `lib/generated/version.js`; waypost (`.waypost-schema-version`, `__tests__/schema-package.test.ts`, a fejléc ellenőrzése), laravel-waypost (rögzítő fájl, CI, verzióteszt, `X-Waypost-Schema`).
+
+## 2026-11-04 – Lánc-tesztvektorok: nyers szöveg, normalizálás és elutasítás (SCH-003)
+
+- **Kérdés:** A `cases` és a `chain` vektorok mind érvényes, már dekódolt bemenetek. Mit tegyen az ellenőrző (a backend a pushnál, egy későbbi harmadik implementáció) azzal a bejegyzéssel, amelynek a szövege másképp van leírva (`9.0`, `\u00e1`, `\/`, tördelés), vagy amely nem hash-elhető (`9.5`, 2⁵³, `1e400`, magányos surrogate)?
+- **Döntés:**
+  - A `chain/test-vectors.json` két új része nyers JSON-szöveget ad (`entry_json`: a teljes, `hash`-sel aláírt bejegyzés), hogy a dekódolás is a teszt része legyen. Az ellenőrzés menete: dekódolás → `chain/entry.json` sémaellenőrzés → kanonikus JSON a `hash` nélkül → HMAC összevetése a `hash`-sel.
+  - `normalized.cases[]`: `{ name, description, entry_json, canonical_json, hash }` – ugyanannak a bejegyzésnek a másképp leírt szövegei (egész értékű tört és exponenciális alak, `-0.0`; escape-elt ékezet, `\/`, `\u0008`, surrogate-pár escape; CRLF-es tördelés, fordított kulcssorrend). Mindegyikből ugyanaz a `canonical_json` és `hash` jön ki, vagyis ezeket **normalizálni kell, nem elutasítani**.
+  - `invalid.cases[]`: `{ name, description, expected, entry_json }`, ahol `expected`:
+    - `invalid`: nem érvényes bejegyzés, vagy nem kanonizálható – a push `422 validation_failed`. Ilyen a tört szám, a 2⁵³, az `1e400`, a magányos surrogate (a `JSON.parse` elfogadja, a `json_decode` nem; az eredmény mindkettőnél elutasítás), a hiányzó `null` mező, az idegen mező és az üres `payload`.
+    - `bad_hmac`: érvényes bejegyzés, de a `hash` nem a kanonikus JSON HMAC-ja – a push a bejegyzést `bad_hmac`-kal utasítja el. Ilyen a rendezetlen kulcsú szöveg, a PHP alapértelmezett `json_encode`-jával (`\/`, `\uXXXX`) írt szöveg, és a `"seq":9.0`-val írt kanonikus szöveg HMAC-ja.
+  - A referencia-ellenőrző a `scripts/chain-vectors.js` `verifyEntryJson()`-ja (Ajv). A `scripts/chain-php.sh` minden vektort PHP-val is lefuttat (a fenti recept + opis/json-schema), a CI-ben is.
+  - Ismétlődő kulcsot (`{"seq":1,"seq":2}`) a vektorok nem rögzítenek: a `JSON.parse` és a `json_decode` is az utolsót tartja meg, így a két oldal nem tér el, az app pedig nem küld ilyet.
+- **Indok:** A specifikáció szerint a közös vektoroknak kell bizonyítaniuk, hogy a két nyelv ugyanúgy viselkedik, a határeseteken és a hibás bemeneten is. A dekódolt bemenetből nem derül ki, hogy a PHP `float`-ként olvassa az `1.0`-t – éppen ezen csúszott el korábban a recept.
+- **Érintett:** `chain/test-vectors.json`, `scripts/chain-vectors.js`, `scripts/chain-php.sh`, `.github/workflows/ci.yml`, M3-10, M4-02, M4-03.
+
+## 2026-11-04 – Menetrend-vektorok: naptárhatárok, többnapos időszak, más DST-szabály (SCH-004)
+
+- **Kérdés:** A 16 kibontási eset a DST-éjszakákat jól lefedte, de a PHP (`DateTime`, `range`) és a TS dátumaritmetikája jellemzően a hónap- és évhatáron, a többnapos tartományon és más időzónák szabályain tér el. Melyik esetek kellenek még?
+- **Döntés:** 11 új eset (27 eset, 175 kör):
+  - `month-boundary` (10-31 → 11-01), `year-boundary` (12-31 → 2027-01-01), `leap-day` (2028-02-28 → 02-29 → 03-01), `sunday-into-monday` (a vasárnapi ablak az időszak utáni hétfőn ér véget, és az időszakhoz tartozik);
+  - `monthly-period-with-dst-gap` (egy egész hónap napi 02:30-as köre, benne a tavaszi réssel), `weekly-period-with-dst-overlap` (egy hét, benne az őszi váltással);
+  - `every-1440` (a legnagyobb lépés, az ablaknál hosszabb: naponta egy kör);
+  - `new-york-spring-gap`, `new-york-autumn-repeat` (más dátumon és 02:00-kor váltó szabály), `santiago-spring-midnight-gap`, `santiago-autumn-repeat-before-midnight` (éjfélkor váltó szabály: a 00:00 nem létezik, illetve az éjfél előtti óra kétszer van).
+  - A vektorok tzdata-függők: a generátor a Node ICU-adatbázisát használja (2026-11-04: tzdata 2025b), a PHP a sajátját vagy a rendszerét. A választott dátumokra 2022 óta egyik szabály sem változott.
+- **Indok:** Az eltérés a fogyasztók között éppen ezeken a pontokon szokott előjönni. Az új esetek már az első futáskor találtak egy backend-hibát: az `every-1440` esetén a PHP `range()` `ValueError`-t dob, ha a lépés nagyobb az ablaknál. A javítás a backend feladata; az app mindegyik esetet helyesen bontja ki.
+- **Érintett:** `schedule/test-vectors.json`, `scripts/schedule-vectors.js`, `scripts/schedule-vectors.test.js`, M3-13, M6-02.
+
+## 2026-11-04 – Kompatibilitás a verziók között, a `/v1` és a `/v2` együttélése (SCH-008)
+
+- **Kérdés:** Az app áruházon át frissül, így a backendnek egyszerre kell kiszolgálnia régi és új appot, egy major váltásnál `/v1`-et és `/v2`-t is. Mivel minden objektumséma `additionalProperties: false`, és a felsorolások zártak, egy „minor” bővítés a régi sémával ellenőrző fogadónak törő: a régi backend 422-vel utasítja el az új app új mezőjét, egy új bejegyzéstípus pedig az egész push-köteget, és mivel a lánc nem ugorhat át bejegyzést, minden későbbi feltöltés megáll. Hogyan maradnak kompatibilisek a verziók, és hogyan él együtt két főverzió?
+- **Döntés:**
+  - **`$id` főverzióval:** `https://waypost.dev/schema/v1/<útvonal a schemas/ alatt>` (`SCHEMA_ID_BASE`, `Paths::SCHEMA_ID_BASE`). A `v1` az API főverziója (`/v1`), nem a csomagé: a 0.x és az 1.x kiadások ugyanazt a `v1` előtagot használják. A fájlok helye (`schemas/<útvonal>`) nem változik. Most, 0.x alatt még megtehető major nélkül: mindkét fogyasztó a konstanson és a `schemaId()`-n át hivatkozik, és rögzített verzión áll (`.waypost-schema-version`), így az új előtagot csak a következő pin-léptetéskor kapja meg, kódváltozás nélkül.
+  - **Sorrend:** séma-kiadás → backend → app, mindig. A backend a szerződés minden minor verzióját a saját pinjével ismeri; az app áruházi verziói közül többet is kiszolgál.
+  - **Kompatibilitási mátrix** (minor változás; „régi” = a változás előtti pin):
+
+    | Változás | régi app × új backend | új app × régi backend |
+    |---|---|---|
+    | új opcionális mező a **kérésben** | jó | 422 – az app csak akkor küldi, ha a szerver `X-Waypost-Schema` verziója ≥ a bővítés verziója |
+    | új enum-érték / új bejegyzéstípus a **kérésben** | jó | 422, a láncnál a feltöltés megáll – ugyanígy csak a szerver verziója szerint |
+    | új opcionális mező a **válaszban** | jó (élesben figyelmen kívül hagyja; `__DEV__`-ben sémahiba) | jó |
+    | új enum-érték a **válaszban** (pl. hibakód) | az app az ismeretlen értéket tartalék ágon kezeli (ismeretlen hibakód: a HTTP-státusz szerint) | jó |
+    | új séma / új végpont | jó | 404 – az app csak a szerver verziója szerint hívja |
+    | szigorítás (eddig érvényes példány érvénytelen lesz) | 422 a régi appnak | jó |
+    | sémaútvonal átnevezése / törlése | az outboxban álló kérés elakad | – |
+
+    Ebből a szabály: kérésoldali bővítés **backend-először**, és az app a szerver fejlécéből dönti el, küldheti-e; válaszoldali bővítés csak opcionális mező vagy olyan enum-érték, amelyre az appnak van tartalék ága; szigorítás csak akkor minor, ha a küldő fél bizonyíthatóan sosem küldött ilyet (egyeztetett kiadással), egyébként major; sémaútvonal minor verzióban nem nevezhető át és nem törölhető (SCH-028). A CHANGELOG verziózási szabálya ezt összefoglalja.
+  - **A `/v1` és a `/v2` együttélése:** egy csomagból nem telepíthető két főverzió egymás mellé (sem npm-en, sem Composerrel), ezért a 2.0.0 kiadás **mindkét** készletet tartalmazza: a `/v2` sémákat `https://waypost.dev/schema/v2/` előtaggal, és a `/v1` utolsó állapotát befagyasztva (csak javítás), `https://waypost.dev/schema/v1/` előtaggal, külön könyvtárban. Mindkettő egy validátorba tölthető, mert az előtagjuk különbözik; a backend a `/v1` útvonalakat a `v1`, a `/v2`-t a `v2` készlettel ellenőrzi. A `/v1` készlet akkor kerül ki, amikor már egyik támogatott app sem használja (major). A pontos könyvtárszerkezet és a `Paths` / `lib` API (verzióparaméter) a 2.0.0 tervezésekor dől el; ekkor a `Paths::schemaNames()` egyszintes bejárását (SCH-027) is módosítani kell.
+- **Indok:** A kompatibilitás eddig egy telepítési sorrenden múlt, amelyet csak egy mondat rögzített. A futásidejű `X-Waypost-Schema` fejléc (0.6.0) óta az app ténylegesen el tudja dönteni, mit küldhet; a mátrix ezt teszi szabállyá. Az `$id` most ingyen kapja meg a főverziót, később már csak major verzióval kaphatná.
+- **Érintett:** minden séma (`$id`), `scripts/validate.js`, `scripts/types.js`, `lib/index.js`, `lib/index.d.ts`, `src/Paths.php`, `CHANGELOG.md`, az app (`X-Waypost-Schema` alapú döntés, tartalék ágak) és a backend (sorrend).
+
+## 2026-11-04 – Az `Idempotency-Key` protokoll a szerződésben (SCH-007)
+
+- **Kérdés:** Az idempotencia tényleges szabályai (a kulcs alakja, hatóköre, a 24 órás visszajátszás, a tárolt 4xx, az egyidejű ismétlés `409`-e) eddig csak a backend döntésnaplójában voltak, pedig az app ezekre épít, és egy új kliens a sémákból rosszul kezelné a `409`-et. Kell-e ehhez saját hibakód?
+- **Döntés:**
+  - A protokoll a szerződés része, a backend mai működése szerint (`laravel-waypost` 2026-10-28 „`Idempotency-Key` (M2-12)” és 2026-11-02 „Az ismételt létrehozás”):
+    - **Mikor:** minden azonosított író kérésen kötelező (a `POST /auth/login` és a `POST /auth/logout` kivétel). Hiányzó vagy hibás fejléc: `422 validation_failed`, `details`: `{"Idempotency-Key": [...]}`.
+    - **Alak:** bármely UUID, kis- és nagybetűvel is (`common/idempotency-key.json`); az app logikai kérésenként új UUIDv7-et küld.
+    - **Hatókör:** a token gazdája (felhasználó vagy eszköz; az `X-Acting-User`-rel küldött kérés az eszközé).
+    - **Visszajátszás:** ugyanarra a kulcsra 24 órán át ugyanaz a válasz (státusz és törzs, `Idempotent-Replayed: true` fejléccel), a kérés nem fut újra; csak a `server_time` friss. A 4xx is tárolódik, az 5xx nem. Ugyanaz a kulcs más kéréssel (módszer, útvonal, query, törzs): `422 validation_failed`.
+    - **Egyidejű ismétlés:** amíg az első kérés fut, `409 conflict` `Retry-After` fejléccel (ma 5 másodperc). Ez az egyetlen `409`, amelynek `Retry-After`-je van; ugyanazzal a kulccsal később újra kell küldeni. A többi `409` (foglalt PIN, címke vagy `id`) végleges.
+    - **Kliensszabályok:** hálózati hiba, 5xx vagy `Retry-After`-es `409` után ugyanazzal a kulccsal kell újrapróbálni. Más 4xx után új kulccsal, mert a régi 24 órán át ugyanazt a 4xx-et adná vissza. A 401 és a 429 nem tárolódik, mert az azonosítás és a throttling a kulcs kezelése előtt fut (pl. a fotó `404`-e, amíg a bejegyzése nincs elfogadva).
+  - Az „egyszer megmutatott” titkok (az eszköz tokenje és titka, a szerver generálta PIN) ugyanazzal a kulccsal 24 órán át újra visszajönnek, mert különben egy elveszett válasz után a hozzárendelés vagy a PIN használhatatlan maradna; más végpont és az azonos `id`-jú ismételt létrehozás nem adja vissza őket. A `devices-enroll.response` és a `user.response` leírása ezt mondja.
+  - **Nincs új hibakód:** a még futó kérés `409 conflict` + `Retry-After` marad. Egy `request_in_progress` kód tisztább lenne, de mindkét fogyasztóban változtatást kívánna; a `Retry-After` jelenléte ugyanazt egyértelműen elmondja. Ha egyszer mégis saját kód kell, az a válaszoldali bővítés szabályai szerint (az appnak tartalék ága van a `409`-re) minor verzióban felvehető.
+  - A fejlécek továbbra sem részei a törzs-sémáknak. A kérés-sémák leírása az `Idempotency-Key`-nél a `common/idempotency-key.json`-ra hivatkozik; az `error-code` leírása a `conflict`-nál megemlíti a `Retry-After`-t.
+- **Indok:** „A szerződés előbb itt” elve szerint a két oldal viselkedési megállapodásának a közös rétegben a helye. A szabályok változatlanok, csak a helyük új, így egyik oldalnak sem kell módosulnia.
+- **Érintett:** `common/idempotency-key.json`, `common/error-code.json`, `api/devices-enroll.response.json`, `api/user.response.json`, az író végpontok kérés-sémáinak leírása, M2-12, M3-04, M5-03, M4-10.
+
+## 2026-11-04 – Közös lapozási minta, a CRUD-listák lapozása (SCH-009)
+
+- **Kérdés:** A két lapozott végpontnak eddig két különböző alakja volt (pull: `cursor` + `has_more`; jelentések: `next_cursor | null`), a hét CRUD-lista pedig nem lapozott, és nem volt felső elemszáma. Később bevezetni a lapozást törő változás lenne. Hogyan legyen?
+- **Döntés:**
+  - Közös alak: `common/next-cursor.json` – átlátszatlan, 1–255 karakteres szöveg, vagy `null` az utolsó oldalon. A következő oldalt a `cursor` query paraméterrel kell kérni, ugyanazokkal a szűrőkkel. Ismeretlen vagy hibás kurzor: `422 validation_failed`. A `report-list.response` `next_cursor`-ja erre hivatkozik (az alakja nem változott).
+  - A hét CRUD-lista (`site-`, `user-`, `checkpoint-`, `route-`, `route-version-`, `schedule-`, `report-subscription-list.response`) **opcionális** `next_cursor` mezőt kap. Ha hiányzik vagy `null`, a lista teljes. Ha szöveg, a szerver lapoz: oldalanként legfeljebb 500 elem (az útvonalverzió a pontjaival együtt), és a kliensnek a kurzort követve össze kell fűznie az oldalakat. A szerver új sémaverzió nélkül kezdhet lapozni, ezért a kliensnek most kell megtanulnia követni a kurzort. A mai backend nem lapoz, és ehhez nem is kell változnia.
+  - A listák `maxItems`-et most nem kapnak: ez szigorítás volna egy olyan válaszon, amelyet a mai backend korlátlanul ad.
+  - A pull alakja marad (`cursor` mindig szöveg + `has_more`), mert ott a kurzor nemcsak a következő oldalt jelöli, hanem a következő növekményes pull kezdőpontját is, ezért az utolsó oldalon sem lehet `null`.
+- **Indok:** Ez a kompatibilitási szabályok szerinti válaszoldali bővítés (opcionális mező), így most még törés nélkül bevezethető. Egy közös kliensoldali lapozó írható rá, és egy nagy ügyfélnél a szerver major verzió nélkül kezdhet lapozni.
+- **Érintett:** `common/next-cursor.json`, a nyolc `*-list.response.json`, M5 (az app listanézetei), M2 (a backend listái).
+
+## 2026-11-04 – Géppel olvasható végponttábla és query-sémák (SCH-006)
+
+- **Kérdés:** A sémák csak a JSON-törzseket írták le. Hogy melyik metódus és útvonal melyik kérés- és válaszsémát használja, milyen státusszal, ki hívhatja, és milyen query paramétereket fogad, az csak a `description`-ökben volt, a backend útvonaltáblája és az app végpontlistája pedig külön-külön tartotta nyilván. Hogyan legyen géppel olvasható?
+- **Döntés:**
+  - **`endpoints.json`** a repó gyökerében: saját, egyszerű formátum, nem OpenAPI. Új eszköz nem kell hozzá, és pontosan azt írja le, amit a két fogyasztó ellenőrizni tud. Végpontonként: `name` (a backend útvonalneve `waypost.` nélkül, pl. `sites.store`), `method`, `path` (az API-alaphoz képest, amely `/v1`-re végződik; `{név}` útvonalparaméter), `path_parameters` (paraméter → séma), `auth` (`none`, `supervisor`, `device`, `acting` = eszköztoken + `X-Acting-User`, `revoked`, `signed_url`; bármelyik), `idempotency_key`, `query` (séma vagy `null`), `request` és `responses` (státusz → `{ content_type, schema }`; bináris törzsnél `schema: null`). Minden más státusz a közös `error_response` (`api/error`). A fejlécek (`Idempotency-Key`, `X-Acting-User`) a `headers` alatt, sémával.
+  - A tábla mind a 48 végpontot tartalmazza, a két aláírt URL-es letöltést (`media.file`, `reports.file`) is (SCH-030).
+  - **Query-sémák:** `api/<lista>.query.json` a szűrős listákhoz (`user-`, `checkpoint-`, `route-`, `schedule-`, `report-subscription-`, `report-list.query`), `api/sync-pull.query.json`, és a szűrő nélküli listák közös `api/list.query.json`-ja (csak `cursor`). A sémák a dekódolt query stringet írják le (minden érték szöveg, mindegyik legfeljebb egyszer). Az azonosító-szűrő UUIDv7, a kurzor `common/cursor.json` (1–255 karakter); hibás érték: `422 validation_failed`. Ismeretlen paramétert a kliens nem küld (`additionalProperties: false`). A mai backend az ismeretlen paramétert figyelmen kívül hagyja, a pullnál az üres `cursor=`-t kurzor nélkülinek veszi; ez a kliens szempontjából nem eltérés, mert a kliens ilyet nem küld.
+  - **Ellenőrzés:** a `scripts/endpoints.js` (a `validate.js` része, így az `npm test`-é is) a tábla alakját a `scripts/endpoints.schema.json` szerint ellenőrzi. Ezen felül azt is, hogy minden megnevezett séma létezik és jó fajtájú (`.query`, `.request`, `.response`), hogy **minden `api/` sémát használ egy végpont**, hogy a név és a metódus + útvonal egyedi, hogy az útvonalparaméterek az útvonalból jönnek, a GET-nek nincs törzse és kulcsa, és hogy az auth-fajták és a fejlécek deklarálva vannak.
+  - **Terjesztés:** npm: `endpoints` (`@waypost/schema`, típusa `EndpointTable`) és `@waypost/schema/endpoints.json`; Composer: `Paths::endpoints()`. A fogyasztók ebből ellenőrizhetik a saját útvonaltáblájukat (backend: a route-nevek, a metódusok, az útvonalak és a `ValidateSchema` sémái; app: `src/api/endpoints.ts`). Ez a fogyasztók feladata.
+  - Új végpont = új sor a táblában, ugyanabban a változtatásban, mint a sémái; különben a `validate.js` elbukik (a séma nincs használva).
+- **Indok:** Így egy átnevezett vagy rossz útvonalhoz kötött séma, egy hiányzó végpont vagy egy eltérően értelmezett szűrő a fogyasztók tesztjében derül ki, nem integrációkor. Az OpenAPI 3.1 ugyanezt nagyobb leírással és új fejlesztői függőséggel adná. Ha egyszer kell (pl. külső kliens vagy Postman), a táblából generálható.
+- **Érintett:** `endpoints.json`, `scripts/endpoints.js`, `scripts/endpoints.schema.json`, `scripts/validate.js`, `common/cursor.json`, `common/next-cursor.json`, `api/*.query.json`, `api/sync-pull.response.json` (`cursor` → `common/cursor.json`), `lib/index.js`, `lib/index.d.ts`, `src/Paths.php`, a backend `routes/api.php`-ja és az app `src/api/endpoints.ts`-e.
+

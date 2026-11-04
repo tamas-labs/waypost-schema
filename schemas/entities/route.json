@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/route.json",
+  "$id": "https://waypost.dev/schema/v1/entities/route.json",
   "title": "Route",
   "description": "A patrol route on a site. Its checkpoints live in immutable route versions. Every property is present; absent values are null.",
   "type": "object",

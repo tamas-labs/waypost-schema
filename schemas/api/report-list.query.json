@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/api/report-list.query.json",
+  "title": "GET /reports – query",
+  "description": "Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.",
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "description": "Only the reports of this site; a site the caller does not see gives an empty list.",
+      "$ref": "../common/uuid.json"
+    },
+    "type": {
+      "description": "Only reports of this kind.",
+      "$ref": "../common/report-frequency.json"
+    },
+    "cursor": {
+      "description": "The next_cursor of the previous page; absent: the first page.",
+      "$ref": "../common/cursor.json"
+    }
+  },
+  "additionalProperties": false
+}

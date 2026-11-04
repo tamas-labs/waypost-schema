@@ -4,6 +4,7 @@
 import type {
   ChainEntry,
   ChainEntryOf,
+  DeviceDiagnosticRequest,
   ErrorResponse,
   SchemaTypes,
   ScanPayload,
@@ -119,6 +120,24 @@ export const wrongMethod: ScanPayload = { ...scanPayload, method: 'bluetooth' };
 
 // @ts-expect-error a property the schema does not have (additionalProperties: false)
 export const extraProperty: ScanPayload = { ...scanPayload, accuracy_m: 12 };
+
+// The enum next to the $ref narrows ErrorCode to the three entry-level codes.
+export const diagnosticCode: DeviceDiagnosticRequest['code'] = 'chain_gap';
+// @ts-expect-error an error code the enum next to the $ref does not allow
+export const requestLevelCode: DeviceDiagnosticRequest['code'] = 'forbidden';
+
+export function rejectionCode(response: SchemaTypes['api/sync-push.response']): 'gap' | 'fork' | 'hmac' {
+  const code = response.rejected[0]?.code;
+  switch (code) {
+    case 'chain_gap':
+      return 'gap';
+    case 'chain_fork':
+      return 'fork';
+    case 'bad_hmac':
+    case undefined:
+      return 'hmac';
+  }
+}
 
 export function noDetails(response: ErrorResponse): void {
   // @ts-expect-error details is optional

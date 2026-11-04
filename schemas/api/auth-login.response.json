@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/auth-login.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/auth-login.response.json",
   "title": "POST /auth/login – 200 response",
   "description": "A non-expiring Sanctum token with the supervisor ability, returned only once. Wrong credentials: 401 unauthenticated. Error responses use api/error.json.",
   "type": "object",

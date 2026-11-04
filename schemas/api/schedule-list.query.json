@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/api/schedule-list.query.json",
+  "title": "GET /schedules – query",
+  "description": "Both filters together: the schedules of that route, if it is on that site. Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.",
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "description": "Only the schedules of the routes of this site; a site the caller does not see gives an empty list.",
+      "$ref": "../common/uuid.json"
+    },
+    "route_id": {
+      "description": "Only the schedules of this route.",
+      "$ref": "../common/uuid.json"
+    },
+    "cursor": {
+      "description": "The next_cursor of the previous page; absent: the first page.",
+      "$ref": "../common/cursor.json"
+    }
+  },
+  "additionalProperties": false
+}

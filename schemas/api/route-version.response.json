@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/route-version.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/route-version.response.json",
   "title": "Route version – response",
   "description": "POST /routes/{id}/versions (201; 200 for a repeated id), GET /routes/{id}/versions/{version_id} (200): the version, its checkpoints by position and the route (current_version_id). Error responses use api/error.json.",
   "type": "object",

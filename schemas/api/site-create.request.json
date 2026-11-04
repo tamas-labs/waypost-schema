@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/site-create.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/site-create.request.json",
   "title": "POST /sites – request",
   "description": "Create a site. Supervisor token only (not through the site phone). The creator is assigned to the new site. Absent timezone: Europe/Budapest; absent no_data_alert_after_min: 120. Response: 201 (200 for a repeated id), api/site.response.json.",
   "type": "object",

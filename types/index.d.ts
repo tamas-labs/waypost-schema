@@ -17,10 +17,17 @@ export type AccuracyDm = number;
  */
 export type Base64 = string;
 
+// common/cursor.json
+
+/**
+ * Opaque paging cursor, 1–255 characters: the client sends back what the server returned, unchanged, as the "cursor" query parameter. An unknown or malformed cursor is 422 validation_failed.
+ */
+export type Cursor = string;
+
 // common/error-code.json
 
 /**
- * Machine-readable error code. Request level (HTTP status): unauthenticated (401), device_revoked (401), forbidden (403), not_found (404), conflict (409, e.g. PIN or tag already taken), validation_failed (422), rate_limited (429); any other client error is bad_request (with its own 4xx status, e.g. 405, 413), any server error server_error (5xx, e.g. 500, 503 during maintenance). Entry level, in the push response's rejected list: chain_gap, chain_fork, bad_hmac.
+ * Machine-readable error code. Request level (HTTP status): unauthenticated (401), device_revoked (401), forbidden (403), not_found (404), conflict (409, e.g. PIN or tag already taken; with a Retry-After header: the first request of the same Idempotency-Key is still running, see common/idempotency-key.json), validation_failed (422), rate_limited (429); any other client error is bad_request (with its own 4xx status, e.g. 405, 413), any server error server_error (5xx, e.g. 500, 503 during maintenance). Entry level, in the push response's rejected list: chain_gap, chain_fork, bad_hmac.
  */
 export type ErrorCode =
   | "unauthenticated"
@@ -43,6 +50,13 @@ export type ErrorCode =
  */
 export type Hash = string;
 
+// common/idempotency-key.json
+
+/**
+ * Value of the Idempotency-Key request header, required on every authenticated write request (all but POST /auth/login and /auth/logout); missing or malformed: 422 validation_failed with details {"Idempotency-Key": [...]}. Any UUID, in either case; the app sends a new UUIDv7 per logical request. The key belongs to the token's owner (user or device). For 24 hours the same key gets the same response (status and body, with an Idempotent-Replayed: true header; only server_time is current) without running the request again; client errors (4xx) are stored too, server errors (5xx) are not. The same key with a different request (method, path, query or body): 422 validation_failed. The same key while its first request is still running: 409 conflict with a Retry-After header (the only 409 that has one), to be retried later with the same key. Rules: docs/decisions.md.
+ */
+export type IdempotencyKey = string;
+
 // common/lat-e7.json
 
 /**
@@ -63,6 +77,13 @@ export type LngE7 = number;
  * Time of day as HH:MM (24-hour, zero-padded) in the site's time zone, e.g. 20:00.
  */
 export type LocalTime = string;
+
+// common/next-cursor.json
+
+/**
+ * Cursor of the next page of a paged list response (common/cursor.json), null on the last page; request the next page with ?cursor=<next_cursor> and the same filters. GET /sync/pull pages differently (cursor + has_more, api/sync-pull.response.json), because its cursor also marks where the next incremental pull starts.
+ */
+export type NextCursor = Cursor | null;
 
 // common/pin.json
 
@@ -634,7 +655,7 @@ export interface AuthLogoutResponse {
 // api/checkpoint-create.request.json
 
 /**
- * Create a checkpoint on a site of the caller. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/checkpoint.response.json.
+ * Create a checkpoint on a site of the caller. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/checkpoint.response.json.
  */
 export interface CheckpointCreateRequest {
   /**
@@ -666,6 +687,22 @@ export interface CheckpointCreateRequest {
   active?: boolean;
 }
 
+// api/checkpoint-list.query.json
+
+/**
+ * Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface CheckpointListQuery {
+  /**
+   * Only the checkpoints of this site; a site the caller does not see gives an empty list.
+   */
+  site_id?: Uuid;
+  /**
+   * The next_cursor of the previous page; absent: the first page.
+   */
+  cursor?: Cursor;
+}
+
 // api/checkpoint-list.response.json
 
 /**
@@ -674,12 +711,16 @@ export interface CheckpointCreateRequest {
 export interface CheckpointListResponse {
   server_time: ServerTime;
   checkpoints: Checkpoint[];
+  /**
+   * Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.
+   */
+  next_cursor?: NextCursor;
 }
 
 // api/checkpoint-update.request.json
 
 /**
- * Change the given properties of a checkpoint; the site cannot change. The result must be a valid checkpoint (e.g. an nfc checkpoint has a tag_uid); a qr checkpoint without a qr_payload gets a generated one. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/checkpoint.response.json.
+ * Change the given properties of a checkpoint; the site cannot change. The result must be a valid checkpoint (e.g. an nfc checkpoint has a tag_uid); a qr checkpoint without a qr_payload gets a generated one. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/checkpoint.response.json.
  */
 export interface CheckpointUpdateRequest {
   name?: string;
@@ -728,7 +769,7 @@ export interface DeletedResponse {
 // api/device-diagnostic.request.json
 
 /**
- * What the device tells the server after the server rejected a chain entry of it (chain_gap, chain_fork or bad_hmac in a push response): the device stops sending those entries, and the supervisor sees this in the report. Outside the chain, because the chain is what has gone wrong. Device token, also of a revoked device until it closes its upload; requires an Idempotency-Key header. device_id must equal the token's device. Sending the same id again changes nothing. Response: 200, api/device-diagnostic.response.json.
+ * What the device tells the server after the server rejected a chain entry of it (chain_gap, chain_fork or bad_hmac in a push response): the device stops sending those entries, and the supervisor sees this in the report. Outside the chain, because the chain is what has gone wrong. Device token, also of a revoked device until it closes its upload; requires an Idempotency-Key header (common/idempotency-key.json). device_id must equal the token's device. Sending the same id again changes nothing. Response: 200, api/device-diagnostic.response.json.
  */
 export interface DeviceDiagnosticRequest {
   /**
@@ -736,7 +777,7 @@ export interface DeviceDiagnosticRequest {
    */
   id: Uuid;
   device_id: Uuid;
-  code: ErrorCode;
+  code: Extract<ErrorCode, "chain_gap" | "chain_fork" | "bad_hmac">;
   /**
    * The first rejected entry of the response.
    */
@@ -775,7 +816,7 @@ export interface DeviceDiagnosticResponse {
 // api/devices-enroll.request.json
 
 /**
- * Enroll the phone the request comes from as the site phone of a site. Supervisor token; requires an Idempotency-Key header. A previously enrolled phone of the site is revoked.
+ * Enroll the phone the request comes from as the site phone of a site. Supervisor token; requires an Idempotency-Key header (common/idempotency-key.json). A previously enrolled phone of the site is revoked.
  */
 export interface DevicesEnrollRequest {
   site_id: Uuid;
@@ -787,7 +828,7 @@ export interface DevicesEnrollRequest {
 // api/devices-enroll.response.json
 
 /**
- * The new device, its token (device ability) and its HMAC secret. Token and secret are returned only by this response, never again. Error responses use api/error.json.
+ * The new device, its token (device ability) and its HMAC secret. Token and secret are returned only by this response: no other endpoint returns them, and only a replay of this request with the same Idempotency-Key within 24 hours returns them again (see common/idempotency-key.json). Error responses use api/error.json.
  */
 export interface DevicesEnrollResponse {
   server_time: ServerTime;
@@ -827,10 +868,22 @@ export interface ErrorResponse {
   };
 }
 
+// api/list.query.json
+
+/**
+ * GET /sites, GET /sites/{id}/users, GET /routes/{id}/versions: only the paging cursor. Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface ListQuery {
+  /**
+   * The next_cursor of the previous page; absent: the first page.
+   */
+  cursor?: Cursor;
+}
+
 // api/media-upload.request.json
 
 /**
- * The text fields of a multipart/form-data body; next to them a part named file holds the JPEG itself (image/jpeg), so that part is not in this schema. The server hashes the file and checks it against sha256, and for a photo of a chain entry also against the sha256 of the entry's payload; a mismatch is 422 validation_failed. Sending the same file again is not an error (200). A photo of a scan or incident: only after its entry is accepted, otherwise 404 not_found; only the device that wrote the entry, otherwise 403 forbidden; a revoked device until it closes its upload (api/sync-push-final.request). A checkpoint photo: sent before the checkpoint request that refers to it (photo_media_id), so the checkpoint need not exist yet; supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). A file over the server's limit is 413 bad_request. Requires an Idempotency-Key header. Response: 200, api/media-upload.response.json.
+ * The text fields of a multipart/form-data body; next to them a part named file holds the JPEG itself (image/jpeg), so that part is not in this schema. The server hashes the file and checks it against sha256, and for a photo of a chain entry also against the sha256 of the entry's payload; a mismatch is 422 validation_failed. Sending the same file again is not an error (200). A photo of a scan or incident: only after its entry is accepted, otherwise 404 not_found; only the device that wrote the entry, otherwise 403 forbidden; a revoked device until it closes its upload (api/sync-push-final.request). A checkpoint photo: sent before the checkpoint request that refers to it (photo_media_id), so the checkpoint need not exist yet; supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). A file over the server's limit is 413 bad_request. Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/media-upload.response.json.
  */
 export interface MediaUploadRequest {
   /**
@@ -858,6 +911,26 @@ export interface MediaUploadResponse {
   media: Media;
 }
 
+// api/report-list.query.json
+
+/**
+ * Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface ReportListQuery {
+  /**
+   * Only the reports of this site; a site the caller does not see gives an empty list.
+   */
+  site_id?: Uuid;
+  /**
+   * Only reports of this kind.
+   */
+  type?: ReportFrequency;
+  /**
+   * The next_cursor of the previous page; absent: the first page.
+   */
+  cursor?: Cursor;
+}
+
 // api/report-list.response.json
 
 /**
@@ -869,16 +942,13 @@ export interface ReportListResponse {
    * @maxItems 100
    */
   reports: Report[];
-  /**
-   * Opaque; null on the last page. An unknown or malformed cursor is a validation error (422).
-   */
-  next_cursor: string | null;
+  next_cursor: NextCursor;
 }
 
 // api/report-subscription-create.request.json
 
 /**
- * Subscribe a supervisor assigned to a site of the caller to a report of the site. The same (user_id, site_id, frequency) twice is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/report-subscription.response.json.
+ * Subscribe a supervisor assigned to a site of the caller to a report of the site. The same (user_id, site_id, frequency) twice is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/report-subscription.response.json.
  */
 export interface ReportSubscriptionCreateRequest {
   /**
@@ -890,6 +960,26 @@ export interface ReportSubscriptionCreateRequest {
   frequency: ReportFrequency;
 }
 
+// api/report-subscription-list.query.json
+
+/**
+ * Both filters together: that user's subscriptions on that site. Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface ReportSubscriptionListQuery {
+  /**
+   * Only the subscriptions of this site; a site the caller does not see gives an empty list.
+   */
+  site_id?: Uuid;
+  /**
+   * Only the subscriptions of this user.
+   */
+  user_id?: Uuid;
+  /**
+   * The next_cursor of the previous page; absent: the first page.
+   */
+  cursor?: Cursor;
+}
+
 // api/report-subscription-list.response.json
 
 /**
@@ -898,12 +988,16 @@ export interface ReportSubscriptionCreateRequest {
 export interface ReportSubscriptionListResponse {
   server_time: ServerTime;
   report_subscriptions: ReportSubscription[];
+  /**
+   * Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.
+   */
+  next_cursor?: NextCursor;
 }
 
 // api/report-subscription-update.request.json
 
 /**
- * Change the frequency of a subscription; an existing (user_id, site_id, frequency) is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/report-subscription.response.json.
+ * Change the frequency of a subscription; an existing (user_id, site_id, frequency) is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/report-subscription.response.json.
  */
 export interface ReportSubscriptionUpdateRequest {
   frequency: ReportFrequency;
@@ -922,7 +1016,7 @@ export interface ReportSubscriptionResponse {
 // api/route-create.request.json
 
 /**
- * Create a route on a site of the caller, without checkpoints: they come with POST /routes/{id}/versions. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/route.response.json.
+ * Create a route on a site of the caller, without checkpoints: they come with POST /routes/{id}/versions. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/route.response.json.
  */
 export interface RouteCreateRequest {
   /**
@@ -938,6 +1032,22 @@ export interface RouteCreateRequest {
   active?: boolean;
 }
 
+// api/route-list.query.json
+
+/**
+ * Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface RouteListQuery {
+  /**
+   * Only the routes of this site; a site the caller does not see gives an empty list.
+   */
+  site_id?: Uuid;
+  /**
+   * The next_cursor of the previous page; absent: the first page.
+   */
+  cursor?: Cursor;
+}
+
 // api/route-list.response.json
 
 /**
@@ -946,12 +1056,16 @@ export interface RouteCreateRequest {
 export interface RouteListResponse {
   server_time: ServerTime;
   routes: Route[];
+  /**
+   * Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.
+   */
+  next_cursor?: NextCursor;
 }
 
 // api/route-update.request.json
 
 /**
- * Change the given properties of a route; the site cannot change, the checkpoints change with a new version. Deleting a route deletes its schedules. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/route.response.json.
+ * Change the given properties of a route; the site cannot change, the checkpoints change with a new version. Deleting a route deletes its schedules. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/route.response.json.
  */
 export interface RouteUpdateRequest {
   name?: string;
@@ -965,7 +1079,7 @@ export interface RouteUpdateRequest {
 // api/route-version-create.request.json
 
 /**
- * Create the next version of a route (version = previous + 1) and make it the current one. Versions never change afterwards. The checkpoints in order (position = index + 1), each once, all on the route's site; walk_time_from_prev_s is null at the first position. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/route-version.response.json.
+ * Create the next version of a route (version = previous + 1) and make it the current one. Versions never change afterwards. The checkpoints in order (position = index + 1), each once, all on the route's site; walk_time_from_prev_s is null at the first position. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/route-version.response.json.
  */
 export interface RouteVersionCreateRequest {
   /**
@@ -1007,6 +1121,10 @@ export interface RouteVersionListResponse {
   server_time: ServerTime;
   route_versions: RouteVersion[];
   route_version_checkpoints: RouteVersionCheckpoint[];
+  /**
+   * Absent or null: the list is complete. A string: the server pages this list (at most 500 route versions per page, each with all of its checkpoints); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.
+   */
+  next_cursor?: NextCursor;
 }
 
 // api/route-version.response.json
@@ -1037,7 +1155,7 @@ export interface RouteResponse {
 // api/schedule-create.request.json
 
 /**
- * Create a schedule of a route of the caller. list mode: start_times; interval mode: interval_from, interval_to, interval_every_min. Absent time_limit_min: ceil(walk_duration_s × 1.5 / 300) × 5 minutes from the current version of the route (at most 1440), 20 without a measured walk; null: no limit. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/schedule.response.json.
+ * Create a schedule of a route of the caller. list mode: start_times; interval mode: interval_from, interval_to, interval_every_min. Absent time_limit_min: ceil(walk_duration_s × 1.5 / 300) × 5 minutes from the current version of the route (at most 1440), 20 without a measured walk; null: no limit. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/schedule.response.json.
  */
 export interface ScheduleCreateRequest {
   /**
@@ -1067,6 +1185,26 @@ export interface ScheduleCreateRequest {
   active?: boolean;
 }
 
+// api/schedule-list.query.json
+
+/**
+ * Both filters together: the schedules of that route, if it is on that site. Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface ScheduleListQuery {
+  /**
+   * Only the schedules of the routes of this site; a site the caller does not see gives an empty list.
+   */
+  site_id?: Uuid;
+  /**
+   * Only the schedules of this route.
+   */
+  route_id?: Uuid;
+  /**
+   * The next_cursor of the previous page; absent: the first page.
+   */
+  cursor?: Cursor;
+}
+
 // api/schedule-list.response.json
 
 /**
@@ -1075,12 +1213,16 @@ export interface ScheduleCreateRequest {
 export interface ScheduleListResponse {
   server_time: ServerTime;
   schedules: Schedule[];
+  /**
+   * Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.
+   */
+  next_cursor?: NextCursor;
 }
 
 // api/schedule-update.request.json
 
 /**
- * Change the given properties of a schedule; the route cannot change. With mode, the fields of the new mode are required and those of the other mode are cleared; without mode, only the fields of the current mode can be given. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/schedule.response.json.
+ * Change the given properties of a schedule; the route cannot change. With mode, the fields of the new mode are required and those of the other mode are cleared; without mode, only the fields of the current mode can be given. interval_from = interval_to is not allowed. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/schedule.response.json.
  */
 export interface ScheduleUpdateRequest {
   name?: string;
@@ -1142,12 +1284,16 @@ export interface SiteCreateRequest {
 export interface SiteListResponse {
   server_time: ServerTime;
   sites: Site[];
+  /**
+   * Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.
+   */
+  next_cursor?: NextCursor;
 }
 
 // api/site-update.request.json
 
 /**
- * Change the given properties of a site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/site.response.json.
+ * Change the given properties of a site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/site.response.json.
  */
 export interface SiteUpdateRequest {
   name?: string;
@@ -1162,7 +1308,7 @@ export interface SiteUpdateRequest {
 // api/site-user-attach.request.json
 
 /**
- * Assign a user the caller can see to the site; only a user every site of whom is a site of the caller (otherwise 403 forbidden), as the new PIN goes to the caller. The user gets a new PIN (the given one, or a generated one returned once), unique among the users of all of their sites: the server only knows the hash of the old PIN, so it cannot check it against the users of the new site. A user already assigned to the site: nothing changes (no new PIN). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.
+ * Assign a user the caller can see to the site; only a user every site of whom is a site of the caller (otherwise 403 forbidden), as the new PIN goes to the caller. The user gets a new PIN (the given one, or a generated one returned once), unique among the users of all of their sites: the server only knows the hash of the old PIN, so it cannot check it against the users of the new site. A user already assigned to the site: nothing changes (no new PIN). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.
  */
 export interface SiteUserAttachRequest {
   user_id: Uuid;
@@ -1179,6 +1325,18 @@ export interface SiteResponse {
   site: Site;
 }
 
+// api/sync-pull.query.json
+
+/**
+ * Without cursor: the full state (a reset page). Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface SyncPullQuery {
+  /**
+   * The cursor of the previous pull page; absent: the full state.
+   */
+  cursor?: Cursor;
+}
+
 // api/sync-pull.response.json
 
 /**
@@ -1187,9 +1345,9 @@ export interface SiteResponse {
 export interface SyncPullResponse {
   server_time: ServerTime;
   /**
-   * Opaque; send it back unchanged as the "cursor" query parameter of the next pull. An unknown or malformed cursor is a validation error (422).
+   * Send it back unchanged as the "cursor" query parameter of the next pull (api/sync-pull.query.json).
    */
-  cursor: string;
+  cursor: Cursor;
   has_more: boolean;
   /**
    * True: this page starts a full state, because the request had no cursor, or the sites the caller sees changed since the cursor (e.g. the supervisor was assigned to another site). Before applying the page, the client deletes its local configuration records (in the same transaction); the following pages are incremental again. Absent means false.
@@ -1276,7 +1434,7 @@ export interface SyncPullResponse {
 // api/sync-push-final.request.json
 
 /**
- * The last upload of a revoked device, in as many requests as it takes: batches of its unacknowledged chain entries in ascending seq order, checked like POST /sync/push, then its photos (PUT /media/{id}), then a request with done true. After that request the upload is closed, even if entries were rejected or photos are missing: push-final and PUT /media/{id} answer 401 device_revoked. A device that is not revoked gets 403 forbidden. Token of the revoked device; requires an Idempotency-Key header. device_id must equal the token's device and the device_id of every entry. Response: 200, api/sync-push-final.response.json.
+ * The last upload of a revoked device, in as many requests as it takes: batches of its unacknowledged chain entries in ascending seq order, checked like POST /sync/push, then its photos (PUT /media/{id}), then a request with done true. After that request the upload is closed, even if entries were rejected or photos are missing: push-final and PUT /media/{id} answer 401 device_revoked. A device that is not revoked gets 403 forbidden. Token of the revoked device; requires an Idempotency-Key header (common/idempotency-key.json). device_id must equal the token's device and the device_id of every entry. Response: 200, api/sync-push-final.response.json.
  */
 export interface SyncPushFinalRequest {
   device_id: Uuid;
@@ -1302,7 +1460,7 @@ export type SyncPushFinalResponse = SyncPushResponse;
 // api/sync-push.request.json
 
 /**
- * A batch of chain entries of the calling device, in ascending seq order. Device token; requires an Idempotency-Key header. device_id must equal the token's device and the device_id of every entry.
+ * A batch of chain entries of the calling device, in ascending seq order. Device token; requires an Idempotency-Key header (common/idempotency-key.json). device_id must equal the token's device and the device_id of every entry.
  */
 export interface SyncPushRequest {
   device_id: Uuid;
@@ -1335,7 +1493,7 @@ export interface SyncPushResponse {
    */
   rejected: {
     id: Uuid;
-    code: ErrorCode;
+    code: Extract<ErrorCode, "chain_gap" | "chain_fork" | "bad_hmac">;
     /**
      * For chain_gap: the seq the server is waiting for; otherwise null.
      */
@@ -1350,7 +1508,7 @@ export interface SyncPushResponse {
 // api/user-create.request.json
 
 /**
- * Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/user.response.json.
+ * Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/user.response.json.
  */
 export interface UserCreateRequest {
   /**
@@ -1374,6 +1532,22 @@ export interface UserCreateRequest {
   site_ids: [Uuid, ...Uuid[]];
 }
 
+// api/user-list.query.json
+
+/**
+ * Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.
+ */
+export interface UserListQuery {
+  /**
+   * Only the users of this site; a site the caller does not see gives an empty list.
+   */
+  site_id?: Uuid;
+  /**
+   * The next_cursor of the previous page; absent: the first page.
+   */
+  cursor?: Cursor;
+}
+
 // api/user-list.response.json
 
 /**
@@ -1382,12 +1556,16 @@ export interface UserCreateRequest {
 export interface UserListResponse {
   server_time: ServerTime;
   users: User[];
+  /**
+   * Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.
+   */
+  next_cursor?: NextCursor;
 }
 
 // api/user-pin.request.json
 
 /**
- * Set a new PIN for the user: the given one, or (pin absent) a generated one, returned once (pin in the response). Unique among the users of all of the user's sites: a taken PIN is 409 conflict. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.
+ * Set a new PIN for the user: the given one, or (pin absent) a generated one, returned once (pin in the response). Unique among the users of all of the user's sites: a taken PIN is 409 conflict. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.
  */
 export interface UserPinRequest {
   pin?: Pin;
@@ -1396,7 +1574,7 @@ export interface UserPinRequest {
 // api/user-update.request.json
 
 /**
- * Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/user.response.json.
+ * Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.
  */
 export interface UserUpdateRequest {
   name?: string;
@@ -1417,23 +1595,26 @@ export interface UserResponse {
   server_time: ServerTime;
   user: User;
   /**
-   * Only when the server generated the PIN: the only time it is shown. Tell it to the user.
+   * Only when the server generated the PIN: no other response shows it, except a replay of the same request with the same Idempotency-Key within 24 hours (see common/idempotency-key.json); a repeated create with the same id does not return it. Tell it to the user.
    */
   pin?: Pin;
 }
 
 /**
  * TypeScript type of each schema, keyed by its path under schemas/ without .json
- * (the schema's $id without https://waypost.dev/schema/ and .json).
+ * (the schema's $id without https://waypost.dev/schema/v1/ and .json).
  */
 export interface SchemaTypes {
   "common/accuracy-dm": AccuracyDm;
   "common/base64": Base64;
+  "common/cursor": Cursor;
   "common/error-code": ErrorCode;
   "common/hash": Hash;
+  "common/idempotency-key": IdempotencyKey;
   "common/lat-e7": LatE7;
   "common/lng-e7": LngE7;
   "common/local-time": LocalTime;
+  "common/next-cursor": NextCursor;
   "common/pin": Pin;
   "common/report-frequency": ReportFrequency;
   "common/server-time": ServerTime;
@@ -1462,6 +1643,7 @@ export interface SchemaTypes {
   "api/auth-login.response": AuthLoginResponse;
   "api/auth-logout.response": AuthLogoutResponse;
   "api/checkpoint-create.request": CheckpointCreateRequest;
+  "api/checkpoint-list.query": CheckpointListQuery;
   "api/checkpoint-list.response": CheckpointListResponse;
   "api/checkpoint-update.request": CheckpointUpdateRequest;
   "api/checkpoint.response": CheckpointResponse;
@@ -1471,14 +1653,18 @@ export interface SchemaTypes {
   "api/devices-enroll.request": DevicesEnrollRequest;
   "api/devices-enroll.response": DevicesEnrollResponse;
   "api/error": ErrorResponse;
+  "api/list.query": ListQuery;
   "api/media-upload.request": MediaUploadRequest;
   "api/media-upload.response": MediaUploadResponse;
+  "api/report-list.query": ReportListQuery;
   "api/report-list.response": ReportListResponse;
   "api/report-subscription-create.request": ReportSubscriptionCreateRequest;
+  "api/report-subscription-list.query": ReportSubscriptionListQuery;
   "api/report-subscription-list.response": ReportSubscriptionListResponse;
   "api/report-subscription-update.request": ReportSubscriptionUpdateRequest;
   "api/report-subscription.response": ReportSubscriptionResponse;
   "api/route-create.request": RouteCreateRequest;
+  "api/route-list.query": RouteListQuery;
   "api/route-list.response": RouteListResponse;
   "api/route-update.request": RouteUpdateRequest;
   "api/route-version-create.request": RouteVersionCreateRequest;
@@ -1486,6 +1672,7 @@ export interface SchemaTypes {
   "api/route-version.response": RouteVersionResponse;
   "api/route.response": RouteResponse;
   "api/schedule-create.request": ScheduleCreateRequest;
+  "api/schedule-list.query": ScheduleListQuery;
   "api/schedule-list.response": ScheduleListResponse;
   "api/schedule-update.request": ScheduleUpdateRequest;
   "api/schedule.response": ScheduleResponse;
@@ -1494,12 +1681,14 @@ export interface SchemaTypes {
   "api/site-update.request": SiteUpdateRequest;
   "api/site-user-attach.request": SiteUserAttachRequest;
   "api/site.response": SiteResponse;
+  "api/sync-pull.query": SyncPullQuery;
   "api/sync-pull.response": SyncPullResponse;
   "api/sync-push-final.request": SyncPushFinalRequest;
   "api/sync-push-final.response": SyncPushFinalResponse;
   "api/sync-push.request": SyncPushRequest;
   "api/sync-push.response": SyncPushResponse;
   "api/user-create.request": UserCreateRequest;
+  "api/user-list.query": UserListQuery;
   "api/user-list.response": UserListResponse;
   "api/user-pin.request": UserPinRequest;
   "api/user-update.request": UserUpdateRequest;

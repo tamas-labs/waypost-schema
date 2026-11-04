@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/route-version-create.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/route-version-create.request.json",
   "title": "POST /routes/{id}/versions – request",
-  "description": "Create the next version of a route (version = previous + 1) and make it the current one. Versions never change afterwards. The checkpoints in order (position = index + 1), each once, all on the route's site; walk_time_from_prev_s is null at the first position. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/route-version.response.json.",
+  "description": "Create the next version of a route (version = previous + 1) and make it the current one. Versions never change afterwards. The checkpoints in order (position = index + 1), each once, all on the route's site; walk_time_from_prev_s is null at the first position. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/route-version.response.json.",
   "type": "object",
   "required": [
     "checkpoints"

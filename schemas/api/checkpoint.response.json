@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/checkpoint.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/checkpoint.response.json",
   "title": "Checkpoint – response",
   "description": "POST /checkpoints (201; 200 for a repeated id), GET and PATCH /checkpoints/{id} (200). Error responses use api/error.json.",
   "type": "object",

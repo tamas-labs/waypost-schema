@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/common/timezone.json",
+  "$id": "https://waypost.dev/schema/v1/common/timezone.json",
   "title": "Time zone",
   "description": "IANA time zone name, e.g. Europe/Budapest. The server also checks that the zone exists.",
   "type": "string",

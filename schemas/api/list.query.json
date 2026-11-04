@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/api/list.query.json",
+  "title": "Query of a list without filters",
+  "description": "GET /sites, GET /sites/{id}/users, GET /routes/{id}/versions: only the paging cursor. Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.",
+  "type": "object",
+  "properties": {
+    "cursor": {
+      "description": "The next_cursor of the previous page; absent: the first page.",
+      "$ref": "../common/cursor.json"
+    }
+  },
+  "additionalProperties": false
+}

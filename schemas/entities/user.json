@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/user.json",
+  "$id": "https://waypost.dev/schema/v1/entities/user.json",
   "title": "User (pull)",
   "description": "A guard or supervisor as delivered by sync pull: without e-mail and password, with the PIN verifier for offline PIN login. The three PIN fields are either all set or all null (no PIN yet, or the recipient is not entitled to them). Every property is present; absent values are null.",
   "type": "object",

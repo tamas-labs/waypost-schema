@@ -6,13 +6,24 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import canonicalize from 'canonicalize';
 import { CanonicalJsonError, canonicalJson } from './jcs.js';
-import { GENESIS_PREV_HASH, VECTORS_FILE, buildVectors, entryHash, renderVectors } from './chain-vectors.js';
+import { GENESIS_PREV_HASH, VECTORS_FILE, buildVectors, entryHash, renderVectors, verifyEntryJson } from './chain-vectors.js';
 import { SCHEMA_ID_BASE, createAjv } from './validate.js';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const fileContent = readFileSync(VECTORS_FILE, 'utf8');
 const vectors = JSON.parse(fileContent);
 const allVectors = [...vectors.cases, ...vectors.chain.entries];
+
+/** Ajv validator of chain/entry.json. */
+function entryValidator() {
+  const ajv = createAjv();
+  for (const file of ['common/uuid', 'common/timestamp', 'common/hash', 'common/base64', 'common/lat-e7', 'common/lng-e7', 'common/accuracy-dm',
+    'chain/payload-shift_started', 'chain/payload-shift_closed', 'chain/payload-round_opened', 'chain/payload-scan',
+    'chain/payload-incident', 'chain/payload-round_closed', 'chain/entry']) {
+    ajv.addSchema(JSON.parse(readFileSync(resolve(ROOT, 'schemas', `${file}.json`), 'utf8')));
+  }
+  return ajv.getSchema(`${SCHEMA_ID_BASE}chain/entry.json`);
+}
 
 describe('canonicalJson (RFC 8785, integers only)', () => {
   test('sorts keys by UTF-16 code units at every level, without whitespace', () => {
@@ -63,13 +74,7 @@ describe('chain/test-vectors.json', () => {
   });
 
   test('input + hash is a valid chain entry', () => {
-    const ajv = createAjv();
-    for (const file of ['common/uuid', 'common/timestamp', 'common/hash', 'common/base64', 'common/lat-e7', 'common/lng-e7', 'common/accuracy-dm',
-      'chain/payload-shift_started', 'chain/payload-shift_closed', 'chain/payload-round_opened', 'chain/payload-scan',
-      'chain/payload-incident', 'chain/payload-round_closed', 'chain/entry']) {
-      ajv.addSchema(JSON.parse(readFileSync(resolve(ROOT, 'schemas', `${file}.json`), 'utf8')));
-    }
-    const validate = ajv.getSchema(`${SCHEMA_ID_BASE}chain/entry.json`);
+    const validate = entryValidator();
     for (const v of allVectors) {
       assert.ok(validate({ ...v.input, hash: v.hash }), `${v.name ?? v.input.id}: ${JSON.stringify(validate.errors)}`);
     }
@@ -98,6 +103,25 @@ describe('chain/test-vectors.json', () => {
       assert.equal(v.input.seq, i + 1);
       assert.equal(v.input.prev_hash, i === 0 ? GENESIS_PREV_HASH : entries[i - 1].hash);
     });
+  });
+
+  test('every normalized text verifies to the canonical JSON and hash of the vector', () => {
+    const validate = entryValidator();
+    const cases = vectors.normalized.cases;
+    assert.ok(cases.length >= 3);
+    for (const v of cases) {
+      assert.deepEqual(verifyEntryJson(v.entry_json, validate), { result: 'ok', canonical_json: v.canonical_json, hash: v.hash }, v.name);
+      assert.notEqual(v.entry_json, v.canonical_json, `${v.name}: the text is already canonical`);
+      assert.equal(JSON.parse(v.entry_json).hash, v.hash, v.name);
+    }
+    assert.equal(new Set(cases.map((v) => v.hash)).size, 1, 'the normalized texts are all of one entry');
+  });
+
+  test('every invalid text is refused as expected', () => {
+    const validate = entryValidator();
+    const cases = vectors.invalid.cases;
+    assert.deepEqual(new Set(cases.map((v) => v.expected)), new Set(['invalid', 'bad_hmac']));
+    for (const v of cases) assert.equal(verifyEntryJson(v.entry_json, validate).result, v.expected, v.name);
   });
 
   test('the file is what buildVectors() describes', () => {

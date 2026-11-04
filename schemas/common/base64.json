@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/common/base64.json",
+  "$id": "https://waypost.dev/schema/v1/common/base64.json",
   "title": "Base64",
   "description": "Non-empty binary value in standard base64 (RFC 4648 section 4: alphabet A-Z a-z 0-9 + /, '=' padding required, no line breaks, no URL-safe alphabet). Used for PIN hash and salt and the device secret.",
   "type": "string",

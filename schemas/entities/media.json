@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/media.json",
+  "$id": "https://waypost.dev/schema/v1/entities/media.json",
   "title": "Media",
   "description": "A photo. The storage path is server-side and never part of this representation. mime, size_bytes and uploaded_at are null until the file is uploaded. Every property is present; absent values are null.",
   "type": "object",

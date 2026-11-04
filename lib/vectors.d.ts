@@ -16,6 +16,27 @@ export interface ChainVectorCase extends ChainVector {
   description: string;
 }
 
+/** A raw signed entry text that decodes, validates and verifies to canonical_json and hash. */
+export interface ChainNormalizedCase {
+  name: string;
+  description: string;
+  /** JSON text of a whole chain entry, with hash, written differently from its canonical JSON. */
+  entry_json: string;
+  /** RFC 8785 canonical JSON of the decoded entry without hash. */
+  canonical_json: string;
+  /** Equal to the hash in entry_json. */
+  hash: Hash;
+}
+
+/** A raw signed entry text a verifier refuses. */
+export interface ChainInvalidCase {
+  name: string;
+  description: string;
+  /** invalid: not a valid chain entry, or not canonicalizable (push: 422); bad_hmac: hash is not the HMAC of its canonical JSON. */
+  expected: 'invalid' | 'bad_hmac';
+  entry_json: string;
+}
+
 /** chain/test-vectors.json */
 export interface ChainVectors {
   description: string;
@@ -25,6 +46,9 @@ export interface ChainVectors {
   cases: ChainVectorCase[];
   /** Entries seq 1, 2, 3 of one device, each linked to the previous through prev_hash. */
   chain: { description: string; entries: ChainVector[] };
+  /** Raw entry texts: decode → validate (chain/entry.json) → canonical JSON without hash → HMAC. */
+  normalized: { description: string; cases: ChainNormalizedCase[] };
+  invalid: { description: string; cases: ChainInvalidCase[] };
 }
 
 /** One expected round. */

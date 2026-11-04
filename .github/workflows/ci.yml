@@ -39,3 +39,6 @@ jobs:
       # The backend validates with opis/json-schema: every example has to be decided as Ajv decides it.
       - name: opis/json-schema parity
         run: sh scripts/opis-parity.sh
+      # The chain vectors with the PHP recipe of docs/decisions.md, the raw texts through json_decode and opis too.
+      - name: Chain vectors in PHP
+        run: sh scripts/chain-php.sh

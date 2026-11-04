@@ -113,7 +113,7 @@ describe('validateRepo', () => {
   test('fails when $id does not match the file path', () => {
     const files = goodFiles();
     files['schemas/common/uuid.json'] = { ...uuidSchema, $id: `${SCHEMA_ID_BASE}uuid.json` };
-    assertFails(run(files), /schemas\/common\/uuid\.json: "\$id" must be "https:\/\/waypost\.dev\/schema\/common\/uuid\.json"/);
+    assertFails(run(files), /schemas\/common\/uuid\.json: "\$id" must be "https:\/\/waypost\.dev\/schema\/v1\/common\/uuid\.json"/);
   });
 
   test('fails on malformed JSON in a schema or an example', () => {

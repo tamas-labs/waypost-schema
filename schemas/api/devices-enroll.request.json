@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/devices-enroll.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/devices-enroll.request.json",
   "title": "POST /devices/enroll – request",
-  "description": "Enroll the phone the request comes from as the site phone of a site. Supervisor token; requires an Idempotency-Key header. A previously enrolled phone of the site is revoked.",
+  "description": "Enroll the phone the request comes from as the site phone of a site. Supervisor token; requires an Idempotency-Key header (common/idempotency-key.json). A previously enrolled phone of the site is revoked.",
   "type": "object",
   "required": [
     "site_id",

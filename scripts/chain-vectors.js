@@ -163,6 +163,150 @@ const CASES = [
   },
 ];
 
+// --- raw entry texts: what a verifier gets over the wire ------------------------------------------------------
+
+/** The entry the raw texts are made of: non-ASCII text, a slash, \b \f U+0000, an emoji, a zero and large numbers. */
+const RAW_BASE = entry({
+  id: id(110), seq: 9, type: 'incident',
+  payload: {
+    incident_id: id(26), shift_id: SHIFT, category: 'open_door', note: 'Ázsió/fék\b\f\u0000 🚨',
+    lat_e7: 474979000, lng_e7: 190402000, accuracy_dm: 0, nearest_checkpoint_id: CP, scan_id: null, media: [],
+  },
+  device_time: '2026-10-27T21:30:00.000Z', uptime_ms: 86400000,
+});
+const RAW_SIGNED = { ...RAW_BASE, hash: entryHash(RAW_BASE) };
+/** RAW_SIGNED as compact JSON, keys in the specification's order. */
+const RAW_TEXT = JSON.stringify(RAW_SIGNED);
+const RAW_NOTE = JSON.stringify(RAW_BASE.payload.note);
+
+/** text with every [from, to] replaced; each from must occur exactly once. */
+function edit(text, ...replacements) {
+  for (const [from, to] of replacements) {
+    const count = text.split(from).length - 1;
+    if (count !== 1) throw new Error(`"${from}" occurs ${count} times in the raw entry, expected once`);
+    text = text.replace(from, () => to);
+  }
+  return text;
+}
+
+const hmacOfText = (text) => createHmac('sha256', KEY).update(text, 'utf8').digest('hex');
+/** RAW_TEXT with its hash replaced by the HMAC of text: what a wrong canonicalization would send. */
+const signedWithHashOf = (text, rawText = RAW_TEXT) => edit(rawText, [`"hash":"${RAW_SIGNED.hash}"`, `"hash":"${hmacOfText(text)}"`]);
+
+/** Raw texts of RAW_SIGNED written differently: decoding them gives the same entry, so the same canonical JSON and hash. */
+const NORMALIZED = [
+  {
+    name: 'integers-written-as-floats',
+    description: 'Integers with a fraction or an exponent (9.0, 8.64e7, 4749790E2) and minus zero (-0.0): JSON Schema integers, and the canonical JSON writes them as plain integers. PHP json_decode() reads them as floats; they must be turned back into integers before canonicalization, not rejected.',
+    entry_json: edit(RAW_TEXT, ['"seq":9,', '"seq":9.0,'], [',"uptime_ms":86400000,', ',"uptime_ms":8.64e7,'], ['"lat_e7":474979000,', '"lat_e7":4749790E2,'], ['"accuracy_dm":0,', '"accuracy_dm":-0.0,']),
+  },
+  {
+    name: 'escaped-strings',
+    description: 'The note written with escapes: \\u00c1 and \\u00F3 for accented letters, \\/ for the slash, \\u0008 \\u000C for \\b \\f, and a surrogate pair escape (\\ud83d\\udea8) for the emoji. The canonical JSON has the letters, the slash and the emoji literally, and writes \\b \\f \\u0000.',
+    entry_json: edit(RAW_TEXT, [RAW_NOTE, '"\\u00c1zsi\\u00F3\\/f\\u00e9k\\u0008\\u000C\\u0000 \\ud83d\\udea8"']),
+  },
+  {
+    name: 'whitespace-and-key-order',
+    description: 'Pretty-printed with CRLF line ends, every object with its keys in reverse order, hash first.',
+    entry_json: JSON.stringify(reverseKeys(RAW_SIGNED), null, 2).replaceAll('\n', '\r\n'),
+  },
+];
+
+/**
+ * Raw texts a verifier must refuse: "invalid" = not a valid chain entry, or one that cannot be canonicalized (the
+ * push is a 422 validation_failed); "bad_hmac" = a valid entry whose hash is not the HMAC of its canonical JSON
+ * (the push rejects the entry with bad_hmac).
+ */
+const INVALID = [
+  {
+    name: 'fractional-integer',
+    description: 'seq is 9.5: not an integer.',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, ['"seq":9,', '"seq":9.5,']),
+  },
+  {
+    name: 'fractional-coordinate',
+    description: 'lat_e7 is 474979000.5: no floating-point number in hashed data.',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, ['"lat_e7":474979000,', '"lat_e7":474979000.5,']),
+  },
+  {
+    name: 'integer-above-2^53-1',
+    description: 'uptime_ms is 2^53 = 9007199254740992: outside ±(2^53 − 1); a JS number cannot tell it from 2^53 + 1.',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, [',"uptime_ms":86400000,', ',"uptime_ms":9007199254740992,']),
+  },
+  {
+    name: 'number-overflow',
+    description: 'uptime_ms is 1e400: Infinity in JS, INF in PHP.',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, [',"uptime_ms":86400000,', ',"uptime_ms":1e400,']),
+  },
+  {
+    name: 'lone-surrogate',
+    description: 'The note ends in a lone high surrogate escape (\\ud83d): not valid Unicode (I-JSON). JSON.parse() accepts it, PHP json_decode() does not; the result is a rejection either way.',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, [RAW_NOTE, '"Ázsió/fék \\ud83d"']),
+  },
+  {
+    name: 'missing-null-field',
+    description: 'gnss_time is left out instead of being null: every field of a chain entry is required.',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, ['"gnss_time":null,', '']),
+  },
+  {
+    name: 'extra-field',
+    description: 'An extra field (the app\'s local synced_at): a chain entry has no other fields.',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, ['"prev_hash":', '"synced_at":"2026-10-27T21:31:00.000Z","prev_hash":']),
+  },
+  {
+    name: 'empty-payload',
+    description: 'payload is {}: not a valid payload. (PHP json_decode(..., true) would make it [], which canonicalizes differently from {}.)',
+    expected: 'invalid',
+    entry_json: edit(RAW_TEXT, [`"payload":${JSON.stringify(RAW_BASE.payload)}`, '"payload":{}']),
+  },
+  {
+    name: 'hash-of-unsorted-json',
+    description: 'hash is the HMAC of the entry without hash as JSON with its keys in the specification\'s order, not sorted.',
+    expected: 'bad_hmac',
+    entry_json: signedWithHashOf(JSON.stringify(RAW_BASE)),
+  },
+  {
+    name: 'hash-of-escaped-json',
+    description: 'hash is the HMAC of the canonical JSON as PHP json_encode() writes it with its default flags: the slash as \\/, non-ASCII as \\u escapes.',
+    expected: 'bad_hmac',
+    entry_json: signedWithHashOf(
+      canonicalJson(RAW_BASE).replaceAll('/', '\\/').replace(/[^\x00-\x7f]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`),
+    ),
+  },
+  {
+    name: 'hash-of-float-text',
+    description: 'seq is written as 9.0, and hash is the HMAC of a canonical JSON with "seq":9.0 (json_encode() of the float PHP decoded): the canonical JSON has "seq":9.',
+    expected: 'bad_hmac',
+    entry_json: signedWithHashOf(edit(canonicalJson(RAW_BASE), ['"seq":9,', '"seq":9.0,']), edit(RAW_TEXT, ['"seq":9,', '"seq":9.0,'])),
+  },
+];
+
+/**
+ * The reference verifier of a raw entry text: decode, validate (validate: a chain/entry.json validator, e.g. Ajv),
+ * canonicalize without hash, compare the HMAC. Returns { result: 'ok', canonical_json, hash } or { result: 'invalid' }
+ * or { result: 'bad_hmac' }, as the normalized and invalid vectors expect.
+ */
+export function verifyEntryJson(text, validate, key = KEY) {
+  let entry, canonical;
+  try {
+    entry = JSON.parse(text);
+    if (!validate(entry)) return { result: 'invalid' };
+    const { hash: _hash, ...unsigned } = entry;
+    canonical = canonicalJson(unsigned);
+  } catch {
+    return { result: 'invalid' };
+  }
+  const hash = createHmac('sha256', key).update(canonical, 'utf8').digest('hex');
+  return hash === entry.hash ? { result: 'ok', canonical_json: canonical, hash } : { result: 'bad_hmac' };
+}
+
 /** A three-entry chain: each prev_hash is the hash of the previous entry, the first is 64 zeros. */
 function buildChain() {
   const specs = [
@@ -181,7 +325,7 @@ function buildChain() {
 
 export function buildVectors() {
   return {
-    description: 'Waypost chain test vectors. For every vector: canonical_json = RFC 8785 (JCS) of input; hash = lowercase hex HMAC-SHA256(key, UTF-8 bytes of canonical_json). input is a chain entry without its "hash" property; input + hash is a valid chain/entry.json instance. Generated by scripts/chain-vectors.js; do not edit by hand.',
+    description: 'Waypost chain test vectors. For every vector of cases and chain: canonical_json = RFC 8785 (JCS) of input; hash = lowercase hex HMAC-SHA256(key, UTF-8 bytes of canonical_json). input is a chain entry without its "hash" property; input + hash is a valid chain/entry.json instance. Generated by scripts/chain-vectors.js; do not edit by hand.',
     key_base64: KEY.toString('base64'),
     key_hex: KEY.toString('hex'),
     cases: CASES.map(({ name, description, input }) => ({
@@ -190,6 +334,16 @@ export function buildVectors() {
     chain: {
       description: 'Three consecutive entries of one device: seq 1..3, prev_hash of seq 1 is 64 zeros, every further prev_hash is the hash of the previous entry.',
       entries: buildChain(),
+    },
+    normalized: {
+      description: 'Raw JSON texts of one signed chain entry (with hash), as a verifier receives them, written in ways that decode to the same entry. A verifier decodes entry_json, validates it against chain/entry.json, and computes the HMAC of the canonical JSON without hash: the result is canonical_json and hash, and hash equals the one in entry_json.',
+      cases: NORMALIZED.map(({ name, description, entry_json }) => ({
+        name, description, entry_json, canonical_json: canonicalJson(RAW_BASE), hash: RAW_SIGNED.hash,
+      })),
+    },
+    invalid: {
+      description: 'Raw JSON texts of signed chain entries a verifier must refuse. expected "invalid": the text does not decode to a valid chain/entry.json instance, or the entry cannot be canonicalized (push: 422 validation_failed); expected "bad_hmac": a valid entry whose hash is not the HMAC of its canonical JSON (push: rejected with bad_hmac).',
+      cases: INVALID.map(({ name, description, expected, entry_json }) => ({ name, description, expected, entry_json })),
     },
   };
 }

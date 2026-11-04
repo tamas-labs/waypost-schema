@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/chain/payload-round_opened.json",
+  "$id": "https://waypost.dev/schema/v1/chain/payload-round_opened.json",
   "title": "Payload: round_opened",
   "description": "A scheduled round opened (status open). A missed time slot is opened later with its original scheduled_at. Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
   "type": "object",

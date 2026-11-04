@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/error.json",
+  "$id": "https://waypost.dev/schema/v1/api/error.json",
   "title": "Error response",
   "description": "Body of every non-2xx API response.",
   "type": "object",

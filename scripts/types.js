@@ -5,14 +5,15 @@
 //   node scripts/types.js --check  exit 1 if the file differs from what would be written
 //
 // Every schema file becomes one named type (typeNameOf). A $ref to another file becomes a reference to that
-// file's type, so no type is declared twice. Conditional rules (if/then/else, allOf of conditionals) cannot
-// be expressed as plain types and are dropped, except the type → payload branches of chain/entry.json, which
-// become the ChainEntry discriminated union.
+// file's type, so no type is declared twice; an enum or const next to a $ref narrows it (Extract<...>).
+// Conditional rules (if/then/else, allOf of conditionals) cannot be expressed as plain types and are dropped,
+// except the type → payload branches of chain/entry.json, which become the ChainEntry discriminated union.
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { posix, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { compile } from 'json-schema-to-typescript';
+import { SCHEMA_ID_BASE } from './validate.js';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const SCHEMAS_DIR = resolve(ROOT, 'schemas');
@@ -71,9 +72,12 @@ function prepare(node, path) {
     if (key === 'not') throw new Error(`${path}: "not" outside a conditional cannot be typed`);
     if (key === '$defs') continue; // declared as separate types by defTypes
     if (key === '$ref') {
-      out.tsType = value.startsWith('#') ? defTypeName(path, value) : typeNameOf(refTarget(path, value));
+      out.tsType = refType(node, path);
       continue;
     }
+    // An enum or const next to a $ref narrows the referenced type (refType); json-schema-to-typescript would
+    // ignore it next to the tsType anyway.
+    if ((key === 'enum' || key === 'const') && '$ref' in node) continue;
     // Property names are not keywords: a property may be called "if" or "not".
     out[key] = key === 'properties'
       ? Object.fromEntries(Object.entries(value).map(([name, sub]) => [name, prepare(sub, path)]))
@@ -83,6 +87,20 @@ function prepare(node, path) {
   const described = (node.anyOf ?? []).filter((member) => member.description);
   if (!out.description && described.length === 1) out.description = described[0].description;
   return out;
+}
+
+/**
+ * TypeScript type of a node with a $ref: the referenced type, narrowed by an enum or const next to it (the schema
+ * allows only the values both allow), e.g. Extract<ErrorCode, "chain_gap" | "bad_hmac">.
+ */
+function refType(node, path) {
+  const ref = node.$ref;
+  const name = ref.startsWith('#') ? defTypeName(path, ref) : typeNameOf(refTarget(path, ref));
+  if ('enum' in node && 'const' in node) throw new Error(`${path}: enum and const next to the same $ref`);
+  const values = 'const' in node ? [node.const] : node.enum;
+  if (values === undefined) return name;
+  if (!Array.isArray(values) || values.length === 0) throw new Error(`${path}: the enum next to ${ref} must be a non-empty array`);
+  return `Extract<${name}, ${values.map((v) => JSON.stringify(v)).join(' | ')}>`;
 }
 
 /** Type name of a local $ref (#/$defs/<name>): the PascalCase name of the definition. */
@@ -167,14 +185,14 @@ export async function renderTypes() {
   const sections = [];
   for (const path of paths) {
     const schema = readSchema(path);
-    const expectedId = `https://waypost.dev/schema/${path}.json`;
+    const expectedId = `${SCHEMA_ID_BASE}${path}.json`;
     if (schema.$id !== expectedId) throw new Error(`${path}: $id must be ${expectedId}`);
     const main = path === ENTRY_PATH ? await compileEntry(schema) : await compileSchema(schema, path, typeNameOf(path));
     sections.push(`// ${path}.json\n\n${[main, ...(await defTypes(schema, path))].join('\n\n')}`);
   }
   sections.push(`/**
  * TypeScript type of each schema, keyed by its path under schemas/ without .json
- * (the schema's $id without https://waypost.dev/schema/ and .json).
+ * (the schema's $id without ${SCHEMA_ID_BASE} and .json).
  */
 export interface SchemaTypes {
 ${paths.map((p) => `  ${JSON.stringify(p)}: ${typeNameOf(p)};`).join('\n')}

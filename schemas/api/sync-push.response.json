@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/sync-push.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/sync-push.response.json",
   "title": "POST /sync/push – 200 response",
   "description": "Per-entry result of a push. An entry sent again after it was accepted is accepted again. Error responses use api/error.json.",
   "type": "object",

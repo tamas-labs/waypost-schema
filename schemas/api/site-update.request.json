@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/site-update.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/site-update.request.json",
   "title": "PATCH /sites/{id} – request",
-  "description": "Change the given properties of a site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/site.response.json.",
+  "description": "Change the given properties of a site. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/site.response.json.",
   "type": "object",
   "properties": {
     "name": {

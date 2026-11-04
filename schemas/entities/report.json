@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/report.json",
+  "$id": "https://waypost.dev/schema/v1/entities/report.json",
   "title": "Report",
   "description": "A report the server generated for a site, as the report archive lists it. The recipients' e-mail addresses and the storage path are server-side and never part of this representation. Every property is present; absent values are null.",
   "type": "object",

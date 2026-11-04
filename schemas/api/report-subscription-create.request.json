@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/report-subscription-create.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/report-subscription-create.request.json",
   "title": "POST /report-subscriptions – request",
-  "description": "Subscribe a supervisor assigned to a site of the caller to a report of the site. The same (user_id, site_id, frequency) twice is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/report-subscription.response.json.",
+  "description": "Subscribe a supervisor assigned to a site of the caller to a report of the site. The same (user_id, site_id, frequency) twice is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/report-subscription.response.json.",
   "type": "object",
   "required": [
     "user_id",

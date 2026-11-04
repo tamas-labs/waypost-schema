@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/common/lng-e7.json",
+  "$id": "https://waypost.dev/schema/v1/common/lng-e7.json",
   "title": "Longitude × 10^7",
   "description": "WGS 84 longitude in degrees multiplied by 10^7 and rounded to an integer (19.0402° → 190402000). Floating-point numbers are not allowed in hashed data.",
   "type": "integer",

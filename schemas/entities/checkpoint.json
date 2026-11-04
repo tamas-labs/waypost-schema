@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/checkpoint.json",
+  "$id": "https://waypost.dev/schema/v1/entities/checkpoint.json",
   "title": "Checkpoint",
   "description": "A point on a site identified by an NFC tag and/or a QR code. NFC checkpoints (nfc, nfc_dna) have a tag_uid, QR checkpoints a qr_payload; either kind may carry the other as a fallback. Location is integer-encoded (no floats); lat_e7 and lng_e7 are both set or both null, accuracy_dm only with a location. Every property is present; absent values are null.",
   "type": "object",

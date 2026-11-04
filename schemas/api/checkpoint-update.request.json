@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/checkpoint-update.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/checkpoint-update.request.json",
   "title": "PATCH /checkpoints/{id} – request",
-  "description": "Change the given properties of a checkpoint; the site cannot change. The result must be a valid checkpoint (e.g. an nfc checkpoint has a tag_uid); a qr checkpoint without a qr_payload gets a generated one. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 200, api/checkpoint.response.json.",
+  "description": "Change the given properties of a checkpoint; the site cannot change. The result must be a valid checkpoint (e.g. an nfc checkpoint has a tag_uid); a qr checkpoint without a qr_payload gets a generated one. tag_uid is required for nfc and nfc_dna. Absent qr_payload: the server generates one (for every tag type); null: no QR code (not for qr). The location is set as a whole: lat_e7 and lng_e7 together, accuracy_dm only with them. A tag_uid already used on the site or a taken qr_payload is 409 conflict. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/checkpoint.response.json.",
   "type": "object",
   "properties": {
     "name": {

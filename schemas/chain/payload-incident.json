@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/chain/payload-incident.json",
+  "$id": "https://waypost.dev/schema/v1/chain/payload-incident.json",
   "title": "Payload: incident",
   "description": "An incident reported by the guard (also created with category damaged_tag and scan_id for a manual scan). Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
   "type": "object",

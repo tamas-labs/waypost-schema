@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/report-subscription-list.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/report-subscription-list.response.json",
   "title": "GET /report-subscriptions – 200 response",
   "description": "The subscriptions of the caller's sites, whoever the subscriber is; ?site_id= or ?user_id= limits them. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Error responses use api/error.json.",
   "type": "object",
@@ -17,6 +17,10 @@
       "items": {
         "$ref": "../entities/report-subscription.json"
       }
+    },
+    "next_cursor": {
+      "description": "Absent or null: the list is complete. A string: the server pages this list (at most 500 items per page); request the next page with ?cursor=<next_cursor> and the same filters, and merge the pages. The server may start paging without a new schema version, so a client must follow it.",
+      "$ref": "../common/next-cursor.json"
     }
   },
   "additionalProperties": false

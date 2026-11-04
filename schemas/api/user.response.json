@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/user.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/user.response.json",
   "title": "User – response",
   "description": "POST /users (201; 200 for a repeated id), GET and PATCH /users/{id}, PUT /users/{id}/pin, POST /sites/{id}/users (200). The user as sync pull delivers it to the caller: site_ids limited to the caller's sites, the PIN fields only to the site phone. Error responses use api/error.json.",
   "type": "object",
@@ -16,7 +16,7 @@
       "$ref": "../entities/user.json"
     },
     "pin": {
-      "description": "Only when the server generated the PIN: the only time it is shown. Tell it to the user.",
+      "description": "Only when the server generated the PIN: no other response shows it, except a replay of the same request with the same Idempotency-Key within 24 hours (see common/idempotency-key.json); a repeated create with the same id does not return it. Tell it to the user.",
       "$ref": "../common/pin.json"
     }
   },

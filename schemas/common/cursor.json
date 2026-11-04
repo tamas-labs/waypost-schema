@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/common/cursor.json",
+  "title": "Cursor",
+  "description": "Opaque paging cursor, 1–255 characters: the client sends back what the server returned, unchanged, as the \"cursor\" query parameter. An unknown or malformed cursor is 422 validation_failed.",
+  "type": "string",
+  "minLength": 1,
+  "maxLength": 255
+}

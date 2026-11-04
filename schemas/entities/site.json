@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/site.json",
+  "$id": "https://waypost.dev/schema/v1/entities/site.json",
   "title": "Site",
   "description": "A guarded site. Every property is present; absent values are null.",
   "type": "object",

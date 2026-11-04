@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/api/report-subscription-list.query.json",
+  "title": "GET /report-subscriptions – query",
+  "description": "Both filters together: that user's subscriptions on that site. Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.",
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "description": "Only the subscriptions of this site; a site the caller does not see gives an empty list.",
+      "$ref": "../common/uuid.json"
+    },
+    "user_id": {
+      "description": "Only the subscriptions of this user.",
+      "$ref": "../common/uuid.json"
+    },
+    "cursor": {
+      "description": "The next_cursor of the previous page; absent: the first page.",
+      "$ref": "../common/cursor.json"
+    }
+  },
+  "additionalProperties": false
+}

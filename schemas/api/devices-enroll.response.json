@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/devices-enroll.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/devices-enroll.response.json",
   "title": "POST /devices/enroll – 200 response",
-  "description": "The new device, its token (device ability) and its HMAC secret. Token and secret are returned only by this response, never again. Error responses use api/error.json.",
+  "description": "The new device, its token (device ability) and its HMAC secret. Token and secret are returned only by this response: no other endpoint returns them, and only a replay of this request with the same Idempotency-Key within 24 hours returns them again (see common/idempotency-key.json). Error responses use api/error.json.",
   "type": "object",
   "required": [
     "server_time",

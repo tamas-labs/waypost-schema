@@ -4,17 +4,19 @@
 //      (all schemas are registered first, so cross-file $refs resolve);
 //   2. every examples/<schema path>/valid/*.json validates against schemas/<schema path>.json;
 //   3. every examples/<schema path>/invalid/*.json fails against it;
-//   4. every schema has at least one valid and one invalid example.
+//   4. every schema has at least one valid and one invalid example;
+//   5. endpoints.json (required once there is an api/ schema) passes scripts/endpoints.js.
 // Exits with 1 if anything fails. Usage: node scripts/validate.js [--verbose] [--root <dir>]
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import { checkEndpoints } from './endpoints.js';
 
 export const SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
-export const SCHEMA_ID_BASE = 'https://waypost.dev/schema/';
+export const SCHEMA_ID_BASE = 'https://waypost.dev/schema/v1/';
 
 const EXAMPLE_KINDS = ['valid', 'invalid'];
 
@@ -161,6 +163,18 @@ export function validateRepo(root, { verbose = false } = {}) {
         errors.push(`schemas/${name}.json: no ${kind} example in examples/${name}/${kind}/`);
       }
     }
+  }
+
+  // 5. The endpoint table.
+  const endpointsFile = join(root, 'endpoints.json');
+  if (existsSync(endpointsFile)) {
+    try {
+      errors.push(...checkEndpoints(readJson(endpointsFile), [...schemas.keys()]));
+    } catch (err) {
+      errors.push(`endpoints.json: invalid JSON: ${err.message}`);
+    }
+  } else if ([...schemas.keys()].some((name) => name.startsWith('api/'))) {
+    errors.push('endpoints.json: missing, but there are api/ schemas');
   }
 
   return { errors, info, stats };

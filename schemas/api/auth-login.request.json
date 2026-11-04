@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/auth-login.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/auth-login.request.json",
   "title": "POST /auth/login – request",
   "description": "Supervisor login with e-mail and password. Guards cannot log in with a password. No token required.",
   "type": "object",

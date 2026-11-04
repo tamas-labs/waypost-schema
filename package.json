@@ -20,6 +20,7 @@
     "./chain/test-vectors.json": "./chain/test-vectors.json",
     "./schedule/test-vectors.json": "./schedule/test-vectors.json",
     "./pin/test-vectors.json": "./pin/test-vectors.json",
+    "./endpoints.json": "./endpoints.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -29,6 +30,8 @@
     "chain/",
     "schedule/",
     "pin/",
+    "endpoints.json",
+    "README.md",
     "CHANGELOG.md"
   ],
   "engines": {

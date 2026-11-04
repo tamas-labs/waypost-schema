@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/user-create.request.json",
+  "$id": "https://waypost.dev/schema/v1/api/user-create.request.json",
   "title": "POST /users – request",
-  "description": "Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header. Response: 201 (200 for a repeated id), api/user.response.json.",
+  "description": "Create a guard or a supervisor and assign them to the given sites of the caller. A supervisor needs an e-mail address and a password (for POST /auth/login); a guard has neither. Absent pin: the server generates one and returns it once (pin in the response). The PIN is unique among the users of the sites: a taken PIN is 409 conflict, as is a taken e-mail address. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 201 (200 for a repeated id), api/user.response.json.",
   "type": "object",
   "required": [
     "name",

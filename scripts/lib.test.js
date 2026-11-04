@@ -6,7 +6,7 @@ import { renderEmbedded } from './embed.js';
 import { schemaPaths } from './types.js';
 import { ROOT, tempModule, typecheck } from './typecheck.js';
 import { createAjv } from './validate.js';
-import { SCHEMA_ID_BASE, schemaId, schemas } from '../lib/index.js';
+import { SCHEMA_ID_BASE, endpoints, schemaId, schemas } from '../lib/index.js';
 import { chainVectors, pinVectors, scheduleVectors } from '../lib/vectors.js';
 
 const readJson = (path) => JSON.parse(readFileSync(resolve(ROOT, path), 'utf8'));
@@ -25,6 +25,16 @@ describe('lib/ (the JS exports)', () => {
     assert.equal(schemas['chain/entry'].$id, schemaId('chain/entry'));
     assert.throws(() => schemaId('chain/nope'), /Unknown schema: chain\/nope/);
     assert.throws(() => schemaId('toString'), /Unknown schema/);
+  });
+
+  test('endpoints is endpoints.json, and matches EndpointTable of lib/index.d.ts', () => {
+    assert.deepEqual(endpoints, readJson('endpoints.json'));
+    const source = (importPath) => `import type { EndpointTable } from ${importPath('lib/index.d.ts')};
+
+export const table: EndpointTable = ${readFileSync(resolve(ROOT, 'endpoints.json'), 'utf8')};
+`;
+    const { status, output } = typecheck([tempModule('endpoints.mts', source)]);
+    assert.equal(status, 0, output);
   });
 
   test('the vectors are the JSON files', () => {

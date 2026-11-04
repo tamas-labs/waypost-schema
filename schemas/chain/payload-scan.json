@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/chain/payload-scan.json",
+  "$id": "https://waypost.dev/schema/v1/chain/payload-scan.json",
   "title": "Payload: scan",
   "description": "A checkpoint scan by NFC, QR or manual entry. App-set flags: manual (manual entry), out_of_order (fixed order, not the expected checkpoint), out_of_round (no open round or checkpoint not on the route; round_id is then null), unknown_tag (no checkpoint for the tag; checkpoint_id is then null), mock_location (Android mock location provider; equals is_mock). Part of the hashed chain entry: every property is present (null when absent) and there are no floating-point numbers.",
   "type": "object",

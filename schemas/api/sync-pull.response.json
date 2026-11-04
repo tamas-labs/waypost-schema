@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/sync-pull.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/sync-pull.response.json",
   "title": "GET /sync/pull – 200 response",
   "description": "Configuration changes since the cursor given in the \"cursor\" query parameter (none: full state). Device token: the device's site; supervisor token: the supervisor's sites. At most 500 records per page (a route version always comes with all of its checkpoints, so such a page may hold 501); while has_more is true, request the next page with the returned cursor right away. Every list is present, possibly empty. Error responses use api/error.json.",
   "type": "object",
@@ -16,10 +16,8 @@
       "$ref": "../common/server-time.json"
     },
     "cursor": {
-      "description": "Opaque; send it back unchanged as the \"cursor\" query parameter of the next pull. An unknown or malformed cursor is a validation error (422).",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 255
+      "description": "Send it back unchanged as the \"cursor\" query parameter of the next pull (api/sync-pull.query.json).",
+      "$ref": "../common/cursor.json"
     },
     "has_more": {
       "type": "boolean"

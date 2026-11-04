@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/api/sync-pull.query.json",
+  "title": "GET /sync/pull – query",
+  "description": "Without cursor: the full state (a reset page). Query string parameters, each at most once (as strings in the URL; the schema describes them decoded). Absent parameter: no filter. A malformed value is 422 validation_failed.",
+  "type": "object",
+  "properties": {
+    "cursor": {
+      "description": "The cursor of the previous pull page; absent: the full state.",
+      "$ref": "../common/cursor.json"
+    }
+  },
+  "additionalProperties": false
+}

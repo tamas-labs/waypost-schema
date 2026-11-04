@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/device.json",
+  "$id": "https://waypost.dev/schema/v1/entities/device.json",
   "title": "Device",
   "description": "A phone enrolled to a site. The secret and the server-side chain state (last_seq, last_hash) are never part of this representation. Every property is present; absent values are null.",
   "type": "object",

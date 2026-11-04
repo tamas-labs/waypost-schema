@@ -85,6 +85,62 @@ describe('schedule/test-vectors.json – hand-checked cases', () => {
     ]);
   });
 
+  test('month, year and leap-day boundaries: the rounds after midnight belong to the start day', () => {
+    assert.deepEqual(byName['month-boundary'].expected.map((r) => [r.start_day, r.utc]), [
+      ['2026-10-31', '2026-10-31T19:00:00.000Z'], ['2026-10-31', '2026-10-31T23:00:00.000Z'],
+      ['2026-10-31', '2026-11-01T03:00:00.000Z'], ['2026-10-31', '2026-11-01T07:00:00.000Z'],
+    ]);
+    assert.deepEqual(byName['year-boundary'].expected.map((r) => [r.start_day, r.local]), [
+      ['2026-12-31', '2026-12-31T22:00:00+01:00'], ['2026-12-31', '2027-01-01T00:00:00+01:00'], ['2026-12-31', '2027-01-01T02:00:00+01:00'],
+    ]);
+    assert.deepEqual(byName['leap-day'].expected.map((r) => [r.start_day, r.local]), [
+      ['2028-02-28', '2028-02-28T22:00:00+01:00'], ['2028-02-28', '2028-02-29T00:00:00+01:00'], ['2028-02-28', '2028-02-29T02:00:00+01:00'],
+      ['2028-02-29', '2028-02-29T22:00:00+01:00'], ['2028-02-29', '2028-03-01T00:00:00+01:00'], ['2028-02-29', '2028-03-01T02:00:00+01:00'],
+    ]);
+  });
+
+  test('a Sunday window ends on the Monday after the period (2026-11-08 is a Sunday)', () => {
+    assert.deepEqual(byName['sunday-into-monday'].expected.map((r) => [r.start_day, r.local]), [
+      ['2026-11-08', '2026-11-08T22:00:00+01:00'], ['2026-11-08', '2026-11-08T23:00:00+01:00'], ['2026-11-08', '2026-11-09T00:00:00+01:00'],
+      ['2026-11-08', '2026-11-09T01:00:00+01:00'], ['2026-11-08', '2026-11-09T02:00:00+01:00'],
+    ]);
+  });
+
+  test('periods of many days across a DST change', () => {
+    const month = utcOf('monthly-period-with-dst-gap');
+    assert.equal(month.length, 31);
+    assert.equal(month[0], '2026-03-01T01:30:00.000Z');
+    assert.equal(month[27], '2026-03-28T01:30:00.000Z'); // 02:30 CET
+    assert.equal(month[28], '2026-03-29T01:00:00.000Z'); // 02:30 does not exist → 03:00 CEST
+    assert.equal(month[29], '2026-03-30T00:30:00.000Z'); // 02:30 CEST
+    assert.equal(month[30], '2026-03-31T00:30:00.000Z');
+
+    const week = byName['weekly-period-with-dst-overlap'].expected;
+    assert.equal(week.length, 35);
+    assert.deepEqual(week.slice(0, 5).map((r) => r.utc), [
+      '2026-10-19T18:00:00.000Z', '2026-10-19T21:00:00.000Z', '2026-10-20T00:00:00.000Z', '2026-10-20T03:00:00.000Z', '2026-10-20T06:00:00.000Z',
+    ]);
+    assert.deepEqual(week.slice(25).map((r) => [r.start_day, r.local]), [
+      ['2026-10-24', '2026-10-24T20:00:00+02:00'], ['2026-10-24', '2026-10-24T23:00:00+02:00'], ['2026-10-24', '2026-10-25T02:00:00+02:00'],
+      ['2026-10-24', '2026-10-25T05:00:00+01:00'], ['2026-10-24', '2026-10-25T08:00:00+01:00'],
+      ['2026-10-25', '2026-10-25T20:00:00+01:00'], ['2026-10-25', '2026-10-25T23:00:00+01:00'], ['2026-10-25', '2026-10-26T02:00:00+01:00'],
+      ['2026-10-25', '2026-10-26T05:00:00+01:00'], ['2026-10-25', '2026-10-26T08:00:00+01:00'],
+    ]);
+  });
+
+  test('interval_every_min = 1440: one round a day', () => {
+    assert.deepEqual(utcOf('every-1440'), ['2026-11-03T07:00:00.000Z', '2026-11-04T07:00:00.000Z']);
+  });
+
+  test('other DST rules: New York (02:00 changes) and Santiago (changes at midnight)', () => {
+    assert.deepEqual(localOf('new-york-spring-gap'), ['2026-03-08T01:30:00-05:00', '2026-03-08T03:00:00-04:00', '2026-03-08T03:30:00-04:00']);
+    assert.deepEqual(localOf('new-york-autumn-repeat'), ['2026-11-01T00:30:00-04:00', '2026-11-01T01:30:00-04:00', '2026-11-01T02:30:00-05:00']);
+    assert.deepEqual(byName['santiago-spring-midnight-gap'].expected.map((r) => [r.wall_time, r.local]), [
+      ['23:00', '2026-09-05T23:00:00-04:00'], ['00:00', '2026-09-06T01:00:00-03:00'], // 00:00 → 01:00 -03 = the 01:00 step, counted once
+    ]);
+    assert.deepEqual(utcOf('santiago-autumn-repeat-before-midnight'), ['2026-04-05T01:30:00.000Z', '2026-04-05T02:30:00.000Z']);
+  });
+
   test('the site time zone is used', () => {
     assert.deepEqual(utcOf('utc-timezone'), ['2026-03-28T22:00:00.000Z', '2026-03-29T00:00:00.000Z', '2026-03-29T02:00:00.000Z']);
     assert.deepEqual(localOf('utc-timezone'), ['2026-03-28T22:00:00+00:00', '2026-03-29T00:00:00+00:00', '2026-03-29T02:00:00+00:00']);

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/tooling/endpoints.json",
+  "title": "endpoints.json",
+  "description": "Shape of the endpoint table (endpoints.json). Checked by scripts/endpoints.js together with the rules a schema cannot express (the schemas exist, every api/ schema is used, path parameters match the path).",
+  "type": "object",
+  "required": ["description", "api_version", "error_response", "auth", "headers", "endpoints"],
+  "properties": {
+    "description": { "type": "string", "minLength": 1 },
+    "api_version": { "type": "string", "pattern": "^v[1-9][0-9]*$" },
+    "error_response": { "$ref": "#/$defs/schemaName" },
+    "auth": {
+      "description": "Every auth kind an endpoint may name, with its meaning.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/authKind" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "headers": {
+      "type": "object",
+      "propertyNames": { "type": "string", "pattern": "^[A-Z][A-Za-z]*(-[A-Z][A-Za-z]*)*$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["schema", "description"],
+        "properties": {
+          "schema": { "$ref": "#/$defs/schemaName" },
+          "description": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "endpoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/endpoint" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "schemaName": {
+      "description": "A schema path under schemas/ without .json.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[-._][a-z0-9]+)*/[a-z0-9]+(?:[-._][a-z0-9]+)*$"
+    },
+    "authKind": {
+      "type": "string",
+      "enum": ["none", "supervisor", "device", "acting", "revoked", "signed_url"]
+    },
+    "body": {
+      "type": "object",
+      "required": ["content_type", "schema"],
+      "properties": {
+        "content_type": { "type": "string", "enum": ["application/json", "multipart/form-data", "image/jpeg", "application/pdf"] },
+        "schema": {
+          "description": "null: a binary body without a schema.",
+          "anyOf": [{ "$ref": "#/$defs/schemaName" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    },
+    "endpoint": {
+      "type": "object",
+      "required": ["name", "method", "path", "path_parameters", "auth", "idempotency_key", "query", "request", "responses"],
+      "properties": {
+        "name": {
+          "description": "Unique; the backend route name without its waypost. prefix.",
+          "type": "string",
+          "pattern": "^[a-z]+(?:-[a-z]+)*(?:\\.[a-z]+(?:-[a-z]+)*)+$"
+        },
+        "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+        "path": {
+          "description": "Relative to the API base; {name} is a path parameter.",
+          "type": "string",
+          "pattern": "^(/([a-z]+(-[a-z]+)*|\\{[a-z_]+\\}))+$"
+        },
+        "path_parameters": {
+          "description": "Schema of each path parameter, keyed by its name in path.",
+          "type": "object",
+          "propertyNames": { "type": "string", "pattern": "^[a-z_]+$" },
+          "additionalProperties": { "$ref": "#/$defs/schemaName" }
+        },
+        "auth": {
+          "description": "Who may call it; any of these.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/authKind" }
+        },
+        "idempotency_key": { "description": "Requires an Idempotency-Key header.", "type": "boolean" },
+        "query": {
+          "description": "Schema of the query parameters (api/<name>.query); null: none.",
+          "anyOf": [{ "$ref": "#/$defs/schemaName" }, { "type": "null" }]
+        },
+        "request": {
+          "description": "The request body; null: none.",
+          "anyOf": [{ "$ref": "#/$defs/body" }, { "type": "null" }]
+        },
+        "responses": {
+          "description": "The success responses by HTTP status; any other status is the error_response.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "type": "string", "pattern": "^2[0-9]{2}$" },
+          "additionalProperties": { "$ref": "#/$defs/body" }
+        },
+        "description": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

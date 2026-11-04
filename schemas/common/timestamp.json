@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/common/timestamp.json",
+  "$id": "https://waypost.dev/schema/v1/common/timestamp.json",
   "title": "UTC timestamp",
   "description": "ISO 8601 / RFC 3339 instant in UTC with exactly three fractional digits and a 'Z' suffix, e.g. 2026-10-27T20:00:00.000Z. No offsets, no leap seconds. The pattern fixes the textual form; 'format' additionally rejects impossible dates such as February 30.",
   "type": "string",

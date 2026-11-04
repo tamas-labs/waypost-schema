@@ -8,7 +8,31 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 - **minor**: visszafelé kompatibilis bővítés (új séma, új opcionális mező, új enum-érték, ahol a fogadó fél ezt elviseli);
 - **patch**: javítás, amely nem változtat az érvényes példányok körén (leírás, példa, tesztvektor-pontosítás).
 
+Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a saját (régebbi) sémájával ellenőriz, egy „minor” bővítés csak akkor kompatibilis, ha a fogadó fél már ismeri. Ezért (részletesen: `docs/decisions.md`, „Kompatibilitás a verziók között”):
+
+- **Sorrend:** séma-kiadás → backend → app. Kérésoldali bővítést (új mező, új enum-érték, új bejegyzéstípus) az app csak akkor küldhet, ha a szerver már ismeri: az `X-Waypost-Schema` fejléc verziója legalább a bővítést hozó verzió.
+- **Válaszoldali bővítés:** új mező vagy enum-érték a válaszban. A régi app élesben figyelmen kívül hagyja az ismeretlen mezőt, és az ismeretlen enum-értéket tartalék ágon kezeli (pl. ismeretlen hibakód: a HTTP-státusz szerint); `__DEV__`-ben figyelmeztet.
+- **Szigorítás** (új megkötés egy eddig érvényes példányra): csak akkor minor, ha a küldő fél bizonyíthatóan sosem küldött ilyet; egyébként major.
+- **Sémaútvonal** (`api/site-create.request` stb.) minor verzióban nem nevezhető át, és nem törölhető: az app outboxa tartósan tárolja.
+
 ## [Unreleased]
+
+### Changed
+
+- **A sémák `$id`-ja főverziót kap:** `https://waypost.dev/schema/v1/<útvonal>` (eddig `https://waypost.dev/schema/<útvonal>`); `SCHEMA_ID_BASE` és `Paths::SCHEMA_ID_BASE` ennek megfelelően. A `v1` az API verziója (`/v1`), nem a csomagé; egy `/v2` készlet saját előtagot kap, így a kettő egy validátorban is megfér (audit: SCH-008). A fájlok helye nem változik. Aki a konstanson vagy a `schemaId()`-n át hivatkozik (mindkét fogyasztó), annak nincs teendője; aki kézzel írta le az `$id`-t, annak igen (0.x alatt nem major, lásd `docs/decisions.md` 2026-10-27).
+- `scripts/types.js`: a `$ref` melletti `enum` / `const` szűkíti a hivatkozott típust (`Extract<ErrorCode, "chain_gap" | "chain_fork" | "bad_hmac">`). Eddig elveszett, így a `device-diagnostic.request` `code` és a `sync-push.response` `rejected[].code` típusa mind a 12 hibakódot elfogadta (audit: SCH-005).
+
+### Added
+
+- `chain/test-vectors.json`: `normalized` (ugyanannak az aláírt bejegyzésnek másképp leírt nyers JSON-szövegei – egész értékű tört és exponenciális alak, escape-ek, tördelés –, amelyekből ugyanaz a kanonikus JSON és lenyomat jön ki) és `invalid` (nyers szövegek, amelyeket az ellenőrzőnek el kell utasítania: `invalid` = 422, `bad_hmac`) rész; a referencia-ellenőrző a `scripts/chain-vectors.js` `verifyEntryJson()`-ja (audit: SCH-003). A `cases` és a `chain` nem változott.
+- `scripts/chain-php.sh`: a lánc-vektorok PHP-val (a `docs/decisions.md` receptje + opis/json-schema), a CI-ben is.
+- `schedule/test-vectors.json`: 11 új eset – hónap-, év- és hétváltás, szökőnap, többnapos időszak DST-váltással, `interval_every_min = 1440`, `America/New_York` és az éjfélkor váltó `America/Santiago` (audit: SCH-004). A meglévő esetek nem változtak.
+- `CHANGELOG.md`: kompatibilitási szabályok a verziók között (audit: SCH-008).
+- `README.md`: a csomag szerepe, telepítés (npm, Composer, pin), validálási recept (Ajv és opis), végponttábla, tesztvektorok, „új séma / új végpont” lépései, kompatibilitási szabályok, parancsok; az npm-csomagban is (audit: SCH-010).
+- `endpoints.json`: géppel olvasható végponttábla – mind a 48 végpont metódussal, útvonallal, útvonalparaméterekkel, auth-fajtával, `Idempotency-Key`-igénnyel, query-, kérés- és válaszsémával (státuszonként), a két aláírt URL-es letöltéssel együtt. npm-en `endpoints` (`EndpointTable` típus) és `@waypost/schema/endpoints.json`, Composerrel `Paths::endpoints()`. A `validate.js` ellenőrzi, hogy minden `api/` séma szerepel benne (audit: SCH-006, SCH-030).
+- Query-sémák: `api/list.query`, `api/sync-pull.query`, `api/report-list.query`, `api/user-list.query`, `api/checkpoint-list.query`, `api/route-list.query`, `api/schedule-list.query`, `api/report-subscription-list.query`; `common/cursor.json` (a pull `cursor`-ja és a `common/next-cursor.json` erre hivatkozik, az alakjuk nem változott) (audit: SCH-006).
+- `common/idempotency-key.json`: az `Idempotency-Key` fejléc alakja és a protokoll leírása (hatókör, 24 órás visszajátszás, tárolt 4xx, `409` + `Retry-After` a még futó kérésre); a kérés-sémák leírása erre hivatkozik, a `conflict` hibakód leírása megemlíti a `Retry-After`-t, a `devices-enroll.response` és a `user.response` leírása a visszajátszást (audit: SCH-007).
+- `common/next-cursor.json`: a lapozott listák közös kurzora; a `report-list.response` erre hivatkozik (az alakja nem változott), a hét CRUD-lista (`site-`, `user-`, `checkpoint-`, `route-`, `route-version-`, `schedule-`, `report-subscription-list.response`) opcionális `next_cursor` mezőt kap. Hiányzik vagy `null`: a lista teljes; szöveg: a következő oldalt `?cursor=`-ral kell kérni (audit: SCH-009).
 
 ## [0.6.0] – 2026-11-04
 

@@ -21,8 +21,11 @@ final class Paths
      */
     public const string VERSION = '0.6.0';
 
-    /** Common prefix of every schema $id. */
-    public const string SCHEMA_ID_BASE = 'https://waypost.dev/schema/';
+    /**
+     * Common prefix of every schema $id. Its v1 is the API version (/v1), not the package version: a /v2 schema set
+     * gets its own prefix, so both can be loaded into one validator (docs/decisions.md, SCH-008).
+     */
+    public const string SCHEMA_ID_BASE = 'https://waypost.dev/schema/v1/';
 
     private const string NAME_PATTERN = '~^[a-z0-9]+(?:[-._][a-z0-9]+)*/[a-z0-9]+(?:[-._][a-z0-9]+)*$~';
 
@@ -61,7 +64,7 @@ final class Paths
     }
 
     /**
-     * The $id of a schema, e.g. https://waypost.dev/schema/api/sync-push.request.json.
+     * The $id of a schema, e.g. https://waypost.dev/schema/v1/api/sync-push.request.json.
      *
      * @throws InvalidArgumentException for a malformed or unknown name
      */
@@ -87,6 +90,12 @@ final class Paths
         sort($names, SORT_STRING);
 
         return $names;
+    }
+
+    /** endpoints.json: every endpoint of the API (method, path, auth, headers, query, request and response schemas). */
+    public static function endpoints(): string
+    {
+        return self::root() . '/endpoints.json';
     }
 
     /** chain/test-vectors.json: entry → canonical JSON → HMAC. */

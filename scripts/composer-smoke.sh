@@ -48,6 +48,9 @@ $schedule = json_decode((string) file_get_contents(Paths::scheduleVectors()), tr
 check(count($schedule['expansion']) > 0, 'schedule vectors');
 $pin = json_decode((string) file_get_contents(Paths::pinVectors()), true, flags: JSON_THROW_ON_ERROR);
 check(count($pin['cases']) > 0 && $pin['defaults']['iterations'] === 100000, 'pin vectors');
+$endpoints = json_decode((string) file_get_contents(Paths::endpoints()), true, flags: JSON_THROW_ON_ERROR);
+$pull = array_values(array_filter($endpoints['endpoints'], static fn (array $e): bool => $e['name'] === 'sync.pull'))[0] ?? null;
+check($pull !== null && $pull['path'] === '/sync/pull' && is_file(Paths::schema($pull['responses']['200']['schema'])), 'endpoint table');
 
 foreach (['../package', 'chain/../../composer', 'chain/entry.json', 'Chain/Entry', 'entry', 'chain/nope'] as $bad) {
     try {
@@ -60,7 +63,7 @@ foreach (['../package', 'chain/../../composer', 'chain/entry.json', 'Chain/Entry
 check(preg_match('/^[0-9]+\.[0-9]+\.[0-9]+$/', Paths::VERSION) === 1, 'Paths::VERSION');
 
 $installed = Composer\InstalledVersions::getPrettyVersion('waypost/schema');
-echo 'ok: waypost/schema ' . Paths::VERSION . " (Composer: {$installed}), " . count($names) . " schemas, vectors readable\n";
+echo 'ok: waypost/schema ' . Paths::VERSION . " (Composer: {$installed}), " . count($names) . " schemas, " . count($endpoints['endpoints']) . " endpoints, vectors readable\n";
 PHP
 
 docker run --rm \

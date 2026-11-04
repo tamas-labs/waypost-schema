@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/entities/report-subscription.json",
+  "$id": "https://waypost.dev/schema/v1/entities/report-subscription.json",
   "title": "Report subscription",
   "description": "A user receives the given report of a site by e-mail. Unique per (user_id, site_id, frequency). Every property is present; absent values are null.",
   "type": "object",

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waypost.dev/schema/v1/common/next-cursor.json",
+  "title": "Next page cursor",
+  "description": "Cursor of the next page of a paged list response (common/cursor.json), null on the last page; request the next page with ?cursor=<next_cursor> and the same filters. GET /sync/pull pages differently (cursor + has_more, api/sync-pull.response.json), because its cursor also marks where the next incremental pull starts.",
+  "anyOf": [
+    {
+      "$ref": "cursor.json"
+    },
+    {
+      "type": "null"
+    }
+  ]
+}

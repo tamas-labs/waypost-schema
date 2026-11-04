@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/sync-push-final.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/sync-push-final.response.json",
   "title": "POST /sync/push-final – 200 response",
   "description": "Same as the response of POST /sync/push. Error responses use api/error.json.",
   "$ref": "sync-push.response.json"

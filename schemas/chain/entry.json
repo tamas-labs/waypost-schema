@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/chain/entry.json",
+  "$id": "https://waypost.dev/schema/v1/chain/entry.json",
   "title": "Chain entry",
   "description": "One entry of a device's hash chain, as stored on the device and sent in sync push. hash = lowercase hex of HMAC-SHA256(key = device secret, message = RFC 8785 canonical JSON of this object without the \"hash\" property). Every property is present, null values included; there are no floating-point numbers anywhere, and every integer is within ±(2^53 − 1). New entry types (e.g. sos in stage 2) are added as a new enum value, a new payload schema and a new branch below, in a minor version.",
   "type": "object",

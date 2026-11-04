@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://waypost.dev/schema/api/device-diagnostic.response.json",
+  "$id": "https://waypost.dev/schema/v1/api/device-diagnostic.response.json",
   "title": "POST /devices/diagnostics – 200 response",
   "description": "The diagnostic is stored. Error responses use api/error.json.",
   "type": "object",

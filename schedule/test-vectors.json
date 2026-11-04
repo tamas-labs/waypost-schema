@@ -844,10 +844,871 @@
       ]
     },
     {
+      "name": "month-boundary",
+      "description": "A window from the last day of a month into the first of the next (2026-10-31 → 11-01); the rounds after midnight belong to October 31.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000315",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Éjszaka négyóránként",
+        "weekdays": 127,
+        "mode": "interval",
+        "start_times": null,
+        "interval_from": "20:00",
+        "interval_to": "08:00",
+        "interval_every_min": 240,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "Europe/Budapest",
+      "from_date": "2026-10-31",
+      "to_date": "2026-10-31",
+      "expected": [
+        {
+          "start_day": "2026-10-31",
+          "wall_time": "20:00",
+          "local": "2026-10-31T20:00:00+01:00",
+          "utc": "2026-10-31T19:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-31",
+          "wall_time": "00:00",
+          "local": "2026-11-01T00:00:00+01:00",
+          "utc": "2026-10-31T23:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-31",
+          "wall_time": "04:00",
+          "local": "2026-11-01T04:00:00+01:00",
+          "utc": "2026-11-01T03:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-31",
+          "wall_time": "08:00",
+          "local": "2026-11-01T08:00:00+01:00",
+          "utc": "2026-11-01T07:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "year-boundary",
+      "description": "A list window from New Year's Eve into 2027-01-01; every round belongs to 2026-12-31.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000316",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Szilveszter",
+        "weekdays": 127,
+        "mode": "list",
+        "start_times": [
+          "22:00",
+          "00:00",
+          "02:00"
+        ],
+        "interval_from": null,
+        "interval_to": null,
+        "interval_every_min": null,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "Europe/Budapest",
+      "from_date": "2026-12-31",
+      "to_date": "2026-12-31",
+      "expected": [
+        {
+          "start_day": "2026-12-31",
+          "wall_time": "22:00",
+          "local": "2026-12-31T22:00:00+01:00",
+          "utc": "2026-12-31T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-12-31",
+          "wall_time": "00:00",
+          "local": "2027-01-01T00:00:00+01:00",
+          "utc": "2026-12-31T23:00:00.000Z"
+        },
+        {
+          "start_day": "2026-12-31",
+          "wall_time": "02:00",
+          "local": "2027-01-01T02:00:00+01:00",
+          "utc": "2027-01-01T01:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "leap-day",
+      "description": "Windows of 2028-02-28 and 02-29 (a leap year): into February 29, then into March 1.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000317",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Szökőnap",
+        "weekdays": 127,
+        "mode": "interval",
+        "start_times": null,
+        "interval_from": "22:00",
+        "interval_to": "02:00",
+        "interval_every_min": 120,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "Europe/Budapest",
+      "from_date": "2028-02-28",
+      "to_date": "2028-02-29",
+      "expected": [
+        {
+          "start_day": "2028-02-28",
+          "wall_time": "22:00",
+          "local": "2028-02-28T22:00:00+01:00",
+          "utc": "2028-02-28T21:00:00.000Z"
+        },
+        {
+          "start_day": "2028-02-28",
+          "wall_time": "00:00",
+          "local": "2028-02-29T00:00:00+01:00",
+          "utc": "2028-02-28T23:00:00.000Z"
+        },
+        {
+          "start_day": "2028-02-28",
+          "wall_time": "02:00",
+          "local": "2028-02-29T02:00:00+01:00",
+          "utc": "2028-02-29T01:00:00.000Z"
+        },
+        {
+          "start_day": "2028-02-29",
+          "wall_time": "22:00",
+          "local": "2028-02-29T22:00:00+01:00",
+          "utc": "2028-02-29T21:00:00.000Z"
+        },
+        {
+          "start_day": "2028-02-29",
+          "wall_time": "00:00",
+          "local": "2028-03-01T00:00:00+01:00",
+          "utc": "2028-02-29T23:00:00.000Z"
+        },
+        {
+          "start_day": "2028-02-29",
+          "wall_time": "02:00",
+          "local": "2028-03-01T02:00:00+01:00",
+          "utc": "2028-03-01T01:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "sunday-into-monday",
+      "description": "weekdays = Sunday over a Monday–Sunday period: the only window starts on the last day and ends on the Monday after the period, and all of it belongs to the period.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000318",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Vasárnap éjjel",
+        "weekdays": 64,
+        "mode": "interval",
+        "start_times": null,
+        "interval_from": "22:00",
+        "interval_to": "02:00",
+        "interval_every_min": 60,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "Europe/Budapest",
+      "from_date": "2026-11-02",
+      "to_date": "2026-11-08",
+      "expected": [
+        {
+          "start_day": "2026-11-08",
+          "wall_time": "22:00",
+          "local": "2026-11-08T22:00:00+01:00",
+          "utc": "2026-11-08T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-11-08",
+          "wall_time": "23:00",
+          "local": "2026-11-08T23:00:00+01:00",
+          "utc": "2026-11-08T22:00:00.000Z"
+        },
+        {
+          "start_day": "2026-11-08",
+          "wall_time": "00:00",
+          "local": "2026-11-09T00:00:00+01:00",
+          "utc": "2026-11-08T23:00:00.000Z"
+        },
+        {
+          "start_day": "2026-11-08",
+          "wall_time": "01:00",
+          "local": "2026-11-09T01:00:00+01:00",
+          "utc": "2026-11-09T00:00:00.000Z"
+        },
+        {
+          "start_day": "2026-11-08",
+          "wall_time": "02:00",
+          "local": "2026-11-09T02:00:00+01:00",
+          "utc": "2026-11-09T01:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "monthly-period-with-dst-gap",
+      "description": "A whole month (March 2026) of a daily 02:30 round: 31 rounds; on 03-29 02:30 does not exist and moves to 03:00 CEST, and from then on the UTC time is an hour earlier.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000319",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Hajnali",
+        "weekdays": 127,
+        "mode": "list",
+        "start_times": [
+          "02:30"
+        ],
+        "interval_from": null,
+        "interval_to": null,
+        "interval_every_min": null,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "Europe/Budapest",
+      "from_date": "2026-03-01",
+      "to_date": "2026-03-31",
+      "expected": [
+        {
+          "start_day": "2026-03-01",
+          "wall_time": "02:30",
+          "local": "2026-03-01T02:30:00+01:00",
+          "utc": "2026-03-01T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-02",
+          "wall_time": "02:30",
+          "local": "2026-03-02T02:30:00+01:00",
+          "utc": "2026-03-02T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-03",
+          "wall_time": "02:30",
+          "local": "2026-03-03T02:30:00+01:00",
+          "utc": "2026-03-03T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-04",
+          "wall_time": "02:30",
+          "local": "2026-03-04T02:30:00+01:00",
+          "utc": "2026-03-04T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-05",
+          "wall_time": "02:30",
+          "local": "2026-03-05T02:30:00+01:00",
+          "utc": "2026-03-05T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-06",
+          "wall_time": "02:30",
+          "local": "2026-03-06T02:30:00+01:00",
+          "utc": "2026-03-06T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-07",
+          "wall_time": "02:30",
+          "local": "2026-03-07T02:30:00+01:00",
+          "utc": "2026-03-07T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-08",
+          "wall_time": "02:30",
+          "local": "2026-03-08T02:30:00+01:00",
+          "utc": "2026-03-08T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-09",
+          "wall_time": "02:30",
+          "local": "2026-03-09T02:30:00+01:00",
+          "utc": "2026-03-09T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-10",
+          "wall_time": "02:30",
+          "local": "2026-03-10T02:30:00+01:00",
+          "utc": "2026-03-10T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-11",
+          "wall_time": "02:30",
+          "local": "2026-03-11T02:30:00+01:00",
+          "utc": "2026-03-11T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-12",
+          "wall_time": "02:30",
+          "local": "2026-03-12T02:30:00+01:00",
+          "utc": "2026-03-12T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-13",
+          "wall_time": "02:30",
+          "local": "2026-03-13T02:30:00+01:00",
+          "utc": "2026-03-13T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-14",
+          "wall_time": "02:30",
+          "local": "2026-03-14T02:30:00+01:00",
+          "utc": "2026-03-14T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-15",
+          "wall_time": "02:30",
+          "local": "2026-03-15T02:30:00+01:00",
+          "utc": "2026-03-15T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-16",
+          "wall_time": "02:30",
+          "local": "2026-03-16T02:30:00+01:00",
+          "utc": "2026-03-16T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-17",
+          "wall_time": "02:30",
+          "local": "2026-03-17T02:30:00+01:00",
+          "utc": "2026-03-17T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-18",
+          "wall_time": "02:30",
+          "local": "2026-03-18T02:30:00+01:00",
+          "utc": "2026-03-18T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-19",
+          "wall_time": "02:30",
+          "local": "2026-03-19T02:30:00+01:00",
+          "utc": "2026-03-19T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-20",
+          "wall_time": "02:30",
+          "local": "2026-03-20T02:30:00+01:00",
+          "utc": "2026-03-20T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-21",
+          "wall_time": "02:30",
+          "local": "2026-03-21T02:30:00+01:00",
+          "utc": "2026-03-21T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-22",
+          "wall_time": "02:30",
+          "local": "2026-03-22T02:30:00+01:00",
+          "utc": "2026-03-22T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-23",
+          "wall_time": "02:30",
+          "local": "2026-03-23T02:30:00+01:00",
+          "utc": "2026-03-23T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-24",
+          "wall_time": "02:30",
+          "local": "2026-03-24T02:30:00+01:00",
+          "utc": "2026-03-24T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-25",
+          "wall_time": "02:30",
+          "local": "2026-03-25T02:30:00+01:00",
+          "utc": "2026-03-25T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-26",
+          "wall_time": "02:30",
+          "local": "2026-03-26T02:30:00+01:00",
+          "utc": "2026-03-26T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-27",
+          "wall_time": "02:30",
+          "local": "2026-03-27T02:30:00+01:00",
+          "utc": "2026-03-27T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-28",
+          "wall_time": "02:30",
+          "local": "2026-03-28T02:30:00+01:00",
+          "utc": "2026-03-28T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-29",
+          "wall_time": "02:30",
+          "local": "2026-03-29T03:00:00+02:00",
+          "utc": "2026-03-29T01:00:00.000Z"
+        },
+        {
+          "start_day": "2026-03-30",
+          "wall_time": "02:30",
+          "local": "2026-03-30T02:30:00+02:00",
+          "utc": "2026-03-30T00:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-31",
+          "wall_time": "02:30",
+          "local": "2026-03-31T02:30:00+02:00",
+          "utc": "2026-03-31T00:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "weekly-period-with-dst-overlap",
+      "description": "A week (2026-10-19 … 10-25) of a nightly interval: the window of Saturday 10-24 crosses the autumn change (02:00 is its first, CEST occurrence), the one of Sunday 10-25 is in CET.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000320",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Éjszaka háromóránként",
+        "weekdays": 127,
+        "mode": "interval",
+        "start_times": null,
+        "interval_from": "20:00",
+        "interval_to": "08:00",
+        "interval_every_min": 180,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "Europe/Budapest",
+      "from_date": "2026-10-19",
+      "to_date": "2026-10-25",
+      "expected": [
+        {
+          "start_day": "2026-10-19",
+          "wall_time": "20:00",
+          "local": "2026-10-19T20:00:00+02:00",
+          "utc": "2026-10-19T18:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-19",
+          "wall_time": "23:00",
+          "local": "2026-10-19T23:00:00+02:00",
+          "utc": "2026-10-19T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-19",
+          "wall_time": "02:00",
+          "local": "2026-10-20T02:00:00+02:00",
+          "utc": "2026-10-20T00:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-19",
+          "wall_time": "05:00",
+          "local": "2026-10-20T05:00:00+02:00",
+          "utc": "2026-10-20T03:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-19",
+          "wall_time": "08:00",
+          "local": "2026-10-20T08:00:00+02:00",
+          "utc": "2026-10-20T06:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-20",
+          "wall_time": "20:00",
+          "local": "2026-10-20T20:00:00+02:00",
+          "utc": "2026-10-20T18:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-20",
+          "wall_time": "23:00",
+          "local": "2026-10-20T23:00:00+02:00",
+          "utc": "2026-10-20T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-20",
+          "wall_time": "02:00",
+          "local": "2026-10-21T02:00:00+02:00",
+          "utc": "2026-10-21T00:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-20",
+          "wall_time": "05:00",
+          "local": "2026-10-21T05:00:00+02:00",
+          "utc": "2026-10-21T03:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-20",
+          "wall_time": "08:00",
+          "local": "2026-10-21T08:00:00+02:00",
+          "utc": "2026-10-21T06:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-21",
+          "wall_time": "20:00",
+          "local": "2026-10-21T20:00:00+02:00",
+          "utc": "2026-10-21T18:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-21",
+          "wall_time": "23:00",
+          "local": "2026-10-21T23:00:00+02:00",
+          "utc": "2026-10-21T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-21",
+          "wall_time": "02:00",
+          "local": "2026-10-22T02:00:00+02:00",
+          "utc": "2026-10-22T00:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-21",
+          "wall_time": "05:00",
+          "local": "2026-10-22T05:00:00+02:00",
+          "utc": "2026-10-22T03:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-21",
+          "wall_time": "08:00",
+          "local": "2026-10-22T08:00:00+02:00",
+          "utc": "2026-10-22T06:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-22",
+          "wall_time": "20:00",
+          "local": "2026-10-22T20:00:00+02:00",
+          "utc": "2026-10-22T18:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-22",
+          "wall_time": "23:00",
+          "local": "2026-10-22T23:00:00+02:00",
+          "utc": "2026-10-22T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-22",
+          "wall_time": "02:00",
+          "local": "2026-10-23T02:00:00+02:00",
+          "utc": "2026-10-23T00:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-22",
+          "wall_time": "05:00",
+          "local": "2026-10-23T05:00:00+02:00",
+          "utc": "2026-10-23T03:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-22",
+          "wall_time": "08:00",
+          "local": "2026-10-23T08:00:00+02:00",
+          "utc": "2026-10-23T06:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-23",
+          "wall_time": "20:00",
+          "local": "2026-10-23T20:00:00+02:00",
+          "utc": "2026-10-23T18:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-23",
+          "wall_time": "23:00",
+          "local": "2026-10-23T23:00:00+02:00",
+          "utc": "2026-10-23T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-23",
+          "wall_time": "02:00",
+          "local": "2026-10-24T02:00:00+02:00",
+          "utc": "2026-10-24T00:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-23",
+          "wall_time": "05:00",
+          "local": "2026-10-24T05:00:00+02:00",
+          "utc": "2026-10-24T03:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-23",
+          "wall_time": "08:00",
+          "local": "2026-10-24T08:00:00+02:00",
+          "utc": "2026-10-24T06:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-24",
+          "wall_time": "20:00",
+          "local": "2026-10-24T20:00:00+02:00",
+          "utc": "2026-10-24T18:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-24",
+          "wall_time": "23:00",
+          "local": "2026-10-24T23:00:00+02:00",
+          "utc": "2026-10-24T21:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-24",
+          "wall_time": "02:00",
+          "local": "2026-10-25T02:00:00+02:00",
+          "utc": "2026-10-25T00:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-24",
+          "wall_time": "05:00",
+          "local": "2026-10-25T05:00:00+01:00",
+          "utc": "2026-10-25T04:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-24",
+          "wall_time": "08:00",
+          "local": "2026-10-25T08:00:00+01:00",
+          "utc": "2026-10-25T07:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-25",
+          "wall_time": "20:00",
+          "local": "2026-10-25T20:00:00+01:00",
+          "utc": "2026-10-25T19:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-25",
+          "wall_time": "23:00",
+          "local": "2026-10-25T23:00:00+01:00",
+          "utc": "2026-10-25T22:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-25",
+          "wall_time": "02:00",
+          "local": "2026-10-26T02:00:00+01:00",
+          "utc": "2026-10-26T01:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-25",
+          "wall_time": "05:00",
+          "local": "2026-10-26T05:00:00+01:00",
+          "utc": "2026-10-26T04:00:00.000Z"
+        },
+        {
+          "start_day": "2026-10-25",
+          "wall_time": "08:00",
+          "local": "2026-10-26T08:00:00+01:00",
+          "utc": "2026-10-26T07:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "every-1440",
+      "description": "interval_every_min = 1440 (the largest step) in a window of 08:00 → 07:59 the next day: one round a day.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000321",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Naponta",
+        "weekdays": 127,
+        "mode": "interval",
+        "start_times": null,
+        "interval_from": "08:00",
+        "interval_to": "07:59",
+        "interval_every_min": 1440,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "Europe/Budapest",
+      "from_date": "2026-11-03",
+      "to_date": "2026-11-04",
+      "expected": [
+        {
+          "start_day": "2026-11-03",
+          "wall_time": "08:00",
+          "local": "2026-11-03T08:00:00+01:00",
+          "utc": "2026-11-03T07:00:00.000Z"
+        },
+        {
+          "start_day": "2026-11-04",
+          "wall_time": "08:00",
+          "local": "2026-11-04T08:00:00+01:00",
+          "utc": "2026-11-04T07:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "new-york-spring-gap",
+      "description": "America/New_York, 2026-03-08 (02:00 EST → 03:00 EDT): 02:30 does not exist and moves to 03:00 EDT.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000322",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Vasárnap hajnal",
+        "weekdays": 64,
+        "mode": "list",
+        "start_times": [
+          "01:30",
+          "02:30",
+          "03:30"
+        ],
+        "interval_from": null,
+        "interval_to": null,
+        "interval_every_min": null,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "America/New_York",
+      "from_date": "2026-03-08",
+      "to_date": "2026-03-08",
+      "expected": [
+        {
+          "start_day": "2026-03-08",
+          "wall_time": "01:30",
+          "local": "2026-03-08T01:30:00-05:00",
+          "utc": "2026-03-08T06:30:00.000Z"
+        },
+        {
+          "start_day": "2026-03-08",
+          "wall_time": "02:30",
+          "local": "2026-03-08T03:00:00-04:00",
+          "utc": "2026-03-08T07:00:00.000Z"
+        },
+        {
+          "start_day": "2026-03-08",
+          "wall_time": "03:30",
+          "local": "2026-03-08T03:30:00-04:00",
+          "utc": "2026-03-08T07:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "new-york-autumn-repeat",
+      "description": "America/New_York, 2026-11-01 (02:00 EDT → 01:00 EST): 01:30 occurs twice; the first (EDT) is used.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000323",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Vasárnap hajnal",
+        "weekdays": 64,
+        "mode": "list",
+        "start_times": [
+          "00:30",
+          "01:30",
+          "02:30"
+        ],
+        "interval_from": null,
+        "interval_to": null,
+        "interval_every_min": null,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "America/New_York",
+      "from_date": "2026-11-01",
+      "to_date": "2026-11-01",
+      "expected": [
+        {
+          "start_day": "2026-11-01",
+          "wall_time": "00:30",
+          "local": "2026-11-01T00:30:00-04:00",
+          "utc": "2026-11-01T04:30:00.000Z"
+        },
+        {
+          "start_day": "2026-11-01",
+          "wall_time": "01:30",
+          "local": "2026-11-01T01:30:00-04:00",
+          "utc": "2026-11-01T05:30:00.000Z"
+        },
+        {
+          "start_day": "2026-11-01",
+          "wall_time": "02:30",
+          "local": "2026-11-01T02:30:00-05:00",
+          "utc": "2026-11-01T07:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "santiago-spring-midnight-gap",
+      "description": "America/Santiago changes at midnight: on 2026-09-06 00:00 -04 → 01:00 -03, so the 00:00 of the Saturday window does not exist, moves to 01:00 -03, and is one round with the 01:00 step.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000324",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Szombat éjjel",
+        "weekdays": 32,
+        "mode": "list",
+        "start_times": [
+          "23:00",
+          "00:00",
+          "01:00"
+        ],
+        "interval_from": null,
+        "interval_to": null,
+        "interval_every_min": null,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "America/Santiago",
+      "from_date": "2026-09-05",
+      "to_date": "2026-09-05",
+      "expected": [
+        {
+          "start_day": "2026-09-05",
+          "wall_time": "23:00",
+          "local": "2026-09-05T23:00:00-04:00",
+          "utc": "2026-09-06T03:00:00.000Z"
+        },
+        {
+          "start_day": "2026-09-05",
+          "wall_time": "00:00",
+          "local": "2026-09-06T01:00:00-03:00",
+          "utc": "2026-09-06T04:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "santiago-autumn-repeat-before-midnight",
+      "description": "America/Santiago, 2026-04-05 00:00 -03 → 2026-04-04 23:00 -04: the hour before midnight occurs twice, so 23:30 of Saturday 04-04 is its first (-03) occurrence.",
+      "schedule": {
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000325",
+        "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
+        "name": "Szombat este",
+        "weekdays": 32,
+        "mode": "list",
+        "start_times": [
+          "22:30",
+          "23:30"
+        ],
+        "interval_from": null,
+        "interval_to": null,
+        "interval_every_min": null,
+        "time_limit_min": 20,
+        "active": true,
+        "created_at": "2026-01-05T08:00:00.000Z",
+        "updated_at": "2026-01-05T08:00:00.000Z"
+      },
+      "timezone": "America/Santiago",
+      "from_date": "2026-04-04",
+      "to_date": "2026-04-04",
+      "expected": [
+        {
+          "start_day": "2026-04-04",
+          "wall_time": "22:30",
+          "local": "2026-04-04T22:30:00-03:00",
+          "utc": "2026-04-05T01:30:00.000Z"
+        },
+        {
+          "start_day": "2026-04-04",
+          "wall_time": "23:30",
+          "local": "2026-04-04T23:30:00-03:00",
+          "utc": "2026-04-05T02:30:00.000Z"
+        }
+      ]
+    },
+    {
       "name": "utc-timezone",
       "description": "The site's time zone is used: in UTC, local and UTC times are equal.",
       "schedule": {
-        "id": "019a2b3c-4d5e-7f00-8a00-000000000315",
+        "id": "019a2b3c-4d5e-7f00-8a00-000000000326",
         "route_id": "019a2b3c-4d5e-7f00-8a00-000000000007",
         "name": "UTC",
         "weekdays": 127,
