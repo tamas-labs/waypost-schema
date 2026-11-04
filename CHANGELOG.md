@@ -10,6 +10,10 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.1.0/) ajánlás
 
 ## [Unreleased]
 
+## [0.6.0] – 2026-11-04
+
+Visszafelé kompatibilis bővítés: a csomag verziója futásidőben, és a szerződés CI-je (audit: SCH-001, SCH-002).
+
 ### Added
 
 - `SCHEMA_VERSION` (npm, `@waypost/schema`) és `Waypost\Schema\Paths::VERSION` (Composer): a csomag verziója futásidőben, hogy a fogyasztó tesztje és a backend `X-Waypost-Schema` fejléce ebből dolgozhasson (`path` repositoryból a Composer csak `dev-main`-t lát).

@@ -19,7 +19,7 @@ final class Paths
      * Version of this package, e.g. "0.5.0". Composer does not know it from a path repository (it reports dev-main
      * there), so it is kept here, equal to package.json (scripts/release.test.js); npm: SCHEMA_VERSION.
      */
-    public const string VERSION = '0.5.0';
+    public const string VERSION = '0.6.0';
 
     /** Common prefix of every schema $id. */
     public const string SCHEMA_ID_BASE = 'https://waypost.dev/schema/';
