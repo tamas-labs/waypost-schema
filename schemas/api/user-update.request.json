@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://waypost.dev/schema/v1/api/user-update.request.json",
   "title": "PATCH /users/{id} – request",
-  "description": "Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.",
+  "description": "Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN with their own token; on the site phone (X-Acting-User) only if the phone's site is their only site (otherwise 403 forbidden: the request proves only the device token, not the supervisor's PIN, and these would open the supervisor's other sites). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.",
   "type": "object",
   "properties": {
     "name": {
@@ -14,7 +14,7 @@
       "$ref": "../common/email.json"
     },
     "password": {
-      "description": "Password of the supervisor for POST /auth/login.",
+      "description": "Password of the supervisor for POST /auth/login. A new password revokes every token of the user except the one of this request: whoever changes their own password stays logged in, the user's other devices get 401 unauthenticated and must log in again. Other fields and the PIN leave the tokens alone.",
       "type": "string",
       "minLength": 8,
       "maxLength": 255

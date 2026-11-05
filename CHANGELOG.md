@@ -17,6 +17,16 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 
 ## [Unreleased]
 
+## [0.8.1] – 2026-11-05
+
+Leírások a `laravel-waypost` 2026-11-05-i auditjából (WP-BE-001, WP-BE-003, WP-BE-005): a sémák a backend 0.3.0 működését mondják ki. Az érvényes példányok köre nem változik; a fogyasztóknak nincs teendőjük (`docs/decisions.md`, 2026-11-05).
+
+### Changed
+
+- `common/idempotency-key.json`: az a kulcs, amelyhez az első kérése után 5 percen belül nem tárolódott válasz, elhagyott; a következő próbálkozás újra lefuttatja a kérést (WP-BE-003).
+- `api/user-update.request.json`, `api/user-pin.request.json`: a saját e-mail-címet, jelszót és PIN-t a telephelyi telefonon (`X-Acting-User`) csak az módosíthatja, akinek a telefon telephelye az egyetlen telephelye, különben `403` (WP-BE-001).
+- `api/user-update.request.json`: az új jelszó a felhasználó összes tokenjét visszavonja, a kérés sajátját kivéve (WP-BE-005).
+
 ## [0.8.0] – 2026-11-04
 
 Az audit INFO-tételei (SCH-022 – SCH-029): két szigorítás, a menetrend-vektorok tzdata-verziója, valamint döntések és ismert kockázatok. A `push-final` szigorítását az app nem érinti. A `validation_failed` `details`-e viszont olyan esetet zár ki, amelyet a backend ma küld (nem JSON vagy nem objektum törzs). A backendnek ezért a 0.8.0-ra lépéskor ezt és egy tesztjét igazítania kell (`docs/decisions.md`, SCH-029, SCH-022). 0.x alatt ez minor.

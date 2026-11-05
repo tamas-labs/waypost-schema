@@ -74,7 +74,7 @@ export type Hash = string;
 // common/idempotency-key.json
 
 /**
- * Value of the Idempotency-Key request header, required on every authenticated write request (all but POST /auth/login and /auth/logout); missing or malformed: 422 validation_failed with details {"Idempotency-Key": [...]}. Any UUID, in either case; the app sends a new UUIDv7 per logical request. The key belongs to the token's owner (user or device). For 24 hours the same key gets the same response (status and body, with an Idempotent-Replayed: true header; only server_time is current) without running the request again; client errors (4xx) are stored too, server errors (5xx) are not. The same key with a different request (method, path, query or body): 422 validation_failed. The same key while its first request is still running: 409 conflict with a Retry-After header (the only 409 that has one), to be retried later with the same key. Rules: docs/decisions.md.
+ * Value of the Idempotency-Key request header, required on every authenticated write request (all but POST /auth/login and /auth/logout); missing or malformed: 422 validation_failed with details {"Idempotency-Key": [...]}. Any UUID, in either case; the app sends a new UUIDv7 per logical request. The key belongs to the token's owner (user or device). For 24 hours the same key gets the same response (status and body, with an Idempotent-Replayed: true header; only server_time is current) without running the request again; client errors (4xx) are stored too, server errors (5xx) are not. The same key with a different request (method, path, query or body): 422 validation_failed. The same key while its first request is still running: 409 conflict with a Retry-After header (the only 409 that has one), to be retried later with the same key. A key with no stored response 5 minutes after its first request (the request crashed, timed out or its process stopped) is abandoned: the next attempt with it runs the request again. Rules: docs/decisions.md.
  */
 export type IdempotencyKey = string;
 
@@ -1609,7 +1609,7 @@ export interface UserListResponse {
 // api/user-pin.request.json
 
 /**
- * Set a new PIN for the user: the given one, or (pin absent) a generated one, returned once (pin in the response). Unique among the users of all of the user's sites: a taken PIN is 409 conflict. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.
+ * Set a new PIN for the user: the given one, or (pin absent) a generated one, returned once (pin in the response). Unique among the users of all of the user's sites: a taken PIN is 409 conflict. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN with their own token; on the site phone (X-Acting-User) only if the phone's site is their only site (otherwise 403 forbidden: the request proves only the device token, not the supervisor's PIN, and these would open the supervisor's other sites). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.
  */
 export interface UserPinRequest {
   pin?: Pin;
@@ -1618,13 +1618,13 @@ export interface UserPinRequest {
 // api/user-update.request.json
 
 /**
- * Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN. Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.
+ * Change the given properties of a user; active: false deactivates (an inactive user cannot log in). e-mail and password only for a supervisor. The role cannot change. The PIN changes with PUT /users/{id}/pin. Only for a user every site of whom is a site of the caller (otherwise 403 forbidden: a supervisor of one shared site must not take over the account of a colleague who also manages other sites); a user changes their own e-mail address, password and PIN with their own token; on the site phone (X-Acting-User) only if the phone's site is their only site (otherwise 403 forbidden: the request proves only the device token, not the supervisor's PIN, and these would open the supervisor's other sites). Supervisor token, or the site phone's device token with an X-Acting-User header (then only on the phone's site). Requires an Idempotency-Key header (common/idempotency-key.json). Response: 200, api/user.response.json.
  */
 export interface UserUpdateRequest {
   name?: string;
   email?: Email;
   /**
-   * Password of the supervisor for POST /auth/login.
+   * Password of the supervisor for POST /auth/login. A new password revokes every token of the user except the one of this request: whoever changes their own password stays logged in, the user's other devices get 401 unauthenticated and must log in again. Other fields and the PIN leave the tokens alone.
    */
   password?: string;
   active?: boolean;
