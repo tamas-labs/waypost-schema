@@ -2,7 +2,7 @@
 # Runs every example (examples/<schema path>/valid|invalid/*.json) through opis/json-schema, the validator of the
 # backend, with the schemas resolved as the backend does (registerPrefix). Fails if opis decides any example
 # differently from what its directory says, i.e. differently from Ajv (scripts/validate.js). Needs Docker
-# (composer:2 image); no local PHP or Composer. Usage:
+# (composer:2 and php:8.4-cli images); no local PHP or Composer. Usage:
 #   sh scripts/opis-parity.sh
 set -eu
 
@@ -14,7 +14,8 @@ cat > "$WORK/composer.json" <<'JSON'
 {
     "name": "waypost/schema-opis-parity",
     "repositories": [{ "type": "path", "url": "/schema" }],
-    "require": { "waypost/schema": "*@dev", "opis/json-schema": "^2.6" }
+    "require": { "waypost/schema": "*@dev", "opis/json-schema": "^2.6" },
+    "config": { "platform": { "php": "8.4.0" } }
 }
 JSON
 
@@ -72,7 +73,13 @@ $opis = Composer\InstalledVersions::getPrettyVersion('opis/json-schema');
 echo "ok: opis/json-schema {$opis} agrees on {$counts['valid']} valid and {$counts['invalid']} invalid examples\n";
 PHP
 
+# Composer resolves for PHP 8.4 (config.platform); the check runs on the PHP of the backend (FR-021), as the
+# composer:2 image has the newest PHP. PHP_IMAGE overrides it.
 docker run --rm \
   -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer \
   -v "$ROOT":/schema:ro -v "$WORK":/app -w /app \
-  composer:2 sh -c 'composer install --no-interaction --no-progress --quiet && php check.php /schema/examples'
+  composer:2 composer install --no-interaction --no-progress --quiet
+docker run --rm \
+  -u "$(id -u):$(id -g)" \
+  -v "$ROOT":/schema:ro -v "$WORK":/app -w /app \
+  "${PHP_IMAGE:-php:8.4-cli}" php check.php /schema/examples

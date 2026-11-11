@@ -3,7 +3,7 @@
 # integral floats back to integers, recursive ksort, json_encode with the documented flags), and for the raw texts
 # (normalized, invalid) the whole verification: json_decode, opis/json-schema against chain/entry.json, canonical
 # JSON without hash, HMAC. Fails if PHP gets any vector differently from scripts/chain-vectors.js. Needs Docker
-# (composer:2 image); no local PHP or Composer. Usage:
+# (composer:2 and php:8.4-cli images); no local PHP or Composer. Usage:
 #   sh scripts/chain-php.sh
 set -eu
 
@@ -15,7 +15,8 @@ cat > "$WORK/composer.json" <<'JSON'
 {
     "name": "waypost/schema-chain-php",
     "repositories": [{ "type": "path", "url": "/schema" }],
-    "require": { "waypost/schema": "*@dev", "opis/json-schema": "^2.6" }
+    "require": { "waypost/schema": "*@dev", "opis/json-schema": "^2.6" },
+    "config": { "platform": { "php": "8.4.0" } }
 }
 JSON
 
@@ -134,7 +135,13 @@ printf(
 );
 PHP
 
+# Composer resolves for PHP 8.4 (config.platform); the check runs on the PHP of the backend (FR-021), as the
+# composer:2 image has the newest PHP. PHP_IMAGE overrides it.
 docker run --rm \
   -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer \
   -v "$ROOT":/schema:ro -v "$WORK":/app -w /app \
-  composer:2 sh -c 'composer install --no-interaction --no-progress --quiet && php check.php'
+  composer:2 composer install --no-interaction --no-progress --quiet
+docker run --rm \
+  -u "$(id -u):$(id -g)" \
+  -v "$ROOT":/schema:ro -v "$WORK":/app -w /app \
+  "${PHP_IMAGE:-php:8.4-cli}" php check.php

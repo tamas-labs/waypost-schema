@@ -76,8 +76,8 @@ CHANGELOG.md
 - `npm run types` – a `types/index.d.ts` újragenerálása (`scripts/types.js`); az `npm test` elbukik, ha elavult, vagy ha a típusokkal a `scripts/types-sample.ts` vagy bármelyik érvényes példa nem fordul le.
 - `npm run embed` – a `lib/generated/` újragenerálása (`scripts/embed.js`): a verzió, a sémák, a végponttábla és a vektorok ES-modulként. `npm run build` = `types` + `embed`.
 - `sh scripts/composer-smoke.sh` – Composer-telepítés üres projektbe `path` repositoryból és a `composer archive` kimenetéből, és a `Paths` ellenőrzése (Docker). Az npm-telepítést az `npm test` próbálja ki (`scripts/package.test.js`).
-- `sh scripts/opis-parity.sh` – minden példa opis/json-schema-val is (a backend validátora, Docker); elbukik, ha bármelyiket másképp dönti el, mint az Ajv.
-- `sh scripts/chain-php.sh` – a lánc-vektorok PHP-val (a `docs/decisions.md` kanonikus JSON-receptje, a nyers szövegeknél `json_decode` + opis + egyedi `media`-azonosítók is; Docker). Lánc-vektor vagy recept változásakor futtasd.
+- `sh scripts/opis-parity.sh` – minden példa opis/json-schema-val is (a backend validátora, Docker, a backend PHP-ján: `php:8.4-cli`, a `PHP_IMAGE` felülírja); elbukik, ha bármelyiket másképp dönti el, mint az Ajv.
+- `sh scripts/chain-php.sh` – a lánc-vektorok PHP 8.4-gyel (a `docs/decisions.md` kanonikus JSON-receptje, a nyers szövegeknél `json_decode` + opis + egyedi `media`-azonosítók is; Docker). Lánc-vektor vagy recept változásakor futtasd.
 - `node scripts/release.js vX.Y.Z` – kiadhatóság: a tag = `v<package.json verzió>`, van CHANGELOG-szakasz, a verziókonstansok egyeznek.
 - CI: `.github/workflows/ci.yml` – `main`-pushra, PR-re és `v*` tagre: `npm test`, `npm run typecheck`, `composer validate --strict`, `composer-smoke.sh`, `opis-parity.sh`, `chain-php.sh`, tagre `release.js`.
 - `npm run typecheck` – `tsc` a `tsconfig.json` szerint (`strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`).

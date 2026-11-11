@@ -668,7 +668,7 @@ export interface AuthLoginRequest {
 // api/auth-login.response.json
 
 /**
- * A non-expiring Sanctum token with the supervisor ability, returned only once. Wrong credentials: 401 unauthenticated. Error responses use api/error.json.
+ * A Sanctum token with the supervisor ability, returned only once. It has no fixed expiry, but the server may refuse it (401 unauthenticated) after a period without use (laravel-waypost: waypost.token_idle_days, 90 days by default); the app then asks for the password again. Wrong credentials: 401 unauthenticated. Error responses use api/error.json.
  */
 export interface AuthLoginResponse {
   server_time: ServerTime;

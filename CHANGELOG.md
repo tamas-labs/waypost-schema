@@ -17,6 +17,16 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 
 ## [Unreleased]
 
+## [0.9.1] – 2026-11-11
+
+Patch: egy leírás és a CI PHP-próbái; az érvényes példányok köre nem változott.
+
+### Changed
+
+- Az `api/auth-login.response` leírása: a supervisor tokenjének nincs rögzített lejárata, de a szerver egy használat nélküli időszak után `401 unauthenticated`-del elutasíthatja (a `laravel-waypost`-ban `waypost.token_idle_days`, alapból 90 nap); az app ekkor újra kéri a jelszót (javításellenőrzés, FR-024).
+
+- A `scripts/chain-php.sh` és a `scripts/opis-parity.sh` a backend PHP-verzióján (8.4, `php:8.4-cli`; a `PHP_IMAGE` felülírja) futtatja az ellenőrzést, nem a `composer:2` image legújabb PHP-ján. A Composer is 8.4-re old fel (`config.platform`). Így a kanonikus JSON receptje és az opis döntései azon a PHP-n bizonyítottak, amelyen a backend fut (javításellenőrzés, FR-021).
+
 ## [0.9.0] – 2026-11-11
 
 A javításellenőrzés FR-013-as tétele: a telefon azt is jelezheti, ha a szerver a push kötegének első bejegyzését `422 validation_failed`-del utasítja el, és emiatt a lánc feltöltése megáll. Kérésoldali bővítés: a backend előbb frissüljön, az app csak legalább 0.9.0-s szervernek küldi (`docs/decisions.md`, 2026-11-11).

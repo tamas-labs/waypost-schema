@@ -19,7 +19,7 @@ final class Paths
      * Version of this package, e.g. "0.5.0". Composer does not know it from a path repository (it reports dev-main
      * there), so it is kept here, equal to package.json (scripts/release.test.js); npm: SCHEMA_VERSION.
      */
-    public const string VERSION = '0.9.0';
+    public const string VERSION = '0.9.1';
 
     /**
      * Common prefix of every schema $id. Its v1 is the API version (/v1), not the package version: a /v2 schema set
