@@ -606,3 +606,18 @@ Ami a fejlesztői specifikációban nincs eldöntve, az ide kerül. Egy bejegyz�
   - **Jelszócsere (WP-BE-005):** a `user-update.request` `password` mezőjének leírása szerint az új jelszó a felhasználó összes tokenjét visszavonja, a kérés saját tokenjét kivéve; a többi eszköze `401 unauthenticated`-et kap, és újra be kell lépnie. A többi mező és a PIN cseréje a tokeneket nem érinti.
 - **Indok:** A backend 0.3.0 már így működik; a szerződésnek ezt kell kimondania, hogy egy új kliens (és az app) ne a régi viselkedésre építsen. Az `X-Acting-User` mögött nincs szerveroldali bizonyíték a PIN-ről (SCH-024), ezért a több telephelyet is megnyitó saját adatok a telefonról csak egytelephelyes supervisornál írhatók át. A képméretkorlát (WP-BE-004, a `AUDIT-OTHER-REPOS.md` 5. sora) szerződésváltozás volna, és döntésre vár: ebben a verzióban nincs benne.
 - **Érintett:** `common/idempotency-key.json`, `api/user-update.request.json`, `api/user-pin.request.json`; `laravel-waypost` `docs/decisions.md` (WP-BE-001, WP-BE-003, WP-BE-005).
+
+## 2026-11-11 – Diagnosztika a push 422-es elutasításáról (FR-013)
+
+- **Kérdés:** Ha a szerver egy push köteg *első* bejegyzését `422 validation_failed`-del utasítja el, a lánc nem léphet tovább (bejegyzés nem hagyható ki), és minden szinkron ugyanazt a köteget küldi. A szerver ilyenkor semmit nem tárol, így a supervisor jelentése sem tud róla: a telefon adatai csendben a telefonon maradnak. A `device_diagnostics` eddig csak a push válaszának elutasításait (`chain_gap`, `chain_fork`, `bad_hmac`) ismerte. Hogyan jelezze a telefon?
+- **Döntés:** Az `api/device-diagnostic.request` `code`-ja `validation_failed`-del bővül (0.9.0, minor). A többi mező jelentése ehhez igazodik, mert a 422-nek nincs push válasza:
+  - `entry_id`, `seq`: a köteg első bejegyzése, amelyet a 422 `details`-e megnevez (`entries.0.…`);
+  - `expected_seq`: `null` (a feltételes szabály `else` ága);
+  - `server_last_seq`: a telefonnak eddig nyugtázott legnagyobb `seq`, ha nincs, 0;
+  - `rejected_count`: a `details`-ben megnevezett bejegyzések száma (legalább 1);
+  - `occurred_at`: a telefon ideje (a hibaválasz `server_time`-ját az API-kliens nem adja tovább).
+  - A telefon bejegyzésenként egyszer küldi, nem minden szinkronnál: a következő szinkron ugyanazt a 422-t kapja.
+- **Kompatibilitás:** kérésoldali enum-bővítés, ezért a sorrend séma → backend → app. A 0.8-as szerver a `validation_failed` diagnosztikát `422`-vel elutasítja; az app ezt eldobja (mint minden 4xx-es diagnosztikát), az elakadt feltöltés jelzése a telefonon ettől még megjelenik.
+- **Nem választott:** külön `upload_blocked` kód vagy új végpont: a `validation_failed` már a közös hibakódok között van (`common/error-code.json`), és pontosan azt mondja, ami történt.
+- **Érintett:** `api/device-diagnostic.request.json`, `examples/api/device-diagnostic.request/valid/validation-failed.json`; `laravel-waypost` (a jelentés szövege), `waypost` (`src/sync/push.ts`).
+

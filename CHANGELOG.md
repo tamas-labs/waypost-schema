@@ -17,6 +17,14 @@ Mivel minden objektumséma `additionalProperties: false`, és a fogadó fél a s
 
 ## [Unreleased]
 
+## [0.9.0] – 2026-11-11
+
+A javításellenőrzés FR-013-as tétele: a telefon azt is jelezheti, ha a szerver a push kötegének első bejegyzését `422 validation_failed`-del utasítja el, és emiatt a lánc feltöltése megáll. Kérésoldali bővítés: a backend előbb frissüljön, az app csak legalább 0.9.0-s szervernek küldi (`docs/decisions.md`, 2026-11-11).
+
+### Added
+
+- `api/device-diagnostic.request.json`: a `code` új értéke `validation_failed`. Ilyenkor az `entry_id` és a `seq` a köteg első, a 422 által megnevezett bejegyzéséé, az `expected_seq` `null`, a `server_last_seq` a telefonnak eddig nyugtázott legnagyobb `seq` (a 422-ben nincs `last_seq`), a `rejected_count` a 422 `details`-ében megnevezett bejegyzések száma, az `occurred_at` a telefon ideje. Új érvényes példa: `validation-failed.json`.
+
 ## [0.8.1] – 2026-11-05
 
 Leírások a `laravel-waypost` 2026-11-05-i auditjából (WP-BE-001, WP-BE-003, WP-BE-005): a sémák a backend 0.3.0 működését mondják ki. Az érvényes példányok köre nem változik; a fogyasztóknak nincs teendőjük (`docs/decisions.md`, 2026-11-05).

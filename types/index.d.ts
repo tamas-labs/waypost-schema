@@ -810,7 +810,7 @@ export interface DeletedResponse {
 // api/device-diagnostic.request.json
 
 /**
- * What the device tells the server after the server rejected a chain entry of it (chain_gap, chain_fork or bad_hmac in a push response): the device stops sending those entries, and the supervisor sees this in the report. Outside the chain, because the chain is what has gone wrong. Device token, also of a revoked device until it closes its upload; requires an Idempotency-Key header (common/idempotency-key.json). device_id must equal the token's device. Sending the same id again changes nothing. Response: 200, api/device-diagnostic.response.json.
+ * What the device tells the server after the server rejected a chain entry of it: chain_gap, chain_fork or bad_hmac in a push response (the device stops sending those entries), or validation_failed, a 422 refusal of the push that names the first entry of the batch (the chain cannot go past it, so the upload stops until the server takes it; the device reports it once per entry). The supervisor sees this in the report. Outside the chain, because the chain is what has gone wrong. Device token, also of a revoked device until it closes its upload; requires an Idempotency-Key header (common/idempotency-key.json). device_id must equal the token's device. Sending the same id again changes nothing. Response: 200, api/device-diagnostic.response.json. validation_failed since 0.9.0: send it only to a server of at least that version (X-Waypost-Schema), an older one refuses it with 422.
  */
 export interface DeviceDiagnosticRequest {
   /**
@@ -818,9 +818,9 @@ export interface DeviceDiagnosticRequest {
    */
   id: Uuid;
   device_id: Uuid;
-  code: Extract<ErrorCode, "chain_gap" | "chain_fork" | "bad_hmac">;
+  code: Extract<ErrorCode, "chain_gap" | "chain_fork" | "bad_hmac" | "validation_failed">;
   /**
-   * The first rejected entry of the response.
+   * The first rejected entry of the response; for validation_failed the first entry of the batch, which the 422 names.
    */
   entry_id: Uuid;
   /**
@@ -828,19 +828,19 @@ export interface DeviceDiagnosticRequest {
    */
   seq: number;
   /**
-   * The rejection's expected_seq: for chain_gap the seq the server is waiting for; otherwise null.
+   * The rejection's expected_seq: for chain_gap the seq the server is waiting for; otherwise (validation_failed too) null.
    */
   expected_seq: number | null;
   /**
-   * last_seq of the response.
+   * last_seq of the response; for validation_failed, whose 422 has none, the highest seq the server has acknowledged to the device (0 if none).
    */
   server_last_seq: number;
   /**
-   * How many entries the response rejected.
+   * How many entries the response rejected; for validation_failed how many entries of the batch the 422 names in its details.
    */
   rejected_count: number;
   /**
-   * When the response arrived: its server_time.
+   * When the response arrived: its server_time; for validation_failed the device's time of the 422.
    */
   occurred_at: Timestamp;
 }
